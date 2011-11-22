@@ -9,12 +9,17 @@ import org.apache.log4j.Logger;
 
 public class RequestListener implements Runnable {
     private static final Logger LOG = Logger.getLogger(RequestListener.class);
-    private int port = 1024;
+    private Configuration config;
     
+    public RequestListener(Configuration config) {
+        super();
+        this.config = config;
+    }
+
     public void run() {
         ServerSocket ss;
         try {
-            ss = new ServerSocket(port);
+            ss = new ServerSocket(config.getPortProxyPort());
         } catch (IOException ex) {
             throw new ProxyException("Startup / restart failed", ex);
         }
@@ -22,7 +27,7 @@ public class RequestListener implements Runnable {
             try {
                 Socket s = ss.accept();
                 // FIXME - Use a bounded thread pool executor.
-                new Thread(new RequestProcessor(s)).start();
+                new Thread(new RequestProcessor(config, s)).start();
             } catch (InterruptedIOException ex) {
                 // FIXME - Synchronously shut down the processor pool.
             } catch (IOException ex) {

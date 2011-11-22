@@ -8,14 +8,15 @@ import org.apache.log4j.Logger;
  */
 public class AclsProxy {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
+    private static Configuration config = new Configuration();
 
     public static void main(String[] args) {
         LOG.info("Starting up");
-        Thread requestListener = launch(new RequestListener());
+        Thread requestListener = launch();
         LOG.info("Started");
         try {
             while (true) {
-                requestListener = checkAndRelaunch(requestListener, new RequestListener());
+                requestListener = checkAndRelaunch(requestListener);
                 Thread.sleep(5000);
             }
         } catch (InterruptedException ex) {
@@ -32,16 +33,16 @@ public class AclsProxy {
         System.exit(0);
     }
 
-    private static Thread checkAndRelaunch(Thread thread, Runnable listener) throws InterruptedException {
+    private static Thread checkAndRelaunch(Thread thread) throws InterruptedException {
         if (thread.isAlive()) {
             return thread;
         }
         thread.join();
-        return launch(listener);
+        return launch();
     }
 
-    private static Thread launch(Runnable listener) {
-        Thread thread = new Thread(listener);
+    private static Thread launch() {
+        Thread thread = new Thread(new RequestListener(config));
         thread.setDaemon(true);
         thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable ex) {
