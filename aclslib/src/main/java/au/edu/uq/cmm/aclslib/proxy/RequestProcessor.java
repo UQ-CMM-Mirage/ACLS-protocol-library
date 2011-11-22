@@ -33,7 +33,6 @@ import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 
 /**
- * 
  * @author scrawley
  */
 public class RequestProcessor implements Runnable {

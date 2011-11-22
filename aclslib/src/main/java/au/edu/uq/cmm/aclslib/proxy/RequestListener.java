@@ -19,7 +19,7 @@ public class RequestListener implements Runnable {
     public void run() {
         ServerSocket ss;
         try {
-            ss = new ServerSocket(config.getPortProxyPort());
+            ss = new ServerSocket(config.getProxyPort());
         } catch (IOException ex) {
             throw new ProxyException("Startup / restart failed", ex);
         }
