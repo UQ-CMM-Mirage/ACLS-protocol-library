@@ -32,7 +32,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         try {
             ResponseType type = ResponseType.parse(command);
             switch (type) {
-            case ERROR:
+            case COMMAND_ERROR:
                 return readCommandError(scanner);
             case LOGIN_ALLOWED: 
             case VIRTUAL_LOGIN_ALLOWED: 

@@ -10,10 +10,16 @@ import java.net.Socket;
 import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.message.AbstractMessage;
+import au.edu.uq.cmm.aclslib.message.AccountRequest;
+import au.edu.uq.cmm.aclslib.message.AccountResponse;
+import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.CommandErrorResponse;
+import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LoginResponse;
+import au.edu.uq.cmm.aclslib.message.LogoutRequest;
 import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
+import au.edu.uq.cmm.aclslib.message.NoteRequest;
 import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -45,15 +51,22 @@ public class RequestProcessor implements Runnable {
             BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                     clientSocket.getOutputStream()));
             InetAddress addr = clientSocket.getInetAddress();
+            // Figure out which 'facility' is talking to us, based on the client
+            // IP address.  If the IP address is not known to us, we can't map it
+            // to a virtual facility id to log the user in ... so the only sensible
+            // thing to do is send a status error.
             Facility f = config.lookupFacility(addr);
             if (f == null) {
                 w.append("Proxy has no facility details for " + addr + "\r\n").flush();
                 return;
             }
+            // Now read the request ...
             InputStream is = clientSocket.getInputStream();
             RequestReader reader = new RequestReaderImpl();
             Request m = reader.read(is);
-            
+            // ... and dispatch to a "process" method bases on the request type.
+            // These methods will deal with the server interaction (if required)
+            // and create and return the relevant response.
             switch (m.getType()) {
             case LOGIN:
                 processLoginRequest(f, m, w);
@@ -95,6 +108,7 @@ public class RequestProcessor implements Runnable {
                 // We have told the client that we don't support the virtual
                 // extensions, so it is an error for it to send them to us.
                 // Anything else ... is an extension we don't understand.
+                LOG.error("Unexpected request type: " + m.getType());
                 sendErrorResponse(w);
                 break;
             }
@@ -111,13 +125,15 @@ public class RequestProcessor implements Runnable {
 
     private void processUseFullscreenRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
-        Response r = new YesNoResponse(f.isUserFullscreen() ? 
+        // Uses a facility-specific configuration setting
+        Response r = new YesNoResponse(f.isUseFullscreen() ? 
                 ResponseType.FULLSCREEN_YES : ResponseType.FULLSCREEN_NO);
         sendResponse(w, r);
     }
 
     private void processNetDriveRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
+        // Uses facility-specific configuration settings
         Response r;
         if (f.isUseNetDrive()) {
             r = new NetDriveResponse(f.getDriveName(), f.getFolderName(),
@@ -128,54 +144,154 @@ public class RequestProcessor implements Runnable {
         sendResponse(w, r);
     }
 
-    private void processStaffLoginRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processStaffLoginRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Pass a 'staff' request as-is.
+        Response r = serverSendReceive(m);
+        switch (r.getType()) {
+        case STAFF_LOGIN_ALLOWED:
+        case STAFF_LOGIN_REFUSED:
+        case COMMAND_ERROR:
+        case NO_RESPONSE:
+            break;
+        default:
+            LOG.error("Unexpected response for staff login: " + r.getType());
+            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+        }
+        sendResponse(w, r);
     }
 
-    private void processSystemPasswordRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processSystemPasswordRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Pass a 'system password' request as-is.
+        Response r = serverSendReceive(m);
+        switch (r.getType()) {
+        case SYSTEM_PASSWORD_YES:
+        case SYSTEM_PASSWORD_NO:
+        case COMMAND_ERROR:
+        case NO_RESPONSE:
+            break;
+        default:
+            LOG.error("Unexpected response for system password: " + r.getType());
+            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+        }
+        sendResponse(w, r);
     }
 
     private void processUseVirtualRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
+        // Uses a hard-wired response.  We don't support proxying of virtual facilities.
         Response r = new YesNoResponse(ResponseType.USE_VIRTUAL, false);
         sendResponse(w, r);
     }
 
-    private void processUseTimerRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processUseTimerRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Uses a facility-specific configuration setting
+        Response r = new YesNoResponse(f.isUseTimer() ? 
+                ResponseType.TIMER_YES : ResponseType.TIMER_NO);
+        sendResponse(w, r);
     }
 
-    private void processUseProjectRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processUseProjectRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Uses a general configuration setting
+        Response r = new YesNoResponse(config.isUseProject() ? 
+                ResponseType.PROJECT_YES : ResponseType.PROJECT_NO);
+        sendResponse(w, r);
     }
 
-    private void processFacilityRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processFacilityRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Uses a facility-specific configuration setting
+        Response r = new FacilityNameResponse(f.getFacilityName());
+        sendResponse(w, r);
     }
 
-    private void processNotesRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processNotesRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Modify a 'notes' request by adding the facility name to the notes text.
+        NoteRequest nr = (NoteRequest) m;
+        String notes = nr.getNotes();
+        Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), 
+                f.getFacilityName() + ": " + notes);
+        Response r = serverSendReceive(vnr);
+        switch (r.getType()) {
+        case NOTES_ALLOWED:
+        case NOTES_REFUSED:
+        case COMMAND_ERROR:
+        case NO_RESPONSE:
+            break;
+        default:
+            LOG.error("Unexpected response for notes: " + r.getType());
+            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+        }
+        sendResponse(w, r);
     }
 
-    private void processAccountRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processAccountRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Turn an 'account' request into a 'virtual_account' request, and 
+        // map the response to the appropriate 'logout' response.
+        AccountRequest a = (AccountRequest) m;
+        Request vl = new AccountRequest(RequestType.VIRTUAL_ACCOUNT, 
+                a.getUserName(), a.getAccount(), f.getFacilityId());
+        {
+            Response r;
+            Response vr = serverSendReceive(vl);
+            switch (vr.getType()) {
+            case VIRTUAL_ACCOUNT_ALLOWED:
+                r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
+                        ((AccountResponse) vr).getLoginTimestamp());
+                break;
+            case VIRTUAL_LOGOUT_REFUSED:
+                r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
+                break;
+            case COMMAND_ERROR:
+            case NO_RESPONSE:
+                r = vr;
+                break;
+            default:
+                LOG.error("Unexpected response for virtual account: " + vr.getType());
+                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            }
+            sendResponse(w, r);
+        }
     }
 
-    private void processLogoutRequest(Facility f, Request m, BufferedWriter w) {
-        // TODO Auto-generated method stub
-        
+    private void processLogoutRequest(Facility f, Request m, BufferedWriter w) 
+            throws IOException {
+        // Turn a 'logout' request into a 'virtual_logout' request, and 
+        // map the response to the appropriate 'logout' response.
+        LogoutRequest l = (LogoutRequest) m;
+        Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
+                l.getUserName(), l.getAccount(), f.getFacilityId());
+        {
+            Response r;
+            Response vr = serverSendReceive(vl);
+            switch (vr.getType()) {
+            case VIRTUAL_LOGOUT_ALLOWED:
+                r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+                break;
+            case VIRTUAL_LOGOUT_REFUSED:
+                r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+                break;
+            case COMMAND_ERROR:
+            case NO_RESPONSE:
+                r = vr;
+                break;
+            default:
+                LOG.error("Unexpected response for virtual logout: " + vr.getType());
+                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            }
+            sendResponse(w, r);
+        }
     }
 
     private void processLoginRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
+        // Turn a 'login' request into a 'virtual_login' request, and 
+        // map the response to the appropriate 'login' response.
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.VIRTUAL_LOGIN, 
                 l.getUserName(), l.getPassword(), f.getFacilityId());
@@ -192,11 +308,12 @@ public class RequestProcessor implements Runnable {
             case VIRTUAL_LOGIN_REFUSED:
                 r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
                 break;
-            case ERROR:
+            case COMMAND_ERROR:
+            case NO_RESPONSE:
                 r = vr;
                 break;
             default:
-                LOG.error("Unexpected response for virtual login");
+                LOG.error("Unexpected response for virtual login: " + vr.getType());
                 r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
             }
             sendResponse(w, r);

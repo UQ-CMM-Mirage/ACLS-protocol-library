@@ -7,6 +7,8 @@ public class Configuration {
     private Map<InetAddress, Facility> facilityMap;
     private int proxyPort = 1024;
     private int serverPort = 1024;
+    private String serverHost;
+    private boolean useProject;
 
     public Facility lookupFacility(InetAddress addr) {
         return facilityMap.get(addr);
@@ -21,8 +23,11 @@ public class Configuration {
     }
 
     public String getServerHost() {
-        // TODO Auto-generated method stub
-        return null;
+        return serverHost;
+    }
+
+    public boolean isUseProject() {
+        return useProject;
     }
 
 }

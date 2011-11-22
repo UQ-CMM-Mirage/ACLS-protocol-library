@@ -1,40 +1,50 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
 public class Facility {
+    
+    private boolean useFullScreen;
+    private String driveName;
+    private String accessPassword;
+    private String accessName;
+    private String folderName;
+    private String facilityId;
+    private boolean useTimer;
+    private String facilityName;
 
-    public boolean isUserFullscreen() {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean isUseFullscreen() {
+        return useFullScreen;
     }
 
     public boolean isUseNetDrive() {
-        // TODO Auto-generated method stub
-        return false;
+        return driveName != null;
     }
 
     public String getFolderName() {
-        // TODO Auto-generated method stub
-        return null;
+        return folderName;
     }
 
     public String getDriveName() {
-        // TODO Auto-generated method stub
-        return null;
+        return driveName;
     }
 
     public String getAccessPassword() {
-        // TODO Auto-generated method stub
-        return null;
+        return accessPassword;
     }
 
     public String getAccessName() {
-        // TODO Auto-generated method stub
-        return null;
+        return accessName;
     }
 
     public String getFacilityId() {
-        // TODO Auto-generated method stub
-        return null;
+        return facilityId;
+    }
+
+    public boolean isUseTimer() {
+        return useTimer;
+    }
+
+    public String getFacilityName() {
+        return facilityName;
     }
 
 }
