@@ -12,7 +12,7 @@ public class CommandErrorResponse extends AbstractResponse {
      * Construct the response.
      */
     public CommandErrorResponse() {
-        super(ResponseType.ERROR);
+        super(ResponseType.COMMAND_ERROR);
     }
 
     public String unparse() {

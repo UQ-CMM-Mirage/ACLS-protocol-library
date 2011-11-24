@@ -8,7 +8,7 @@ package au.edu.uq.cmm.aclslib.message;
  * @author scrawley
  */
 public enum ResponseType {
-    ERROR(0), 
+    NO_RESPONSE(-1), COMMAND_ERROR(0), 
     LOGIN_ALLOWED(11), LOGIN_REFUSED(12), 
     LOGOUT_ALLOWED(21), LOGOUT_REFUSED(22),
     ACCOUNT_ALLOWED(31), ACCOUNT_REFUSED(32),
