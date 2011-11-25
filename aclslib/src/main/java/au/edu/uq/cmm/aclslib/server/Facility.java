@@ -1,4 +1,4 @@
-package au.edu.uq.cmm.aclslib.proxy;
+package au.edu.uq.cmm.aclslib.server;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 

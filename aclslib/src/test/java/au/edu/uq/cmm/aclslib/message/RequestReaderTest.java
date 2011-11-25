@@ -10,17 +10,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.junit.Test;
 
-import au.edu.uq.cmm.aclslib.message.AccountRequest;
-import au.edu.uq.cmm.aclslib.message.LoginRequest;
-import au.edu.uq.cmm.aclslib.message.LogoutRequest;
-import au.edu.uq.cmm.aclslib.message.MessageSyntaxException;
-import au.edu.uq.cmm.aclslib.message.NoteRequest;
-import au.edu.uq.cmm.aclslib.message.Request;
-import au.edu.uq.cmm.aclslib.message.RequestReader;
-import au.edu.uq.cmm.aclslib.message.RequestReaderImpl;
-import au.edu.uq.cmm.aclslib.message.RequestType;
-import au.edu.uq.cmm.aclslib.message.SimpleRequest;
-
 public class RequestReaderTest {
 
     @Test

@@ -31,6 +31,8 @@ import au.edu.uq.cmm.aclslib.message.ResponseReaderImpl;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
+import au.edu.uq.cmm.aclslib.server.Configuration;
+import au.edu.uq.cmm.aclslib.server.Facility;
 
 /**
  * @author scrawley

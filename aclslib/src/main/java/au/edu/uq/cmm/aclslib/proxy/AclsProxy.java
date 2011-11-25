@@ -1,7 +1,11 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -11,6 +15,13 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+
+import au.edu.uq.cmm.aclslib.message.AbstractMessage;
+import au.edu.uq.cmm.aclslib.server.Configuration;
+import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.RequestListener;
+import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
+import au.edu.uq.cmm.aclslib.server.ServerException;
 
 
 /**
@@ -23,7 +34,7 @@ public class AclsProxy {
 
     public static void main(String[] args) {
         if (args.length > 0 && args[0].equals("--createSampleConfig")) {
-            createSampleConfiguration();
+            createSampleConfigurationFile();
             return;
         }
         String configFile = null;
@@ -31,10 +42,17 @@ public class AclsProxy {
             configFile = args[0];
         }
         try {
-            config = loadConfiguration(configFile);
+            config = Configuration.loadConfiguration(configFile);
             if (config == null) {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
+            }
+            LOG.info("Probing ACLS server");
+            try {
+                probeServer();
+            } catch (ServerException ex) {
+                LOG.error("Cannot contact ACLS server", ex);
+                System.exit(3);
             }
             LOG.info("Starting up");
             Thread requestListener = launch();
@@ -61,10 +79,32 @@ public class AclsProxy {
             System.exit(1);
         }
     }
-    
-    private static void createSampleConfiguration() {
+
+    private static void probeServer() throws ServerException {
+        try {
+            Socket aclsSocket = new Socket(config.getServerHost(), config.getServerPort());
+            try {
+                InputStream is = aclsSocket.getInputStream();
+                BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                String statusLine = r.readLine();
+                if (statusLine == null) {
+                    throw new ServerException("ACLS server closed connection");
+                } else if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
+                    throw new ServerException("ACLS server status - " + statusLine);
+                }
+            } finally {
+                aclsSocket.close();
+            }
+        }
+        catch (IOException ex) {
+            throw new ServerException("IO error while probing ACLS server", ex);
+        } 
+    }
+
+    private static void createSampleConfigurationFile() {
         Configuration sampleConfig = new Configuration();
         sampleConfig.setServerHost("aclsHost.example.com");
+        sampleConfig.setProxyHost("proxyHost.example.com");
         Map<String, Facility> facilityMap = new TreeMap<String, Facility>();
         sampleConfig.setFacilities(facilityMap);
         Facility f1 = new Facility();
@@ -94,32 +134,8 @@ public class AclsProxy {
             LOG.error(e);
         }
     }
-
-    private static Configuration loadConfiguration(String configFile) {
-        // Load configuration from a JSON file.
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            File cf = new File(configFile == null ? "config.json" : configFile);
-            if (!cf.exists()) {
-                LOG.error("Configuration file '" + cf + "' not found");
-            } else if (!cf.isFile()) {
-                LOG.error("Configuration file '" + cf + "' is not a regular file");
-            } else if (!cf.canRead()) {
-                LOG.error("Configuration file '" + cf + "' is not readable");
-            } else {
-                return mapper.readValue(cf, Configuration.class);
-            }
-        } catch (JsonParseException e) {
-            LOG.error(e);
-        } catch (JsonMappingException e) {
-            LOG.error(e);
-        } catch (IOException e) {
-            LOG.error(e);
-        }
-        return null;
-    }
-
-    private static Thread checkAndRelaunch(Thread thread) throws InterruptedException {
+    private static Thread checkAndRelaunch(Thread thread) 
+            throws InterruptedException, UnknownHostException {
         if (thread.isAlive()) {
             return thread;
         }
@@ -127,8 +143,14 @@ public class AclsProxy {
         return launch();
     }
 
-    private static Thread launch() {
-        Thread thread = new Thread(new RequestListener(config));
+    private static Thread launch() throws UnknownHostException {
+        Thread thread = new Thread(new RequestListener(config, config.getProxyPort(),
+                config.getProxyHost(),
+                new RequestProcessorFactory() {
+                    public Runnable createProcessor(Configuration config, Socket s) {
+                        return new RequestProcessor(config, s);
+                    }
+                }));
         thread.setDaemon(true);
         thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable ex) {

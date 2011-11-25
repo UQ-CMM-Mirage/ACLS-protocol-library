@@ -11,26 +11,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.junit.Test;
 
-import au.edu.uq.cmm.aclslib.message.AccountResponse;
-import au.edu.uq.cmm.aclslib.message.AllowedResponse;
-import au.edu.uq.cmm.aclslib.message.Certification;
-import au.edu.uq.cmm.aclslib.message.CommandErrorResponse;
-import au.edu.uq.cmm.aclslib.message.FacilityCountResponse;
-import au.edu.uq.cmm.aclslib.message.FacilityListResponse;
-import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
-import au.edu.uq.cmm.aclslib.message.LoginResponse;
-import au.edu.uq.cmm.aclslib.message.Message;
-import au.edu.uq.cmm.aclslib.message.MessageSyntaxException;
-import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
-import au.edu.uq.cmm.aclslib.message.RefusedResponse;
-import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.message.ResponseReader;
-import au.edu.uq.cmm.aclslib.message.ResponseReaderImpl;
-import au.edu.uq.cmm.aclslib.message.ResponseType;
-import au.edu.uq.cmm.aclslib.message.ServerStatusException;
-import au.edu.uq.cmm.aclslib.message.SystemPasswordResponse;
-import au.edu.uq.cmm.aclslib.message.YesNoResponse;
-
 public class ResponseReaderTest {
 
     @Test
