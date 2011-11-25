@@ -187,7 +187,7 @@ public class RequestReaderTest {
     public void testFullScreen() {
         RequestReader r = reader();
         Request req = r.read(source("23:"));
-        assertEquals(RequestType.USE_FULLSCREEN, req.getType());
+        assertEquals(RequestType.USE_FULL_SCREEN, req.getType());
         assertTrue(req instanceof SimpleRequest);
     }
 

@@ -2,6 +2,8 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -19,7 +21,11 @@ public class RequestListener implements Runnable {
     public void run() {
         ServerSocket ss;
         try {
-            ss = new ServerSocket(config.getProxyPort());
+            // FIXME - parameterize the bind address.
+            InetAddress bindAddr = InetAddress.getByName("10.33.1.174");
+            ss = new ServerSocket(config.getProxyPort(), 5, bindAddr);
+            LOG.debug("Proxy listening for requests on " + ss.getInetAddress() + 
+                    " port " + ss.getLocalPort());
         } catch (IOException ex) {
             throw new ProxyException("Startup / restart failed", ex);
         }

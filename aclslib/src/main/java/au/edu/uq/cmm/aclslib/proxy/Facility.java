@@ -37,10 +37,6 @@ public class Facility {
         return folderName;
     }
 
-    public boolean isUseFullscreen() {
-        return useFullScreen;
-    }
-
     public boolean isUseFullScreen() {
         return useFullScreen;
     }

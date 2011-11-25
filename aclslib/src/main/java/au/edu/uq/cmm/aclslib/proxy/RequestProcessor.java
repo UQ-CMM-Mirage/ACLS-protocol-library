@@ -47,25 +47,34 @@ public class RequestProcessor implements Runnable {
 
     public void run() {
         try {
+            InetAddress addr = clientSocket.getInetAddress();
+            LOG.debug("Processing request from " + addr);
             BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                     clientSocket.getOutputStream()));
-            InetAddress addr = clientSocket.getInetAddress();
             // Figure out which 'facility' is talking to us, based on the client
             // IP address.  If the IP address is not known to us, we can't map it
             // to a virtual facility id to log the user in ... so the only sensible
             // thing to do is send a status error.
             Facility f = config.lookupFacility(addr);
             if (f == null) {
+                LOG.debug("Unknown facility: IP is " + addr);
                 w.append("Proxy has no facility details for " + addr + "\r\n").flush();
                 return;
             }
+            w.append(AbstractMessage.ACCEPTED_IP_TAG + "\r\n").flush();
+            
             // Now read the request ...
             InputStream is = clientSocket.getInputStream();
             RequestReader reader = new RequestReaderImpl();
             Request m = reader.read(is);
+            if (m == null) {
+                LOG.debug("No request: client probing (?)");
+                return;
+            }
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)
             // and create and return the relevant response.
+            LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
             switch (m.getType()) {
             case LOGIN:
                 processLoginRequest(f, m, w);
@@ -100,8 +109,8 @@ public class RequestProcessor implements Runnable {
             case NET_DRIVE: 
                 processNetDriveRequest(f, m, w);
                 break;
-            case USE_FULLSCREEN:
-                processUseFullscreenRequest(f, m, w);
+            case USE_FULL_SCREEN:
+                processUseFullScreenRequest(f, m, w);
                 break;
             default:
                 // We have told the client that we don't support the virtual
@@ -122,11 +131,11 @@ public class RequestProcessor implements Runnable {
         }
     }
 
-    private void processUseFullscreenRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseFullScreenRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
-        Response r = new YesNoResponse(f.isUseFullscreen() ? 
-                ResponseType.FULLSCREEN_YES : ResponseType.FULLSCREEN_NO);
+        Response r = new YesNoResponse(f.isUseFullScreen() ? 
+                ResponseType.FULL_SCREEN_YES : ResponseType.FULL_SCREEN_NO);
         sendResponse(w, r);
     }
 
@@ -344,12 +353,13 @@ public class RequestProcessor implements Runnable {
         }
     }
 
-    private void sendResponse(BufferedWriter w, Response response) throws IOException {
-        if (response instanceof ProxyErrorResponse) {
-            w.append(((ProxyErrorResponse) response).getMessage() + "\r\n");
+    private void sendResponse(BufferedWriter w, Response r) throws IOException {
+        if (r instanceof ProxyErrorResponse) {
+            LOG.error("Proxy error - " + ((ProxyErrorResponse) r).getMessage());
+            w.append(new CommandErrorResponse().unparse() + "\r\n").flush();
         } else {
-            w.append(AbstractMessage.ACCEPTED_IP_TAG + "\r\n");
-            w.append(response.unparse() + "\r\n").flush();
+            LOG.debug("Response is " + r.getType().name() + "(" + r.unparse() + ")");
+            w.append(r.unparse() + "\r\n").flush();
         }
     }
     

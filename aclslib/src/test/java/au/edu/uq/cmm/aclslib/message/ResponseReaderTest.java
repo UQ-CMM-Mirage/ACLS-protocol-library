@@ -283,7 +283,7 @@ public class ResponseReaderTest {
     @Test
     public void testFullScreenYes() {
         Response r = reader().read(source("231:\n"));
-        assertEquals(ResponseType.FULLSCREEN_YES, r.getType());
+        assertEquals(ResponseType.FULL_SCREEN_YES, r.getType());
         assertTrue(r instanceof YesNoResponse);
         assertTrue(((YesNoResponse) r).isYes());
     }
@@ -291,7 +291,7 @@ public class ResponseReaderTest {
     @Test
     public void testFullScreenNo() {
         Response r = reader().read(source("232:\n"));
-        assertEquals(ResponseType.FULLSCREEN_NO, r.getType());
+        assertEquals(ResponseType.FULL_SCREEN_NO, r.getType());
         assertTrue(r instanceof YesNoResponse);
         assertFalse(((YesNoResponse) r).isYes());
     }

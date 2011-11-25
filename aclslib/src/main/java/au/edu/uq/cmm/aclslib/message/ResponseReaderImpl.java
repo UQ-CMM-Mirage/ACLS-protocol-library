@@ -61,11 +61,11 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
                 return readAllowed(scanner, type);
             case PROJECT_YES:
             case TIMER_YES:
-            case FULLSCREEN_YES:
+            case FULL_SCREEN_YES:
                 return readYesNo(scanner, type, true);
             case PROJECT_NO:
             case TIMER_NO:
-            case FULLSCREEN_NO:
+            case FULL_SCREEN_NO:
                 return readYesNo(scanner, type, false);
             case USE_VIRTUAL:
                 return readFacilityType(scanner);

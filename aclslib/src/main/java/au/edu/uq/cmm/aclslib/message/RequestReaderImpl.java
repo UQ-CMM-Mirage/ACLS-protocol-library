@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
 import java.io.InputStream;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
@@ -14,7 +15,12 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     public Request read(InputStream source) {
         Scanner scanner = createScanner(source);
         scanner.useDelimiter(DEFAULT_DELIMITERS);
-        String command = scanner.next();
+        String command;
+        try {
+            command = scanner.next();
+        } catch (NoSuchElementException ex) {
+            return null;
+        }
         expect(scanner, AbstractMessage.COMMAND_DELIMITER);
         try {
             RequestType type = RequestType.parse(command);
@@ -38,7 +44,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
             case FACILITY_LIST:
             case USE_PROJECT:
             case USE_TIMER:
-            case USE_FULLSCREEN:
+            case USE_FULL_SCREEN:
             case USE_VIRTUAL:
             case SYSTEM_PASSWORD:
             case NET_DRIVE:

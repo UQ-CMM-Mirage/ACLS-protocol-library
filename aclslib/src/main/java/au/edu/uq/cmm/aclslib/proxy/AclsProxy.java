@@ -26,8 +26,12 @@ public class AclsProxy {
             createSampleConfiguration();
             return;
         }
+        String configFile = null;
+        if (args.length > 0) {
+            configFile = args[0];
+        }
         try {
-            loadConfiguration();
+            config = loadConfiguration(configFile);
             if (config == null) {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
@@ -91,11 +95,20 @@ public class AclsProxy {
         }
     }
 
-    private static void loadConfiguration() {
+    private static Configuration loadConfiguration(String configFile) {
         // Load configuration from a JSON file.
         try {
             ObjectMapper mapper = new ObjectMapper();
-            config = mapper.readValue(new File("config.json"), Configuration.class);
+            File cf = new File(configFile == null ? "config.json" : configFile);
+            if (!cf.exists()) {
+                LOG.error("Configuration file '" + cf + "' not found");
+            } else if (!cf.isFile()) {
+                LOG.error("Configuration file '" + cf + "' is not a regular file");
+            } else if (!cf.canRead()) {
+                LOG.error("Configuration file '" + cf + "' is not readable");
+            } else {
+                return mapper.readValue(cf, Configuration.class);
+            }
         } catch (JsonParseException e) {
             LOG.error(e);
         } catch (JsonMappingException e) {
@@ -103,6 +116,7 @@ public class AclsProxy {
         } catch (IOException e) {
             LOG.error(e);
         }
+        return null;
     }
 
     private static Thread checkAndRelaunch(Thread thread) throws InterruptedException {
