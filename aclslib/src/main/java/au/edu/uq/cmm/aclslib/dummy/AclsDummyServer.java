@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
 
-import au.edu.uq.cmm.aclslib.proxy.RequestProcessor;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
