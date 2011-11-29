@@ -1,8 +1,14 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class is an ACLS request reader for versions 20.x and 30.x of the 
@@ -11,9 +17,23 @@ import java.util.Scanner;
  * @author scrawley
  */
 public class RequestReaderImpl extends AbstractReader implements RequestReader {
+    private static final Logger LOG = Logger.getLogger(RequestReaderImpl.class);
 
     public Request read(InputStream source) {
-        Scanner scanner = createScanner(source);
+        InputStream buffer;
+        try {
+            String line = new BufferedReader(new InputStreamReader(source)).readLine();
+            if (line == null) {
+                return null;
+            }
+            LOG.debug("Raw request line is (" + line + ")");
+            line += "\r\n";
+            buffer = new ByteArrayInputStream(line.getBytes());
+        } catch (IOException ex) {
+            LOG.error("Unexpected IO error while creating buffer", ex);
+            return null;
+        }
+        Scanner scanner = createScanner(buffer);
         scanner.useDelimiter(DEFAULT_DELIMITERS);
         String command;
         try {
@@ -92,6 +112,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private Request readLogoutRequest(Scanner scanner, RequestType type) {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
+        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String facility = null;
@@ -107,6 +128,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private Request readAccountRequest(Scanner scanner, RequestType type) {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
+        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String facility = null;
