@@ -69,13 +69,25 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
         }
     }
  
-
     private void processLoginRequest(Request m, BufferedWriter w) 
             throws IOException {
         LoginRequest login = (LoginRequest) m;
-        Response r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
-               login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
-               Certification.VALID, false);
+        Response r;
+        if (!login.getPassword().equals("secret")) {
+            r = new RefusedResponse(ResponseType.VIRTUAL_LOGIN_REFUSED);
+        } else if (login.getUserName().equals("junior")) {
+            r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
+                    login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+                    Certification.NONE, true);
+        } else if (login.getUserName().equals("badboy")) {
+            r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
+                    login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+                    Certification.NONE, false);
+        } else {
+            r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
+                    login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+                    Certification.VALID, false);
+        }
         sendResponse(w, r);
     }
 

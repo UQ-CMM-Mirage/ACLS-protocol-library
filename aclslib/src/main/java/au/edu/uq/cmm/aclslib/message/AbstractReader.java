@@ -72,10 +72,10 @@ public class AbstractReader {
 
     protected void expectEnd(Scanner source) {
         if (source.hasNext()) {
-            String rest = source.nextLine();
-            if (!rest.isEmpty()) {
+            String token = source.next().trim();
+            if (!token.isEmpty() && !token.equals(AbstractMessage.DELIMITER)) {
                 throw new MessageSyntaxException(
-                        "Unexpected characters at end of message: '" + rest);
+                        "Unexpected token at end of message: '" + token);
             }
         }
     }

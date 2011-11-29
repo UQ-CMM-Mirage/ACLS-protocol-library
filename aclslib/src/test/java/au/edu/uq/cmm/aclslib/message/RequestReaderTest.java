@@ -140,7 +140,7 @@ public class RequestReaderTest {
     public void testReadNotes() {
         RequestReader r = reader();
         Request req = r.read(source(
-                "4:charlie|unicorn|~Put a banana in your ear|"));
+                "4:charlie|]unicorn|~Put a banana in your ear|"));
         assertEquals(RequestType.NOTES, req.getType());
         NoteRequest acc = (NoteRequest) req;
         assertEquals("charlie", acc.getUserName());
