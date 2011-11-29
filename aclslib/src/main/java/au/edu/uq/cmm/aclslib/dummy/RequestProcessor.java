@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -22,9 +21,9 @@ import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.message.SystemPasswordResponse;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.proxy.AclsProxy;
-import au.edu.uq.cmm.aclslib.proxy.RequestProcessorBase;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 public class RequestProcessor extends RequestProcessorBase implements Runnable {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
@@ -74,7 +73,7 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
     private void processLoginRequest(Request m, BufferedWriter w) 
             throws IOException {
         LoginRequest login = (LoginRequest) m;
-        Response r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
+        Response r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
                login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
                Certification.VALID, false);
         sendResponse(w, r);
@@ -82,15 +81,14 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
 
     private void processLogoutRequest(Request m, BufferedWriter w) 
             throws IOException {
-        Response r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+        Response r = new AllowedResponse(ResponseType.VIRTUAL_LOGOUT_ALLOWED);
         sendResponse(w, r);
     }
 
     private void processAccountRequest(Request m, BufferedWriter w) 
             throws IOException {
-        Calendar cal = new GregorianCalendar();
-        String timestamp = DateFormat.getInstance().format(cal);
-        Response r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED, timestamp);
+        String timestamp = DateFormat.getInstance().format(new Date());
+        Response r = new AccountResponse(ResponseType.VIRTUAL_ACCOUNT_ALLOWED, timestamp);
         sendResponse(w, r);
     }
 
