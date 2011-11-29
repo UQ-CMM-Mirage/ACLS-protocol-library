@@ -31,7 +31,7 @@ public class NoteRequest extends AbstractRequest {
     public String unparse() {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
-                FACILITY_DELIMITER + notes + DELIMITER;
+                NOTE_DELIMITER + notes + DELIMITER;
     }
 
     /**

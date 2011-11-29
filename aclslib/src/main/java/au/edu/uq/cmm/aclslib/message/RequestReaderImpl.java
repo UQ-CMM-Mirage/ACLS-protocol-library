@@ -85,11 +85,11 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private Request readNotesRequest(Scanner scanner) {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
+        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.NOTE_DELIMITER);
         String notes = nextNotes(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new NoteRequest(userName, account, notes);
     }
@@ -98,12 +98,11 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String password = nextPassword(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         String facility = null;
         if (type != RequestType.LOGIN && type != RequestType.STAFF_LOGIN) {
+            expect(scanner, AbstractMessage.DELIMITER);
             expect(scanner, AbstractMessage.FACILITY_DELIMITER);
             facility = nextSubfacility(scanner);
-            expect(scanner, AbstractMessage.DELIMITER);
         }
         expectEnd(scanner);
         return new LoginRequest(type, userName, password, facility);
@@ -114,12 +113,11 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         String facility = null;
         if (type == RequestType.VIRTUAL_LOGOUT) {
+            expect(scanner, AbstractMessage.DELIMITER);
             expect(scanner, AbstractMessage.FACILITY_DELIMITER);
             facility = nextSubfacility(scanner);
-            expect(scanner, AbstractMessage.DELIMITER);
         }
         expectEnd(scanner);
         return new LogoutRequest(type, userName, account, facility);
@@ -130,12 +128,11 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         String facility = null;
         if (type != RequestType.ACCOUNT) {
+            expect(scanner, AbstractMessage.DELIMITER);
             expect(scanner, AbstractMessage.FACILITY_DELIMITER);
             facility = nextSubfacility(scanner);
-            expect(scanner, AbstractMessage.DELIMITER);
         }
         expectEnd(scanner);
         return new AccountRequest(type, userName, account, facility);
