@@ -21,13 +21,13 @@ public class YesNoResponse extends AbstractResponse {
         super(type);
         switch (getType()) {
         case PROJECT_NO:
-        case FULLSCREEN_NO:
+        case FULL_SCREEN_NO:
         case TIMER_NO:
             if (value) {
                 throw new AssertionError("Wrong value");
             }
             break;
-        case FULLSCREEN_YES:
+        case FULL_SCREEN_YES:
         case PROJECT_YES:
         case TIMER_YES:
             if (!value) {
@@ -50,11 +50,11 @@ public class YesNoResponse extends AbstractResponse {
         super(type);
         switch (getType()) {
         case PROJECT_NO:
-        case FULLSCREEN_NO:
+        case FULL_SCREEN_NO:
         case TIMER_NO:
             this.value = false;
             break;
-        case FULLSCREEN_YES:
+        case FULL_SCREEN_YES:
         case PROJECT_YES:
         case TIMER_YES:
             this.value = true;
@@ -68,8 +68,8 @@ public class YesNoResponse extends AbstractResponse {
         switch (getType()) {
         case PROJECT_NO:
         case PROJECT_YES:
-        case FULLSCREEN_NO:
-        case FULLSCREEN_YES:
+        case FULL_SCREEN_NO:
+        case FULL_SCREEN_YES:
         case TIMER_NO:
         case TIMER_YES:
             return generateHeader();

@@ -4,16 +4,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.InetAddress;
 import java.net.Socket;
 
-import org.apache.log4j.Logger;
-
-import au.edu.uq.cmm.aclslib.message.AbstractMessage;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
-import au.edu.uq.cmm.aclslib.message.CommandErrorResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LoginResponse;
@@ -23,110 +18,81 @@ import au.edu.uq.cmm.aclslib.message.NoteRequest;
 import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
-import au.edu.uq.cmm.aclslib.message.RequestReader;
-import au.edu.uq.cmm.aclslib.message.RequestReaderImpl;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseReaderImpl;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
+import au.edu.uq.cmm.aclslib.server.Configuration;
+import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 /**
  * @author scrawley
  */
-public class RequestProcessor implements Runnable {
-    private static final Logger LOG = Logger.getLogger(RequestProcessor.class);
-    private Socket clientSocket;
-    private Configuration config;
+public class RequestProcessor extends RequestProcessorBase {
 
-    public RequestProcessor(Configuration config, Socket s) {
-        this.clientSocket = s;
-        this.config = config;
+    public RequestProcessor(Configuration config, Socket socket) {
+        super(config, socket);
     }
 
-    public void run() {
-        try {
-            BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
-                    clientSocket.getOutputStream()));
-            InetAddress addr = clientSocket.getInetAddress();
-            // Figure out which 'facility' is talking to us, based on the client
-            // IP address.  If the IP address is not known to us, we can't map it
-            // to a virtual facility id to log the user in ... so the only sensible
-            // thing to do is send a status error.
-            Facility f = config.lookupFacility(addr);
-            if (f == null) {
-                w.append("Proxy has no facility details for " + addr + "\r\n").flush();
-                return;
-            }
-            // Now read the request ...
-            InputStream is = clientSocket.getInputStream();
-            RequestReader reader = new RequestReaderImpl();
-            Request m = reader.read(is);
-            // ... and dispatch to a "process" method bases on the request type.
-            // These methods will deal with the server interaction (if required)
-            // and create and return the relevant response.
-            switch (m.getType()) {
-            case LOGIN:
-                processLoginRequest(f, m, w);
-                break;
-            case LOGOUT: 
-                processLogoutRequest(f, m, w);
-                break;
-            case ACCOUNT:
-                processAccountRequest(f, m, w);
-                break;
-            case NOTES:
-                processNotesRequest(f, m, w);
-                break;
-            case FACILITY_NAME:
-                processFacilityRequest(f, m, w);
-                break;
-            case USE_PROJECT: 
-                processUseProjectRequest(f, m, w);
-                break;
-            case USE_TIMER: 
-                processUseTimerRequest(f, m, w);
-                break;
-            case USE_VIRTUAL: 
-                processUseVirtualRequest(f, m, w);
-                break;
-            case SYSTEM_PASSWORD: 
-                processSystemPasswordRequest(f, m, w);
-                break;
-            case STAFF_LOGIN:
-                processStaffLoginRequest(f, m, w);
-                break;
-            case NET_DRIVE: 
-                processNetDriveRequest(f, m, w);
-                break;
-            case USE_FULLSCREEN:
-                processUseFullscreenRequest(f, m, w);
-                break;
-            default:
-                // We have told the client that we don't support the virtual
-                // extensions, so it is an error for it to send them to us.
-                // Anything else ... is an extension we don't understand.
-                LOG.error("Unexpected request type: " + m.getType());
-                sendErrorResponse(w);
-                break;
-            }
-        } catch (IOException ex) {
-            LOG.error(ex);
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException ex) {
-                // ignore this.
-            }
+    protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
+        // These methods will deal with the server interaction (if required)
+        // and create and return the relevant response.
+        LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
+        switch (m.getType()) {
+        case LOGIN:
+            processLoginRequest(f, m, w);
+            break;
+        case LOGOUT: 
+            processLogoutRequest(f, m, w);
+            break;
+        case ACCOUNT:
+            processAccountRequest(f, m, w);
+            break;
+        case NOTES:
+            processNotesRequest(f, m, w);
+            break;
+        case FACILITY_NAME:
+            processFacilityRequest(f, m, w);
+            break;
+        case USE_PROJECT: 
+            processUseProjectRequest(f, m, w);
+            break;
+        case USE_TIMER: 
+            processUseTimerRequest(f, m, w);
+            break;
+        case USE_VIRTUAL: 
+            processUseVirtualRequest(f, m, w);
+            break;
+        case SYSTEM_PASSWORD: 
+            processSystemPasswordRequest(f, m, w);
+            break;
+        case STAFF_LOGIN:
+            processStaffLoginRequest(f, m, w);
+            break;
+        case NET_DRIVE: 
+            processNetDriveRequest(f, m, w);
+            break;
+        case USE_FULL_SCREEN:
+            processUseFullScreenRequest(f, m, w);
+            break;
+        default:
+            // We have told the client that we don't support the virtual
+            // extensions, so it is an error for it to send them to us.
+            // Anything else ... is an extension we don't understand.
+            LOG.error("Unexpected request type: " + m.getType());
+            sendErrorResponse(w);
+            break;
         }
     }
 
-    private void processUseFullscreenRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseFullScreenRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
-        Response r = new YesNoResponse(f.isUseFullscreen() ? 
-                ResponseType.FULLSCREEN_YES : ResponseType.FULLSCREEN_NO);
+        Response r = new YesNoResponse(f.isUseFullScreen() ? 
+                ResponseType.FULL_SCREEN_YES : ResponseType.FULL_SCREEN_NO);
         sendResponse(w, r);
     }
 
@@ -195,7 +161,7 @@ public class RequestProcessor implements Runnable {
     private void processUseProjectRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a general configuration setting
-        Response r = new YesNoResponse(config.isUseProject() ? 
+        Response r = new YesNoResponse(getConfig().isUseProject() ? 
                 ResponseType.PROJECT_YES : ResponseType.PROJECT_NO);
         sendResponse(w, r);
     }
@@ -319,13 +285,10 @@ public class RequestProcessor implements Runnable {
         }
     }
 
-    private void sendErrorResponse(BufferedWriter w) throws IOException {
-        sendResponse(w, new CommandErrorResponse());
-    }
-
     private Response serverSendReceive(Request request) {
         try {
-            Socket aclsSocket = new Socket(config.getServerHost(), config.getServerPort());
+            Socket aclsSocket = new Socket(
+                    getConfig().getServerHost(), getConfig().getServerPort());
             try {
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
@@ -342,18 +305,5 @@ public class RequestProcessor implements Runnable {
             LOG.warn("IO error while trying to talk to ACLS server", ex);
             return new ProxyErrorResponse("Proxy cannot talk to ACLS server");
         }
-    }
-
-    private void sendResponse(BufferedWriter w, Response response) throws IOException {
-        if (response instanceof ProxyErrorResponse) {
-            w.append(((ProxyErrorResponse) response).getMessage() + "\r\n");
-        } else {
-            w.append(AbstractMessage.ACCEPTED_IP_TAG + "\r\n");
-            w.append(response.unparse() + "\r\n").flush();
-        }
-    }
-    
-    private void sendRequest(BufferedWriter w, Request request) throws IOException {
-        w.append(request.unparse() + "\r\n").flush();
     }
 }
