@@ -84,7 +84,7 @@ public class RequestReaderTest {
     @Test
     public void testReadLogout() {
         RequestReader r = reader();
-        Request req = r.read(source("2:steve|acc1|"));
+        Request req = r.read(source("2:steve|]acc1|"));
         assertEquals(RequestType.LOGOUT, req.getType());
         LogoutRequest logout = (LogoutRequest) req;
         assertEquals("steve", logout.getUserName());
@@ -95,7 +95,7 @@ public class RequestReaderTest {
     @Test
     public void testReadVirtualLogout() {
         RequestReader r = reader();
-        Request req = r.read(source("12:steve|acc1|?here|"));
+        Request req = r.read(source("12:steve|]acc1|?here|"));
         assertEquals(RequestType.VIRTUAL_LOGOUT, req.getType());
         LogoutRequest logout = (LogoutRequest) req;
         assertEquals("steve", logout.getUserName());
@@ -106,7 +106,7 @@ public class RequestReaderTest {
     @Test
     public void testReadAccount() {
         RequestReader r = reader();
-        Request req = r.read(source("3:steve|acc1|"));
+        Request req = r.read(source("3:steve|]acc1|"));
         assertEquals(RequestType.ACCOUNT, req.getType());
         AccountRequest acc = (AccountRequest) req;
         assertEquals("steve", acc.getUserName());
@@ -117,7 +117,7 @@ public class RequestReaderTest {
     @Test
     public void testReadVirtualAccount() {
         RequestReader r = reader();
-        Request req = r.read(source("13:steve|acc1|?here|"));
+        Request req = r.read(source("13:steve|]acc1|?here|"));
         assertEquals(RequestType.VIRTUAL_ACCOUNT, req.getType());
         AccountRequest acc = (AccountRequest) req;
         assertEquals("steve", acc.getUserName());
@@ -128,7 +128,7 @@ public class RequestReaderTest {
     @Test
     public void testReadNewVirtualAccount() {
         RequestReader r = reader();
-        Request req = r.read(source("15:steve|acc1|?here|"));
+        Request req = r.read(source("15:steve|]acc1|?here|"));
         assertEquals(RequestType.NEW_VIRTUAL_ACCOUNT, req.getType());
         AccountRequest acc = (AccountRequest) req;
         assertEquals("steve", acc.getUserName());
