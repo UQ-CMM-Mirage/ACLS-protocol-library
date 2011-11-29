@@ -11,8 +11,8 @@ public abstract class AbstractMessage implements Message {
     // Strictly speaking, many of them are markers rather than
     // delimiters, but I'm sticking with the ACLS terminology.
     
-    public static final String YES = "Yes";
-    public static final String NO = "No";
+    public static final String YES = "YES";
+    public static final String NO = "NO";
     
     public static String DELIMITER = "|";
     public static String COMMAND_DELIMITER = ":";
