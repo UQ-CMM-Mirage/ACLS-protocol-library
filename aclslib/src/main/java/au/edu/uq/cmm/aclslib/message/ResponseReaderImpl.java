@@ -100,7 +100,6 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         String accessName = nextAccessName(scanner);
         expect(scanner, AbstractMessage.ONSITE_ASSIST_DELIMITER);
         String accessPassword = nextAccessPassword(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new NetDriveResponse(driveName, folderName, accessName, accessPassword);
     }
@@ -112,9 +111,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             password = nextSystemPassword(scanner);
             if (password.equals(AbstractMessage.DELIMITER)) {
                 password = "";
-            } else {
-                expect(scanner, AbstractMessage.DELIMITER);
-            }
+            } 
             expectEnd(scanner);
         }
         return new SystemPasswordResponse(password);
@@ -132,7 +129,6 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             throw new MessageSyntaxException(
                     "Expected 'Yes' or 'No' but got '" + valueString + "'");
         }
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new YesNoResponse(ResponseType.USE_VIRTUAL, value);
     }
@@ -147,7 +143,6 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             throw new MessageSyntaxException(
                     "Invalid facility count '" + countString + "'");
         }
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new FacilityCountResponse(count);
     }
@@ -175,7 +170,6 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
     private Response readFacility(Scanner scanner) {
         expect(scanner, AbstractMessage.FACILITY_DELIMITER);
         String facility = nextFacility(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new FacilityNameResponse(facility);
     }
@@ -213,7 +207,6 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         if (token.equals(AbstractMessage.ONSITE_ASSIST_DELIMITER)) {
             onsiteAssist = scanner.next().equalsIgnoreCase(AbstractMessage.YES);
         }
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new LoginResponse(type, userName, orgName, 
                 accounts, certification, onsiteAssist);
@@ -222,7 +215,6 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
     private Response readAccountResponse(Scanner scanner, ResponseType type) {
         expect(scanner, AbstractMessage.TIME_DELIMITER);
         String timestamp = nextTimestamp(scanner);
-        expect(scanner, AbstractMessage.DELIMITER);
         expectEnd(scanner);
         return new AccountResponse(type, timestamp);
     }
