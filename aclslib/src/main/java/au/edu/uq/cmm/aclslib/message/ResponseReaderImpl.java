@@ -46,6 +46,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             case VIRTUAL_LOGIN_REFUSED:
             case NEW_VIRTUAL_LOGIN_REFUSED:
             case LOGOUT_REFUSED:
+            case VIRTUAL_LOGOUT_REFUSED:
             case ACCOUNT_REFUSED:
             case VIRTUAL_ACCOUNT_REFUSED:
             case NEW_VIRTUAL_ACCOUNT_REFUSED:
@@ -56,6 +57,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             case FACILITY_ALLOWED:
                 return readFacility(scanner);
             case LOGOUT_ALLOWED:
+            case VIRTUAL_LOGOUT_ALLOWED:
             case NOTES_ALLOWED:
             case STAFF_LOGIN_ALLOWED:
                 return readAllowed(scanner, type);
