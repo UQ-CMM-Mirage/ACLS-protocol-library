@@ -1,4 +1,4 @@
-package au.edu.uq.cmm.aclslib.proxy;
+package au.edu.uq.cmm.aclslib.server;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
@@ -35,10 +35,6 @@ public class Facility {
 
     public String getFolderName() {
         return folderName;
-    }
-
-    public boolean isUseFullscreen() {
-        return useFullScreen;
     }
 
     public boolean isUseFullScreen() {

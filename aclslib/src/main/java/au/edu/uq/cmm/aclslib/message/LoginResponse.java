@@ -44,7 +44,7 @@ public class LoginResponse extends AbstractResponse {
     public String unparse() {
         return generateHeader() + userName + DELIMITER + orgName + DELIMITER + 
                 ACCOUNT_DELIMITER + generateList(accounts, ACCOUNT_SEPARATOR) + 
-                CERTIFICATE_DELIMITER + certification + 
+                DELIMITER + CERTIFICATE_DELIMITER + certification + 
                 ONSITE_ASSIST_DELIMITER + 
                 (onsiteAssist ? AbstractMessage.YES : AbstractMessage.NO) + 
                 DELIMITER;

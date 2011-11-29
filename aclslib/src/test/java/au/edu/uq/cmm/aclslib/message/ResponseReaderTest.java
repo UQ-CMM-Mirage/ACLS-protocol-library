@@ -11,26 +11,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.junit.Test;
 
-import au.edu.uq.cmm.aclslib.message.AccountResponse;
-import au.edu.uq.cmm.aclslib.message.AllowedResponse;
-import au.edu.uq.cmm.aclslib.message.Certification;
-import au.edu.uq.cmm.aclslib.message.CommandErrorResponse;
-import au.edu.uq.cmm.aclslib.message.FacilityCountResponse;
-import au.edu.uq.cmm.aclslib.message.FacilityListResponse;
-import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
-import au.edu.uq.cmm.aclslib.message.LoginResponse;
-import au.edu.uq.cmm.aclslib.message.Message;
-import au.edu.uq.cmm.aclslib.message.MessageSyntaxException;
-import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
-import au.edu.uq.cmm.aclslib.message.RefusedResponse;
-import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.message.ResponseReader;
-import au.edu.uq.cmm.aclslib.message.ResponseReaderImpl;
-import au.edu.uq.cmm.aclslib.message.ResponseType;
-import au.edu.uq.cmm.aclslib.message.ServerStatusException;
-import au.edu.uq.cmm.aclslib.message.SystemPasswordResponse;
-import au.edu.uq.cmm.aclslib.message.YesNoResponse;
-
 public class ResponseReaderTest {
 
     @Test
@@ -100,8 +80,22 @@ public class ResponseReaderTest {
     }
     
     @Test
+    public void testLogin2() {
+        Response r = reader().read(source("11:test|cmm|]general;special;|&No Certificate~No|\n"));
+        assertEquals(ResponseType.LOGIN_ALLOWED, r.getType());
+        LoginResponse login = (LoginResponse) r;
+        assertEquals("test", login.getUserName());
+        assertEquals("cmm", login.getOrgName());
+        assertEquals(2, login.getAccounts().size());
+        assertEquals("general", login.getAccounts().get(0));
+        assertEquals("special", login.getAccounts().get(1));
+        assertEquals(Certification.NONE, login.getCertification());
+        assertEquals(false, login.isOnsiteAssist());
+    }
+    
+    @Test
     public void testVirtualLogin() {
-        Response r = reader().read(source("111:steve|cmm|]acc1;|&Valid Certificate~No|\n"));
+        Response r = reader().read(source("111:steve|cmm|]acc1;|&Valid Certificate~Yes|\n"));
         assertEquals(ResponseType.VIRTUAL_LOGIN_ALLOWED, r.getType());
         LoginResponse login = (LoginResponse) r;
         assertEquals("steve", login.getUserName());
@@ -109,7 +103,7 @@ public class ResponseReaderTest {
         assertEquals(1, login.getAccounts().size());
         assertEquals("acc1", login.getAccounts().get(0));
         assertEquals(Certification.VALID, login.getCertification());
-        assertEquals(false, login.isOnsiteAssist());
+        assertEquals(true, login.isOnsiteAssist());
     }
     
     @Test
@@ -168,7 +162,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testLogoutAlloweded() {
+    public void testLogoutAllowed() {
         Response r = reader().read(source("21:\n"));
         assertEquals(ResponseType.LOGOUT_ALLOWED, r.getType());
     }
@@ -283,7 +277,7 @@ public class ResponseReaderTest {
     @Test
     public void testFullScreenYes() {
         Response r = reader().read(source("231:\n"));
-        assertEquals(ResponseType.FULLSCREEN_YES, r.getType());
+        assertEquals(ResponseType.FULL_SCREEN_YES, r.getType());
         assertTrue(r instanceof YesNoResponse);
         assertTrue(((YesNoResponse) r).isYes());
     }
@@ -291,7 +285,7 @@ public class ResponseReaderTest {
     @Test
     public void testFullScreenNo() {
         Response r = reader().read(source("232:\n"));
-        assertEquals(ResponseType.FULLSCREEN_NO, r.getType());
+        assertEquals(ResponseType.FULL_SCREEN_NO, r.getType());
         assertTrue(r instanceof YesNoResponse);
         assertFalse(((YesNoResponse) r).isYes());
     }
