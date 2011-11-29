@@ -3,10 +3,16 @@ package au.edu.uq.cmm.aclslib.dummy;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import org.apache.log4j.Logger;
 
+import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
+import au.edu.uq.cmm.aclslib.message.Certification;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.RefusedResponse;
@@ -27,7 +33,7 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
         super(config, socket);
     }
 
-    protected void doProcess(Facility f, Request m, BufferedWriter w) {
+    protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
         LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
         switch (m.getType()) {
         case VIRTUAL_LOGIN:
@@ -63,6 +69,42 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
             break;
         }
     }
+ 
+
+    private void processLoginRequest(Request m, BufferedWriter w) 
+            throws IOException {
+        LoginRequest login = (LoginRequest) m;
+        Response r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
+               login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+               Certification.VALID, false);
+        sendResponse(w, r);
+    }
+
+    private void processLogoutRequest(Request m, BufferedWriter w) 
+            throws IOException {
+        Response r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+        sendResponse(w, r);
+    }
+
+    private void processAccountRequest(Request m, BufferedWriter w) 
+            throws IOException {
+        Calendar cal = new GregorianCalendar();
+        String timestamp = DateFormat.getInstance().format(cal);
+        Response r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED, timestamp);
+        sendResponse(w, r);
+    }
+
+    private void processNotesRequest(Request m, BufferedWriter w)
+            throws IOException {
+        Response r = new AllowedResponse(ResponseType.NOTES_ALLOWED);
+        sendResponse(w, r);
+    }
+
+    private void processUseProjectRequest(Request m, BufferedWriter w) 
+            throws IOException {
+        Response r = new YesNoResponse(ResponseType.PROJECT_YES, true);
+        sendResponse(w, r);
+    }
 
     private void processUseVirtualRequest(Request m, BufferedWriter w) 
             throws IOException {
@@ -87,6 +129,4 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
         Response r = new SystemPasswordResponse("secret");
         sendResponse(w, r);
     }
-    
-    
 }
