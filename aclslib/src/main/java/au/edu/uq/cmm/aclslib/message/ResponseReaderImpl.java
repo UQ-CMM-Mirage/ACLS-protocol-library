@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.MatchResult;
 
 /**
  * This class is an ACLS response reader for versions 20.x and 30.x of the 
@@ -93,13 +94,14 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         if (type == ResponseType.NET_DRIVE_NO) {
             return new NetDriveResponse();
         }
-        String driveName = nextDriveName(scanner);
-        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
-        String folderName = nextFolderName(scanner);
-        expect(scanner, AbstractMessage.TIME_DELIMITER);
-        String accessName = nextAccessName(scanner);
-        expect(scanner, AbstractMessage.ONSITE_ASSIST_DELIMITER);
-        String accessPassword = nextAccessPassword(scanner);
+        if (scanner.findInLine("([^\\]]*)\\]([^\\[]*)\\[([^~]*)~([^|]*)") == null) {
+            throw new MessageSyntaxException("Cannot decode 'NetDrive' response");
+        }
+        MatchResult result = scanner.match();
+        String driveName = result.group(1);
+        String folderName = result.group(2);
+        String accessName = result.group(3);
+        String accessPassword = result.group(4);
         expectEnd(scanner);
         return new NetDriveResponse(driveName, folderName, accessName, accessPassword);
     }
