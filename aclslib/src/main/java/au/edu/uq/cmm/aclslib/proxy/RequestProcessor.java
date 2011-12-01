@@ -32,9 +32,12 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
  * @author scrawley
  */
 public class RequestProcessor extends RequestProcessorBase {
+    
+    private AclsProxy proxy;
 
-    public RequestProcessor(Configuration config, Socket socket) {
+    public RequestProcessor(Configuration config, Socket socket, AclsProxy proxy) {
         super(config, socket);
+        this.proxy = proxy;
     }
 
     protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
@@ -206,6 +209,7 @@ public class RequestProcessor extends RequestProcessorBase {
             Response vr = serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_ACCOUNT_ALLOWED:
+                proxy.sendEvent(new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
                 r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
                         ((AccountResponse) vr).getLoginTimestamp());
                 break;
@@ -236,6 +240,7 @@ public class RequestProcessor extends RequestProcessorBase {
             Response vr = serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_LOGOUT_ALLOWED:
+                proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
                 r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
                 break;
             case VIRTUAL_LOGOUT_REFUSED:

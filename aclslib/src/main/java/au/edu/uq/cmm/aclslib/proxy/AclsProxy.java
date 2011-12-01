@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -29,8 +31,14 @@ import au.edu.uq.cmm.aclslib.server.ServerException;
  */
 public class AclsProxy {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
-    private static Configuration config;   
-    private static JsonFactory jf = new JsonFactory();
+    private Configuration config;
+    private Thread requestListenerThread;
+    private List<AclsFacilityEventListener> listeners = 
+            new ArrayList<AclsFacilityEventListener>();
+    
+    public AclsProxy(Configuration config) {
+        this.config = config;
+    }
 
     public static void main(String[] args) {
         if (args.length > 0 && args[0].equals("--createSampleConfig")) {
@@ -42,36 +50,25 @@ public class AclsProxy {
             configFile = args[0];
         }
         try {
-            config = Configuration.loadConfiguration(configFile);
+            Configuration config = Configuration.loadConfiguration(configFile);
             if (config == null) {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
             }
-            LOG.info("Probing ACLS server");
+            AclsProxy proxy = new AclsProxy(config);
             try {
-                probeServer();
+                proxy.probeServer();
             } catch (ServerException ex) {
                 LOG.error("Cannot contact ACLS server", ex);
                 System.exit(3);
             }
-            LOG.info("Starting up");
-            Thread requestListener = launch();
-            LOG.info("Started");
-            try {
-                while (true) {
-                    requestListener = checkAndRelaunch(requestListener);
-                    Thread.sleep(5000);
+            proxy.registerListener(new AclsFacilityEventListener() {
+                public void eventOccurred(AclsFacilityEvent event) {
+                    LOG.info("Facility event: " + event);
                 }
-            } catch (InterruptedException ex) {
-                LOG.debug(ex);
-            }
-            LOG.info("Shutting down");
-            try {
-                requestListener.interrupt();
-                requestListener.join(5000);
-            } catch (InterruptedException ex) {
-                LOG.debug(ex);
-            }
+            });
+            proxy.startup();
+            proxy.shutdown();
             LOG.info("Exitting normally");
             System.exit(0);
         } catch (Throwable ex) {
@@ -80,7 +77,43 @@ public class AclsProxy {
         }
     }
 
-    private static void probeServer() throws ServerException {
+    private void registerListener(AclsFacilityEventListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    private void shutdown() {
+        LOG.info("Shutting down");
+        try {
+            requestListenerThread.interrupt();
+            requestListenerThread.join(5000);
+        } catch (InterruptedException ex) {
+            LOG.debug(ex);
+        }
+    }
+
+    private void startup() throws UnknownHostException {
+        LOG.info("Starting up");
+        requestListenerThread = launch();
+        LOG.info("Started");
+        try {
+            while (true) {
+                if (!requestListenerThread.isAlive()) {
+                    LOG.info("Listener thread died");
+                    requestListenerThread.join();
+                    requestListenerThread = launch();
+                    LOG.info("Restarted");
+                }
+                Thread.sleep(5000);
+            }
+        } catch (InterruptedException ex) {
+            LOG.debug(ex);
+        }
+    }
+
+    private void probeServer() throws ServerException {
+        LOG.info("Probing ACLS server");
         try {
             Socket aclsSocket = new Socket(config.getServerHost(), config.getServerPort());
             try {
@@ -101,7 +134,7 @@ public class AclsProxy {
         } 
     }
 
-    private static void createSampleConfigurationFile() {
+    public static void createSampleConfigurationFile() {
         Configuration sampleConfig = new Configuration();
         sampleConfig.setServerHost("aclsHost.example.com");
         sampleConfig.setProxyHost("proxyHost.example.com");
@@ -123,6 +156,7 @@ public class AclsProxy {
         facilityMap.put("hatstand.example.com", f2);
         try {
             ObjectMapper mapper = new ObjectMapper();
+            JsonFactory jf = new JsonFactory();
             JsonGenerator jg = jf.createJsonGenerator(System.out);
             jg.useDefaultPrettyPrinter();
             mapper.writeValue(jg, sampleConfig);
@@ -134,21 +168,13 @@ public class AclsProxy {
             LOG.error(e);
         }
     }
-    private static Thread checkAndRelaunch(Thread thread) 
-            throws InterruptedException, UnknownHostException {
-        if (thread.isAlive()) {
-            return thread;
-        }
-        thread.join();
-        return launch();
-    }
 
-    private static Thread launch() throws UnknownHostException {
+    private Thread launch() throws UnknownHostException {
         Thread thread = new Thread(new RequestListener(config, config.getProxyPort(),
                 config.getProxyHost(),
                 new RequestProcessorFactory() {
                     public Runnable createProcessor(Configuration config, Socket s) {
-                        return new RequestProcessor(config, s);
+                        return new RequestProcessor(config, s, AclsProxy.this);
                     }
                 }));
         thread.setDaemon(true);
@@ -159,5 +185,13 @@ public class AclsProxy {
         });
         thread.start();
         return thread;
+    }
+
+    public void sendEvent(AclsFacilityEvent event) {
+        synchronized (listeners) {
+            for (AclsFacilityEventListener listener : listeners) {
+                listener.eventOccurred(event);
+            }
+        }
     }
 }
