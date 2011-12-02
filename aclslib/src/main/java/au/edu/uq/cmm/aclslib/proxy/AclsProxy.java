@@ -62,7 +62,7 @@ public class AclsProxy {
                 LOG.error("Cannot contact ACLS server", ex);
                 System.exit(3);
             }
-            proxy.registerListener(new AclsFacilityEventListener() {
+            proxy.addListener(new AclsFacilityEventListener() {
                 public void eventOccurred(AclsFacilityEvent event) {
                     LOG.info("Facility event: " + event);
                 }
@@ -76,13 +76,7 @@ public class AclsProxy {
             System.exit(1);
         }
     }
-
-    private void registerListener(AclsFacilityEventListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
+    
     private void shutdown() {
         LOG.info("Shutting down");
         try {
@@ -194,4 +188,17 @@ public class AclsProxy {
             }
         }
     }
+
+    public void addListener(AclsFacilityEventListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(AclsFacilityEventListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
 }
