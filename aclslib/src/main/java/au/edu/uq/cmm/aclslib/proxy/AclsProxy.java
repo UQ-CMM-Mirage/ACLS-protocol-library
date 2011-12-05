@@ -1,9 +1,12 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.message.AbstractMessage;
+import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
@@ -111,6 +115,14 @@ public class AclsProxy {
         try {
             Socket aclsSocket = new Socket(config.getServerHost(), config.getServerPort());
             try {
+                // FIXME - I'm not sure if I should send a request in the probe.  (In the 
+                // non-vMFL case, I shouldn't need to do this because the non-vMFL client
+                // probes by reading the status line without sending a request.  But the
+                // probing code is not present in the vMFL client ...)
+                OutputStream os = aclsSocket.getOutputStream();
+                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                w.write(RequestType.USE_VIRTUAL + AbstractMessage.COMMAND_DELIMITER + "\r\n");
+                
                 InputStream is = aclsSocket.getInputStream();
                 BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                 String statusLine = r.readLine();
