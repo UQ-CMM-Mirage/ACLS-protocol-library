@@ -1,12 +1,6 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -21,8 +15,11 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import au.edu.uq.cmm.aclslib.message.AbstractMessage;
+import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
+import au.edu.uq.cmm.aclslib.message.Response;
+import au.edu.uq.cmm.aclslib.message.SimpleRequest;
+import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
@@ -81,7 +78,7 @@ public class AclsProxy {
         }
     }
     
-    private void shutdown() {
+    public void shutdown() {
         LOG.info("Shutting down");
         try {
             requestListenerThread.interrupt();
@@ -91,7 +88,7 @@ public class AclsProxy {
         }
     }
 
-    private void startup() throws UnknownHostException {
+    public void startup() throws UnknownHostException {
         LOG.info("Starting up");
         requestListenerThread = launch();
         LOG.info("Started");
@@ -112,32 +109,21 @@ public class AclsProxy {
 
     private void probeServer() throws ServerException {
         LOG.info("Probing ACLS server");
-        try {
-            Socket aclsSocket = new Socket(config.getServerHost(), config.getServerPort());
-            try {
-                // FIXME - I'm not sure if I should send a request in the probe.  (In the 
-                // non-vMFL case, I shouldn't need to do this because the non-vMFL client
-                // probes by reading the status line without sending a request.  But the
-                // probing code is not present in the vMFL client ...)
-                OutputStream os = aclsSocket.getOutputStream();
-                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                w.write(RequestType.USE_VIRTUAL + AbstractMessage.COMMAND_DELIMITER + "\r\n");
-                
-                InputStream is = aclsSocket.getInputStream();
-                BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String statusLine = r.readLine();
-                if (statusLine == null) {
-                    throw new ServerException("ACLS server closed connection");
-                } else if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
-                    throw new ServerException("ACLS server status - " + statusLine);
-                }
-            } finally {
-                aclsSocket.close();
+        Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
+        Response response = RequestProcessor.serverSendReceive(request, config);
+        switch (response.getType()) {
+        case USE_VIRTUAL:
+            YesNoResponse uv = (YesNoResponse) response;
+            if (!uv.isYes()) {
+                throw new ServerException(
+                        "The ACLS server has the proxy configured as a normal Facility");
             }
+            break;
+        default:
+            LOG.error("Unexpected response for USE_VIRTUAL request: " + response.getType());
+            throw new ServerException(
+                    "The ACLS server gave an unexpected response to our probe");
         }
-        catch (IOException ex) {
-            throw new ServerException("IO error while probing ACLS server", ex);
-        } 
     }
 
     public static void createSampleConfigurationFile() {

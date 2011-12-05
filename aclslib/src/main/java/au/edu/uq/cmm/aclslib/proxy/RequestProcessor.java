@@ -289,11 +289,15 @@ public class RequestProcessor extends RequestProcessorBase {
             sendResponse(w, r);
         }
     }
-
+    
     private Response serverSendReceive(Request request) {
+        return serverSendReceive(request, getConfig());
+    }
+
+    static Response serverSendReceive(Request request, Configuration config) {
         try {
             Socket aclsSocket = new Socket(
-                    getConfig().getServerHost(), getConfig().getServerPort());
+                    config.getServerHost(), config.getServerPort());
             try {
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));

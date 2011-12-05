@@ -47,7 +47,7 @@ public abstract class RequestProcessorBase  implements Runnable {
         }
     }
 
-    protected void sendRequest(BufferedWriter w, Request request) throws IOException {
+    protected static void sendRequest(BufferedWriter w, Request request) throws IOException {
         w.append(request.unparse() + "\r\n").flush();
     }
 

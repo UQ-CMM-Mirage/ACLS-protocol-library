@@ -123,7 +123,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         expect(scanner, AbstractMessage.FACILITY_DELIMITER);
         String valueString = scanner.next();
         boolean value;
-        if (valueString.equalsIgnoreCase(AbstractMessage.YES)) {
+        if (valueString.equalsIgnoreCase(AbstractMessage.VMFL)) {
             value = true;
         } else if (valueString.equalsIgnoreCase(AbstractMessage.NO)) {
             value = false;

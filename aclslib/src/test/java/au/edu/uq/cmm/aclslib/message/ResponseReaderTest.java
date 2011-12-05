@@ -292,7 +292,7 @@ public class ResponseReaderTest {
     
     @Test
     public void testFacilityYes() {
-        Response r = reader().read(source("81:?Yes|\n"));
+        Response r = reader().read(source("81:?vMFL|\n"));
         assertEquals(ResponseType.USE_VIRTUAL, r.getType());
         assertTrue(r instanceof YesNoResponse);
         assertTrue(((YesNoResponse) r).isYes());

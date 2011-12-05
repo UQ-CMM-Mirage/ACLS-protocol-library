@@ -13,6 +13,7 @@ public abstract class AbstractMessage implements Message {
     
     public static final String YES = "YES";
     public static final String NO = "NO";
+    public static final String VMFL = "vMFL";
     
     public static String DELIMITER = "|";
     public static String COMMAND_DELIMITER = ":";

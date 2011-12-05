@@ -75,7 +75,7 @@ public class YesNoResponse extends AbstractResponse {
             return generateHeader();
         case USE_VIRTUAL:
             return generateHeader() + FACILITY_DELIMITER +
-                    (value ? YES : NO) + DELIMITER;
+                    (value ? VMFL : NO) + DELIMITER;
         default:
             throw new AssertionError("Unexpected type (" + getType() + ")");
         }
