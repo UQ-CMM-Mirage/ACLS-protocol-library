@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
 
+import org.apache.log4j.Logger;
+
 /**
  * This class is an ACLS response reader for versions 20.x and 30.x of the 
  * ACLS protocol.
@@ -13,17 +15,23 @@ import java.util.regex.MatchResult;
  * @author scrawley
  */
 public class ResponseReaderImpl extends AbstractReader implements ResponseReader {
+    private static final Logger LOG = Logger.getLogger(ResponseReaderImpl.class);
+    
+    public ResponseReaderImpl() {
+        super(LOG);
+    }
 
     public Response read(InputStream source) {
-        return readResponse(createScanner(source));
+        return readResponse(createLineScanner(source));
     }
     
     public Response readWithStatusLine(InputStream source) {
-        Scanner scanner = createScanner(source);
+        Scanner scanner = createLineScanner(source);
         String statusLine = scanner.nextLine();
         if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
             throw new ServerStatusException(statusLine);
         }
+        scanner = createLineScanner(source);
         return readResponse(scanner);
     }
     
@@ -177,7 +185,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
     }
 
     private Response readFacilityList(Scanner scanner) {
-        expect(scanner, AbstractMessage.FACILITY_DELIMITER);
+        expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
         List<String> list = new ArrayList<String>();
         String token = nextSubfacility(scanner);
         while (!token.equals(AbstractMessage.DELIMITER)) {
@@ -185,7 +193,11 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
             token = scanner.next();
         }
-        expectEnd(scanner);
+        // For some reason, the server is holding the connection open ...
+        // so we can't check that we get an EOF follwing the final
+        // delimiter
+        
+        // expectEnd(scanner);
         return new FacilityListResponse(list);
     }
 

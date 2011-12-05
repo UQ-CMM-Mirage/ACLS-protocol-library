@@ -34,6 +34,8 @@ public class AclsProxy {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
     private Configuration config;
     private Thread requestListenerThread;
+    @SuppressWarnings("unused")
+    private Thread facilityCheckerThread;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
     
@@ -88,23 +90,32 @@ public class AclsProxy {
         }
     }
 
-    public void startup() throws UnknownHostException {
-        LOG.info("Starting up");
-        requestListenerThread = launch();
-        LOG.info("Started");
+    public void startup() throws ServerException {
+        // FIXME - this needs to launch a startup / watchdog thread
         try {
-            while (true) {
-                if (!requestListenerThread.isAlive()) {
-                    LOG.info("Listener thread died");
+            LOG.info("Starting up");
+            requestListenerThread = launchRequestListener();
+            facilityCheckerThread = launchFacilityChecker();
+            LOG.info("Started");
+            try {
+                while (true) {
                     requestListenerThread.join();
-                    requestListenerThread = launch();
+                    LOG.info("Listener thread died");
+                    requestListenerThread = launchRequestListener();
                     LOG.info("Restarted");
                 }
-                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                LOG.debug(ex);
             }
-        } catch (InterruptedException ex) {
-            LOG.debug(ex);
+        } catch (UnknownHostException ex) {
+            throw new ServerException("Can't launch proxy", ex);
         }
+    }
+
+    private Thread launchFacilityChecker() {
+        Thread thread = new Thread(new FacilityChecker(config));
+        thread.start();
+        return thread;
     }
 
     private void probeServer() throws ServerException {
@@ -161,7 +172,7 @@ public class AclsProxy {
         }
     }
 
-    private Thread launch() throws UnknownHostException {
+    private Thread launchRequestListener() throws UnknownHostException {
         Thread thread = new Thread(new RequestListener(config, config.getProxyPort(),
                 config.getProxyHost(),
                 new RequestProcessorFactory() {

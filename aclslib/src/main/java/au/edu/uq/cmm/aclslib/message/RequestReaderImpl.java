@@ -1,10 +1,6 @@
 package au.edu.uq.cmm.aclslib.message;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -18,23 +14,13 @@ import org.apache.log4j.Logger;
  */
 public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private static final Logger LOG = Logger.getLogger(RequestReaderImpl.class);
+    
+    public RequestReaderImpl() {
+        super(LOG);
+    }
 
     public Request read(InputStream source) {
-        InputStream buffer;
-        try {
-            String line = new BufferedReader(new InputStreamReader(source)).readLine();
-            if (line == null) {
-                return null;
-            }
-            LOG.debug("Raw request line is (" + line + ")");
-            line += "\r\n";
-            buffer = new ByteArrayInputStream(line.getBytes());
-        } catch (IOException ex) {
-            LOG.error("Unexpected IO error while creating buffer", ex);
-            return null;
-        }
-        Scanner scanner = createScanner(buffer);
-        scanner.useDelimiter(DEFAULT_DELIMITERS);
+        Scanner scanner = createLineScanner(source);
         String command;
         try {
             command = scanner.next();

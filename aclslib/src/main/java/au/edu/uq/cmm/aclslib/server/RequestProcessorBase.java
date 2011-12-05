@@ -30,8 +30,6 @@ public abstract class RequestProcessorBase  implements Runnable {
         this.socket = socket;
         this.config = config;
     }
-    
-    
 
     protected void sendErrorResponse(BufferedWriter w) throws IOException {
         sendResponse(w, new CommandErrorResponse());
@@ -42,13 +40,15 @@ public abstract class RequestProcessorBase  implements Runnable {
             LOG.error("Proxy error - " + ((ProxyErrorResponse) r).getMessage());
             w.append(new CommandErrorResponse().unparse() + "\r\n").flush();
         } else {
-            LOG.debug("Response is " + r.getType().name() + "(" + r.unparse() + ")");
+            LOG.debug("Sending response " + r.getType().name() + "(" + r.unparse() + ")");
             w.append(r.unparse() + "\r\n").flush();
         }
     }
 
-    protected static void sendRequest(BufferedWriter w, Request request) throws IOException {
-        w.append(request.unparse() + "\r\n").flush();
+    protected static void sendRequest(BufferedWriter w, Request r) 
+            throws IOException {
+        LOG.debug("Sending request " + r.getType().name() + "(" + r.unparse() + ")");
+        w.append(r.unparse() + "\r\n").flush();
     }
 
     public void run() {
@@ -61,7 +61,7 @@ public abstract class RequestProcessorBase  implements Runnable {
             // IP address.  If the IP address is not known to us, we can't map it
             // to a virtual facility id to log the user in ... so the only sensible
             // thing to do is send a status error.
-            Facility f = config.lookupFacility(addr);
+            Facility f = config.lookupFacilityByAddress(addr);
             if (f == null) {
                 LOG.debug("Unknown facility: IP is " + addr);
                 w.append("Proxy has no facility details for " + addr + "\r\n").flush();
@@ -94,8 +94,6 @@ public abstract class RequestProcessorBase  implements Runnable {
     }
 
     protected abstract void doProcess(Facility f, Request m, BufferedWriter w) throws IOException;
-
-
 
     public Configuration getConfig() {
         return config;

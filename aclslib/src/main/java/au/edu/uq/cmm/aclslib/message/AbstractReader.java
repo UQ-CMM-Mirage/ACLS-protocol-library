@@ -1,10 +1,13 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * This the base class for the ACLS request and response reader classes.
@@ -48,14 +51,28 @@ public class AbstractReader {
     static final Pattern DEFAULT_DELIMITERS = 
             Pattern.compile("(?<=[/:|\\[\\];~&?])|(?=[/:|\\[\\];~&?])");
     
-    protected final Scanner createScanner(InputStream source) {
+    private Logger log;
+    
+    public AbstractReader(Logger log) {
+        this.log = log;
+    }
+    
+    protected final Scanner createLineScanner(InputStream source) {
+        String line;
         try {
-            Scanner scanner = new Scanner(new InputStreamReader(source, "UTF-8"));
-            scanner.useDelimiter(DEFAULT_DELIMITERS);
-            return scanner;
-        } catch (UnsupportedEncodingException ex) {
+            line = new BufferedReader(new InputStreamReader(source)).readLine();
+            if (line == null) {
+                return null;
+            }
+            log.debug("Raw request/response line is (" + line + ")");
+            line += "\r\n";
+        } catch (IOException ex) {
+            log.error("Unexpected IO error while creating buffer", ex);
             throw new AssertionError("UTF-8 not supported");
         }
+        Scanner scanner = new Scanner(line);
+        scanner.useDelimiter(DEFAULT_DELIMITERS);
+        return scanner;
     }
 
     protected void expect(Scanner source, String expected) {
