@@ -1,6 +1,8 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -20,7 +22,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
 
     public Request read(InputStream source) {
-        Scanner scanner = createLineScanner(source);
+        Scanner scanner = createLineScanner(new BufferedReader(new InputStreamReader(source)));
         String command;
         try {
             command = scanner.next();

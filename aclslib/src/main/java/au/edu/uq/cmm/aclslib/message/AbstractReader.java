@@ -57,12 +57,12 @@ public class AbstractReader {
         this.log = log;
     }
     
-    protected final Scanner createLineScanner(InputStream source) {
+    protected final Scanner createLineScanner(BufferedReader source) {
         String line;
         try {
-            line = new BufferedReader(new InputStreamReader(source)).readLine();
+            line = source.readLine();
             if (line == null) {
-                return null;
+                return new Scanner("");
             }
             log.debug("Raw request/response line is (" + line + ")");
             line += "\r\n";

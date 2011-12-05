@@ -1,6 +1,8 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -22,16 +24,18 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
     }
 
     public Response read(InputStream source) {
-        return readResponse(createLineScanner(source));
+        BufferedReader br = new BufferedReader(new InputStreamReader(source));
+        return readResponse(createLineScanner(br));
     }
     
     public Response readWithStatusLine(InputStream source) {
-        Scanner scanner = createLineScanner(source);
+        BufferedReader br = new BufferedReader(new InputStreamReader(source));
+        Scanner scanner = createLineScanner(br);
         String statusLine = scanner.nextLine();
         if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
             throw new ServerStatusException(statusLine);
         }
-        scanner = createLineScanner(source);
+        scanner = createLineScanner(br);
         return readResponse(scanner);
     }
     

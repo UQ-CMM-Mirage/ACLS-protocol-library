@@ -316,7 +316,7 @@ public class ResponseReaderTest {
     
     @Test
     public void testFacilityList() {
-        Response r = reader().read(source("101:?f1;f2;f3;|\n"));
+        Response r = reader().read(source("101:;f1;f2;f3;|\n"));
         assertEquals(ResponseType.FACILITY_LIST, r.getType());
         assertTrue(r instanceof FacilityListResponse);
         assertEquals(3, ((FacilityListResponse) r).getList().size());
