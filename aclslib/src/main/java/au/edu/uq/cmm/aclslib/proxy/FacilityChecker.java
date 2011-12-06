@@ -12,9 +12,10 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
-import au.edu.uq.cmm.aclslib.server.ServerException;
+import au.edu.uq.cmm.aclslib.service.ServiceException;
+import au.edu.uq.cmm.aclslib.service.ThreadServiceBase;
 
-public class FacilityChecker implements Runnable {
+public class FacilityChecker extends ThreadServiceBase {
     private static final Logger LOG = Logger.getLogger(FacilityChecker.class);
 
     private Configuration config;
@@ -60,18 +61,18 @@ public class FacilityChecker implements Runnable {
         case FACILITY_LIST:
             return ((FacilityListResponse) response).getList();
         default:
-            throw new ServerException("Unexpected response: " + response.getType());
+            throw new ServiceException("Unexpected response: " + response.getType());
         }
     }
 
-    private int queryFacilityCount() throws ServerException {
+    private int queryFacilityCount() throws ServiceException {
         Request request = new SimpleRequest(RequestType.FACILITY_COUNT);
         Response response = RequestProcessor.serverSendReceive(request, config);
         switch (response.getType()) {
         case FACILITY_COUNT:
             return ((FacilityCountResponse) response).getCount();
         default:
-            throw new ServerException("Unexpected response: " + response.getType());
+            throw new ServiceException("Unexpected response: " + response.getType());
         }
     }
 }

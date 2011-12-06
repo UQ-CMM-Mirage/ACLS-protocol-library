@@ -24,23 +24,37 @@ import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
-import au.edu.uq.cmm.aclslib.server.ServerException;
+import au.edu.uq.cmm.aclslib.service.Service;
+import au.edu.uq.cmm.aclslib.service.ServiceException;
 
 
 /**
  * 
  */
-public class AclsProxy {
+public class AclsProxy implements Service {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
     private Configuration config;
-    private Thread requestListenerThread;
-    @SuppressWarnings("unused")
-    private Thread facilityCheckerThread;
+    private Service requestListener;
+    private Service facilityChecker;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
+    private boolean running = false;
+    private boolean changingState = false;
     
     public AclsProxy(Configuration config) {
         this.config = config;
+        try {
+            this.requestListener = new RequestListener(config, config.getProxyPort(),
+                    config.getProxyHost(),
+                    new RequestProcessorFactory() {
+                public Runnable createProcessor(Configuration config, Socket s) {
+                    return new RequestProcessor(config, s, AclsProxy.this);
+                }
+            });
+        } catch (UnknownHostException ex) {
+            throw new IllegalArgumentException("Configuration problem", ex);
+        }
+        this.facilityChecker = new FacilityChecker(config);
     }
 
     public static void main(String[] args) {
@@ -61,7 +75,7 @@ public class AclsProxy {
             AclsProxy proxy = new AclsProxy(config);
             try {
                 proxy.probeServer();
-            } catch (ServerException ex) {
+            } catch (ServiceException ex) {
                 LOG.error("Cannot contact ACLS server", ex);
                 System.exit(3);
             }
@@ -71,7 +85,7 @@ public class AclsProxy {
                 }
             });
             proxy.startup();
-            proxy.shutdown();
+            proxy.awaitShutdown();
             LOG.info("Exitting normally");
             System.exit(0);
         } catch (Throwable ex) {
@@ -80,45 +94,57 @@ public class AclsProxy {
         }
     }
     
-    public void shutdown() {
-        LOG.info("Shutting down");
-        try {
-            requestListenerThread.interrupt();
-            requestListenerThread.join(5000);
-        } catch (InterruptedException ex) {
-            LOG.debug(ex);
-        }
-    }
-
-    public void startup() throws ServerException {
-        // FIXME - this needs to launch a startup / watchdog thread
-        try {
-            LOG.info("Starting up");
-            requestListenerThread = launchRequestListener();
-            facilityCheckerThread = launchFacilityChecker();
-            LOG.info("Started");
-            try {
-                while (true) {
-                    requestListenerThread.join();
-                    LOG.info("Listener thread died");
-                    requestListenerThread = launchRequestListener();
-                    LOG.info("Restarted");
-                }
-            } catch (InterruptedException ex) {
-                LOG.debug(ex);
+    public void awaitShutdown() throws InterruptedException {
+        synchronized (this) {
+            while (running) {
+                wait();
             }
-        } catch (UnknownHostException ex) {
-            throw new ServerException("Can't launch proxy", ex);
         }
     }
 
-    private Thread launchFacilityChecker() {
-        Thread thread = new Thread(new FacilityChecker(config));
-        thread.start();
-        return thread;
+    public void shutdown() {
+        synchronized (this) {
+            if (changingState) {
+                throw new IllegalStateException("State change already in progress");
+            }
+            if (running == false) {
+                return;
+            }
+            changingState = true;
+        }
+        LOG.info("Shutting down");
+        facilityChecker.shutdown();
+        requestListener.shutdown();
+        LOG.info("Shutdown completed");
+        synchronized (this) {
+            changingState = false;
+            running = false;
+            this.notifyAll();
+        }
     }
 
-    private void probeServer() throws ServerException {
+    public void startup() throws ServiceException {
+        synchronized (this) {
+            if (changingState) {
+                throw new IllegalStateException("State change already in progress");
+            }
+            if (running == true) {
+                return;
+            }
+            changingState = true;
+        }
+        LOG.info("Starting up");
+        requestListener.startup();
+        facilityChecker.startup();
+        LOG.info("Startup completed");
+        synchronized (this) {
+            changingState = false;
+            running = true;
+            this.notifyAll();
+        }
+    }
+
+    private void probeServer() throws ServiceException {
         LOG.info("Probing ACLS server");
         Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
         Response response = RequestProcessor.serverSendReceive(request, config);
@@ -126,13 +152,13 @@ public class AclsProxy {
         case USE_VIRTUAL:
             YesNoResponse uv = (YesNoResponse) response;
             if (!uv.isYes()) {
-                throw new ServerException(
+                throw new ServiceException(
                         "The ACLS server has the proxy configured as a normal Facility");
             }
             break;
         default:
             LOG.error("Unexpected response for USE_VIRTUAL request: " + response.getType());
-            throw new ServerException(
+            throw new ServiceException(
                     "The ACLS server gave an unexpected response to our probe");
         }
     }
@@ -170,24 +196,6 @@ public class AclsProxy {
         } catch (IOException e) {
             LOG.error(e);
         }
-    }
-
-    private Thread launchRequestListener() throws UnknownHostException {
-        Thread thread = new Thread(new RequestListener(config, config.getProxyPort(),
-                config.getProxyHost(),
-                new RequestProcessorFactory() {
-                    public Runnable createProcessor(Configuration config, Socket s) {
-                        return new RequestProcessor(config, s, AclsProxy.this);
-                    }
-                }));
-        thread.setDaemon(true);
-        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            public void uncaughtException(Thread t, Throwable ex) {
-                LOG.debug(ex);
-            }
-        });
-        thread.start();
-        return thread;
     }
 
     public void sendEvent(AclsFacilityEvent event) {

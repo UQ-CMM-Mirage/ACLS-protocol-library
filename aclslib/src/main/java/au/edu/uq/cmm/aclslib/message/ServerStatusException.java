@@ -6,9 +6,8 @@ package au.edu.uq.cmm.aclslib.message;
  * 
  * @author scrawley
  */
+@SuppressWarnings("serial")
 public class ServerStatusException extends AclsProtocolException {
-    private static final long serialVersionUID = 7732308813287253138L;
-    
     private String statusLine;
 
     public ServerStatusException(String statusLine) {
