@@ -28,6 +28,7 @@ public abstract class AbstractMessage implements Message {
     public static String ALL_DELIMITERS = "|:];?&~/[";
     
     public static String ACCEPTED_IP_TAG = "IP Accepted";
+    public static String FAILED_TAG = "Thank You!";
 
     
     protected String checkName(String name) {

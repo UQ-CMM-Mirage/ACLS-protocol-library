@@ -97,7 +97,9 @@ public class AbstractReader {
             // I don't understand why, but in some cases the "status" message seems to
             // be repeated at the end of a response.  The standard clients don't make 
             // any use of this (as far as I can tell) so I'm treating it as noise. 
-            if (!token.isEmpty() & !token.equalsIgnoreCase(AbstractMessage.ACCEPTED_IP_TAG)) {
+            if (!token.isEmpty() &&
+                !token.equalsIgnoreCase(AbstractMessage.ACCEPTED_IP_TAG) &&
+                !token.equalsIgnoreCase(AbstractMessage.FAILED_TAG)) {
                 throw new MessageSyntaxException(
                         "Unexpected token at end of message: '" + token);
             }
