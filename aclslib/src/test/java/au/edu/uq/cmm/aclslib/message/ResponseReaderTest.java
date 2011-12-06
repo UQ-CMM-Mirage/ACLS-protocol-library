@@ -107,6 +107,21 @@ public class ResponseReaderTest {
     }
     
     @Test
+    public void testVirtualLogin2() {
+        Response r = reader().read(
+                source("111:steve|cmm|[2012-01-01T00:00:00Z|]acc1;|&Valid Certificate~Yes|\n"));
+        assertEquals(ResponseType.VIRTUAL_LOGIN_ALLOWED, r.getType());
+        LoginResponse login = (LoginResponse) r;
+        assertEquals("steve", login.getUserName());
+        assertEquals("cmm", login.getOrgName());
+        assertEquals("2012-01-01T00:00:00Z", login.getLoginTimestamp());
+        assertEquals(1, login.getAccounts().size());
+        assertEquals("acc1", login.getAccounts().get(0));
+        assertEquals(Certification.VALID, login.getCertification());
+        assertEquals(true, login.isOnsiteAssist());
+    }
+    
+    @Test
     public void testNewVirtualLogin() {
         Response r = reader().read(source("141:steve|cmm|]acc1;|&Valid Certificate~No|\n"));
         assertEquals(ResponseType.NEW_VIRTUAL_LOGIN_ALLOWED, r.getType());

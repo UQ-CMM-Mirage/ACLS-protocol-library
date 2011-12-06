@@ -141,7 +141,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             value = false;
         } else {
             throw new MessageSyntaxException(
-                    "Expected 'Yes' or 'No' but got '" + valueString + "'");
+                    "Expected 'vFML' or 'No' but got '" + valueString + "'");
         }
         expectEnd(scanner);
         return new YesNoResponse(ResponseType.USE_VIRTUAL, value);
@@ -210,9 +210,16 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         expect(scanner, AbstractMessage.DELIMITER);
         String orgName = nextOrganization(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
-        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
+        String token = scanner.next();
+        String timestamp = null;
+        if (token.equals(AbstractMessage.TIME_DELIMITER)) {
+            timestamp = nextTimestamp(scanner);
+            expect(scanner, AbstractMessage.DELIMITER);
+            token = scanner.next();
+        }
+        expect(token, AbstractMessage.ACCOUNT_DELIMITER);
         List<String> accounts = new ArrayList<String>();
-        String token = nextAccount(scanner);
+        token = nextAccount(scanner);
         while (!token.equals(AbstractMessage.DELIMITER)) {
             accounts.add(token);
             expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
@@ -226,7 +233,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             onsiteAssist = scanner.next().equalsIgnoreCase(AbstractMessage.YES);
         }
         expectEnd(scanner);
-        return new LoginResponse(type, userName, orgName, 
+        return new LoginResponse(type, userName, orgName, timestamp,
                 accounts, certification, onsiteAssist);
     }
 

@@ -272,7 +272,7 @@ public class RequestProcessor extends RequestProcessorBase {
             case VIRTUAL_LOGIN_ALLOWED:
                 LoginResponse vlr = (LoginResponse) vr;
                 r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
-                        vlr.getUserName(), vlr.getOrgName(), 
+                        vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
                         vlr.getAccounts(), vlr.getCertification(), vlr.isOnsiteAssist());
                 break;
             case VIRTUAL_LOGIN_REFUSED:

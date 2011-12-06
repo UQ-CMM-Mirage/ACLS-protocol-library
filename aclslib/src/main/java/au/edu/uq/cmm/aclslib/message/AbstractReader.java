@@ -78,7 +78,10 @@ public class AbstractReader {
             throw new MessageSyntaxException(
                     "Expected '" + expected + "' but got end-of-message");
         }
-        String token = source.next();
+        expect(source.next(), expected);
+    }
+
+    protected void expect(String token, String expected) {
         if (!expected.equals(token)) {
             throw new MessageSyntaxException(
                     "Expected '" + expected + "' but got '" + token + "'");
