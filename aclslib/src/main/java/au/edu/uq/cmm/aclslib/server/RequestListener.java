@@ -31,9 +31,10 @@ public class RequestListener implements Runnable {
         try {
             // FIXME - parameterize the bind address.
             ss = new ServerSocket(port, 5, bindAddr);
-            LOG.debug("Listening for requests on " + ss.getInetAddress() + 
+            LOG.debug("Proxy listening for requests on " + ss.getInetAddress() + 
                     " port " + ss.getLocalPort());
         } catch (IOException ex) {
+            LOG.error("Error while creating / binding the proxy's server socket", ex);
             throw new ServerException("Startup / restart failed", ex);
         }
         while (true) {

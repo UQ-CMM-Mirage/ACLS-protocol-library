@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -72,20 +73,22 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
     private void processLoginRequest(Request m, BufferedWriter w) 
             throws IOException {
         LoginRequest login = (LoginRequest) m;
+        String timestamp = DateFormat.getInstance().format(new Date());
+        List<String> accounts = Arrays.asList("general", "special");
         Response r;
         if (!login.getPassword().equals("secret")) {
             r = new RefusedResponse(ResponseType.VIRTUAL_LOGIN_REFUSED);
         } else if (login.getUserName().equals("junior")) {
             r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
-                    login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+                    login.getUserName(), "CMMMM", timestamp, accounts,
                     Certification.NONE, true);
         } else if (login.getUserName().equals("badboy")) {
             r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
-                    login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+                    login.getUserName(), "CMMMM", timestamp, accounts,
                     Certification.NONE, false);
         } else {
             r = new LoginResponse(ResponseType.VIRTUAL_LOGIN_ALLOWED, 
-                    login.getUserName(), "CMMMM", Arrays.asList("general", "special"),
+                    login.getUserName(), "CMMMM", timestamp, accounts,
                     Certification.VALID, false);
         }
         sendResponse(w, r);

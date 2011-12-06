@@ -42,12 +42,21 @@ public class Configuration {
         return useProject;
     }
 
-    public Facility lookupFacility(InetAddress addr) {
+    public Facility lookupFacilityByAddress(InetAddress addr) {
         Facility facility = facilityMap.get(addr.getHostAddress());
         if (facility == null) {
             facility = facilityMap.get(addr.getHostName());
         }
         return facility;
+    }
+
+    public Facility lookupFacilityById(String id) {
+        for (Facility f : facilityMap.values()) {
+            if (id.equals(f.getFacilityId())) {
+                return f;
+            }
+        }
+        return null;
     }
 
     public void setFacilities(Map<String, Facility> facilityMap) {

@@ -17,6 +17,7 @@ public class LoginResponse extends AbstractResponse {
     private Certification certification;
     private boolean onsiteAssist;
     private List<String> accounts;
+    private String loginTimestamp;
 
     /**
      * Construct the response message
@@ -24,15 +25,18 @@ public class LoginResponse extends AbstractResponse {
      * @param type
      * @param userName
      * @param orgName
+     * @param loginTimestamp - this will be null for a classic login response.
      * @param accounts
      * @param certification
      * @param onsiteAssist
      */
     public LoginResponse(ResponseType type, String userName, String orgName, 
-            List<String> accounts, Certification certification, boolean onsiteAssist) {
+            String loginTimestamp, List<String> accounts, 
+            Certification certification, boolean onsiteAssist) {
         super(type);
         this.userName = checkName(userName);
         this.orgName = checkOrganization(orgName);
+        this.loginTimestamp = loginTimestamp;
         this.accounts = accounts;
         for (String acc : accounts) {
             checkAccount(acc);
@@ -43,6 +47,7 @@ public class LoginResponse extends AbstractResponse {
 
     public String unparse() {
         return generateHeader() + userName + DELIMITER + orgName + DELIMITER + 
+                (loginTimestamp == null ? "" : (TIME_DELIMITER + loginTimestamp) + DELIMITER) +
                 ACCOUNT_DELIMITER + generateList(accounts, ACCOUNT_SEPARATOR) + 
                 DELIMITER + CERTIFICATE_DELIMITER + certification + 
                 ONSITE_ASSIST_DELIMITER + 
@@ -86,4 +91,10 @@ public class LoginResponse extends AbstractResponse {
         return accounts;
     }
 
+    /**
+     * @return the login timestamp or {@literal null}.
+     */
+    public String getLoginTimestamp() {
+        return loginTimestamp;
+    }
 }

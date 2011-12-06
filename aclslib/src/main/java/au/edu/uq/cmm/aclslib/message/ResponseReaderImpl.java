@@ -1,10 +1,14 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class is an ACLS response reader for versions 20.x and 30.x of the 
@@ -13,17 +17,25 @@ import java.util.regex.MatchResult;
  * @author scrawley
  */
 public class ResponseReaderImpl extends AbstractReader implements ResponseReader {
+    private static final Logger LOG = Logger.getLogger(ResponseReaderImpl.class);
+    
+    public ResponseReaderImpl() {
+        super(LOG);
+    }
 
     public Response read(InputStream source) {
-        return readResponse(createScanner(source));
+        BufferedReader br = new BufferedReader(new InputStreamReader(source));
+        return readResponse(createLineScanner(br));
     }
     
     public Response readWithStatusLine(InputStream source) {
-        Scanner scanner = createScanner(source);
+        BufferedReader br = new BufferedReader(new InputStreamReader(source));
+        Scanner scanner = createLineScanner(br);
         String statusLine = scanner.nextLine();
         if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
             throw new ServerStatusException(statusLine);
         }
+        scanner = createLineScanner(br);
         return readResponse(scanner);
     }
     
@@ -123,13 +135,13 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         expect(scanner, AbstractMessage.FACILITY_DELIMITER);
         String valueString = scanner.next();
         boolean value;
-        if (valueString.equalsIgnoreCase(AbstractMessage.YES)) {
+        if (valueString.equalsIgnoreCase(AbstractMessage.VMFL)) {
             value = true;
         } else if (valueString.equalsIgnoreCase(AbstractMessage.NO)) {
             value = false;
         } else {
             throw new MessageSyntaxException(
-                    "Expected 'Yes' or 'No' but got '" + valueString + "'");
+                    "Expected 'vFML' or 'No' but got '" + valueString + "'");
         }
         expectEnd(scanner);
         return new YesNoResponse(ResponseType.USE_VIRTUAL, value);
@@ -177,7 +189,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
     }
 
     private Response readFacilityList(Scanner scanner) {
-        expect(scanner, AbstractMessage.FACILITY_DELIMITER);
+        expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
         List<String> list = new ArrayList<String>();
         String token = nextSubfacility(scanner);
         while (!token.equals(AbstractMessage.DELIMITER)) {
@@ -185,7 +197,11 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
             token = scanner.next();
         }
-        expectEnd(scanner);
+        // For some reason, the server is holding the connection open ...
+        // so we can't check that we get an EOF follwing the final
+        // delimiter
+        
+        // expectEnd(scanner);
         return new FacilityListResponse(list);
     }
 
@@ -194,9 +210,16 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         expect(scanner, AbstractMessage.DELIMITER);
         String orgName = nextOrganization(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
-        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
+        String token = scanner.next();
+        String timestamp = null;
+        if (token.equals(AbstractMessage.TIME_DELIMITER)) {
+            timestamp = nextTimestamp(scanner);
+            expect(scanner, AbstractMessage.DELIMITER);
+            token = scanner.next();
+        }
+        expect(token, AbstractMessage.ACCOUNT_DELIMITER);
         List<String> accounts = new ArrayList<String>();
-        String token = nextAccount(scanner);
+        token = nextAccount(scanner);
         while (!token.equals(AbstractMessage.DELIMITER)) {
             accounts.add(token);
             expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
@@ -210,7 +233,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
             onsiteAssist = scanner.next().equalsIgnoreCase(AbstractMessage.YES);
         }
         expectEnd(scanner);
-        return new LoginResponse(type, userName, orgName, 
+        return new LoginResponse(type, userName, orgName, timestamp,
                 accounts, certification, onsiteAssist);
     }
 
