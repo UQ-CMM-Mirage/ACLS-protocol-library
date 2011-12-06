@@ -1,10 +1,11 @@
 package au.edu.uq.cmm.aclslib.message;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * This the base class for the ACLS request and response reader classes.
@@ -48,14 +49,28 @@ public class AbstractReader {
     static final Pattern DEFAULT_DELIMITERS = 
             Pattern.compile("(?<=[/:|\\[\\];~&?])|(?=[/:|\\[\\];~&?])");
     
-    protected final Scanner createScanner(InputStream source) {
+    private Logger log;
+    
+    public AbstractReader(Logger log) {
+        this.log = log;
+    }
+    
+    protected final Scanner createLineScanner(BufferedReader source) {
+        String line;
         try {
-            Scanner scanner = new Scanner(new InputStreamReader(source, "UTF-8"));
-            scanner.useDelimiter(DEFAULT_DELIMITERS);
-            return scanner;
-        } catch (UnsupportedEncodingException ex) {
+            line = source.readLine();
+            if (line == null) {
+                return new Scanner("");
+            }
+            log.debug("Raw request/response line is (" + line + ")");
+            line += "\r\n";
+        } catch (IOException ex) {
+            log.error("Unexpected IO error while creating buffer", ex);
             throw new AssertionError("UTF-8 not supported");
         }
+        Scanner scanner = new Scanner(line);
+        scanner.useDelimiter(DEFAULT_DELIMITERS);
+        return scanner;
     }
 
     protected void expect(Scanner source, String expected) {
@@ -63,7 +78,10 @@ public class AbstractReader {
             throw new MessageSyntaxException(
                     "Expected '" + expected + "' but got end-of-message");
         }
-        String token = source.next();
+        expect(source.next(), expected);
+    }
+
+    protected void expect(String token, String expected) {
         if (!expected.equals(token)) {
             throw new MessageSyntaxException(
                     "Expected '" + expected + "' but got '" + token + "'");
@@ -73,7 +91,15 @@ public class AbstractReader {
     protected void expectEnd(Scanner source) {
         if (source.hasNext()) {
             String token = source.next().trim();
-            if (!token.isEmpty() && !token.equals(AbstractMessage.DELIMITER)) {
+            if (token.equals(AbstractMessage.DELIMITER)) {
+                token = source.next().trim();
+            }
+            // I don't understand why, but in some cases the "status" message seems to
+            // be repeated at the end of a response.  The standard clients don't make 
+            // any use of this (as far as I can tell) so I'm treating it as noise. 
+            if (!token.isEmpty() &&
+                !token.equalsIgnoreCase(AbstractMessage.ACCEPTED_IP_TAG) &&
+                !token.equalsIgnoreCase(AbstractMessage.FAILED_TAG)) {
                 throw new MessageSyntaxException(
                         "Unexpected token at end of message: '" + token);
             }

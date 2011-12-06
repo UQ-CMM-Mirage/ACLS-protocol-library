@@ -33,7 +33,7 @@ public class AccountRequest extends AbstractRequest {
     public String unparse() {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
-                (getType() == RequestType.LOGOUT ? "" : 
+                (getType() == RequestType.ACCOUNT ? "" : 
                     (FACILITY_DELIMITER + facility + DELIMITER));
     }
 

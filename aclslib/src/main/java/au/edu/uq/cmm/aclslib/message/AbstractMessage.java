@@ -13,6 +13,7 @@ public abstract class AbstractMessage implements Message {
     
     public static final String YES = "YES";
     public static final String NO = "NO";
+    public static final String VMFL = "vMFL";
     
     public static String DELIMITER = "|";
     public static String COMMAND_DELIMITER = ":";
@@ -27,6 +28,7 @@ public abstract class AbstractMessage implements Message {
     public static String ALL_DELIMITERS = "|:];?&~/[";
     
     public static String ACCEPTED_IP_TAG = "IP Accepted";
+    public static String FAILED_TAG = "Thank You!";
 
     
     protected String checkName(String name) {

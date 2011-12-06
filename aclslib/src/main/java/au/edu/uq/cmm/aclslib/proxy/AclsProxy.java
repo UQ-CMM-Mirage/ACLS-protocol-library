@@ -1,9 +1,6 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -18,7 +15,11 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import au.edu.uq.cmm.aclslib.message.AbstractMessage;
+import au.edu.uq.cmm.aclslib.message.Request;
+import au.edu.uq.cmm.aclslib.message.RequestType;
+import au.edu.uq.cmm.aclslib.message.Response;
+import au.edu.uq.cmm.aclslib.message.SimpleRequest;
+import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
@@ -33,6 +34,8 @@ public class AclsProxy {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
     private Configuration config;
     private Thread requestListenerThread;
+    @SuppressWarnings("unused")
+    private Thread facilityCheckerThread;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
     
@@ -62,7 +65,7 @@ public class AclsProxy {
                 LOG.error("Cannot contact ACLS server", ex);
                 System.exit(3);
             }
-            proxy.registerListener(new AclsFacilityEventListener() {
+            proxy.addListener(new AclsFacilityEventListener() {
                 public void eventOccurred(AclsFacilityEvent event) {
                     LOG.info("Facility event: " + event);
                 }
@@ -76,14 +79,8 @@ public class AclsProxy {
             System.exit(1);
         }
     }
-
-    private void registerListener(AclsFacilityEventListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    private void shutdown() {
+    
+    public void shutdown() {
         LOG.info("Shutting down");
         try {
             requestListenerThread.interrupt();
@@ -93,45 +90,51 @@ public class AclsProxy {
         }
     }
 
-    private void startup() throws UnknownHostException {
-        LOG.info("Starting up");
-        requestListenerThread = launch();
-        LOG.info("Started");
+    public void startup() throws ServerException {
+        // FIXME - this needs to launch a startup / watchdog thread
         try {
-            while (true) {
-                if (!requestListenerThread.isAlive()) {
-                    LOG.info("Listener thread died");
+            LOG.info("Starting up");
+            requestListenerThread = launchRequestListener();
+            facilityCheckerThread = launchFacilityChecker();
+            LOG.info("Started");
+            try {
+                while (true) {
                     requestListenerThread.join();
-                    requestListenerThread = launch();
+                    LOG.info("Listener thread died");
+                    requestListenerThread = launchRequestListener();
                     LOG.info("Restarted");
                 }
-                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                LOG.debug(ex);
             }
-        } catch (InterruptedException ex) {
-            LOG.debug(ex);
+        } catch (UnknownHostException ex) {
+            throw new ServerException("Can't launch proxy", ex);
         }
+    }
+
+    private Thread launchFacilityChecker() {
+        Thread thread = new Thread(new FacilityChecker(config));
+        thread.start();
+        return thread;
     }
 
     private void probeServer() throws ServerException {
         LOG.info("Probing ACLS server");
-        try {
-            Socket aclsSocket = new Socket(config.getServerHost(), config.getServerPort());
-            try {
-                InputStream is = aclsSocket.getInputStream();
-                BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                String statusLine = r.readLine();
-                if (statusLine == null) {
-                    throw new ServerException("ACLS server closed connection");
-                } else if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
-                    throw new ServerException("ACLS server status - " + statusLine);
-                }
-            } finally {
-                aclsSocket.close();
+        Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
+        Response response = RequestProcessor.serverSendReceive(request, config);
+        switch (response.getType()) {
+        case USE_VIRTUAL:
+            YesNoResponse uv = (YesNoResponse) response;
+            if (!uv.isYes()) {
+                throw new ServerException(
+                        "The ACLS server has the proxy configured as a normal Facility");
             }
+            break;
+        default:
+            LOG.error("Unexpected response for USE_VIRTUAL request: " + response.getType());
+            throw new ServerException(
+                    "The ACLS server gave an unexpected response to our probe");
         }
-        catch (IOException ex) {
-            throw new ServerException("IO error while probing ACLS server", ex);
-        } 
     }
 
     public static void createSampleConfigurationFile() {
@@ -169,7 +172,7 @@ public class AclsProxy {
         }
     }
 
-    private Thread launch() throws UnknownHostException {
+    private Thread launchRequestListener() throws UnknownHostException {
         Thread thread = new Thread(new RequestListener(config, config.getProxyPort(),
                 config.getProxyHost(),
                 new RequestProcessorFactory() {
@@ -194,4 +197,17 @@ public class AclsProxy {
             }
         }
     }
+
+    public void addListener(AclsFacilityEventListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(AclsFacilityEventListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
 }
