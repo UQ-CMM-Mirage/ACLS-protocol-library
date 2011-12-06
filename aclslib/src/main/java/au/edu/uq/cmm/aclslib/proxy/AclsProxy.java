@@ -24,6 +24,7 @@ import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
+import au.edu.uq.cmm.aclslib.service.CompositeServiceBase;
 import au.edu.uq.cmm.aclslib.service.Service;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 
@@ -31,15 +32,13 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
 /**
  * 
  */
-public class AclsProxy implements Service {
+public class AclsProxy extends CompositeServiceBase {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
     private Configuration config;
     private Service requestListener;
     private Service facilityChecker;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
-    private boolean running = false;
-    private boolean changingState = false;
     
     public AclsProxy(Configuration config) {
         this.config = config;
@@ -93,55 +92,15 @@ public class AclsProxy implements Service {
             System.exit(1);
         }
     }
-    
-    public void awaitShutdown() throws InterruptedException {
-        synchronized (this) {
-            while (running) {
-                wait();
-            }
-        }
-    }
 
-    public void shutdown() {
-        synchronized (this) {
-            if (changingState) {
-                throw new IllegalStateException("State change already in progress");
-            }
-            if (running == false) {
-                return;
-            }
-            changingState = true;
-        }
-        LOG.info("Shutting down");
+    protected void doShutdown() {
         facilityChecker.shutdown();
         requestListener.shutdown();
-        LOG.info("Shutdown completed");
-        synchronized (this) {
-            changingState = false;
-            running = false;
-            this.notifyAll();
-        }
     }
 
-    public void startup() throws ServiceException {
-        synchronized (this) {
-            if (changingState) {
-                throw new IllegalStateException("State change already in progress");
-            }
-            if (running == true) {
-                return;
-            }
-            changingState = true;
-        }
-        LOG.info("Starting up");
+    protected void doStartup() throws ServiceException {
         requestListener.startup();
         facilityChecker.startup();
-        LOG.info("Startup completed");
-        synchronized (this) {
-            changingState = false;
-            running = true;
-            this.notifyAll();
-        }
     }
 
     private void probeServer() throws ServiceException {
