@@ -25,7 +25,7 @@ public class FacilityChecker extends ThreadServiceBase {
 
     public FacilityChecker(Configuration config) {
         this.config = config;
-        this.client = new AclsClient(config);
+        this.client = new AclsClient(config.getServerHost(), config.getServerPort());
     }
 
     public void run() {

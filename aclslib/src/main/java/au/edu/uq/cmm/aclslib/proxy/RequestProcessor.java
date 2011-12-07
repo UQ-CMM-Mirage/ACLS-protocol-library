@@ -35,7 +35,7 @@ public class RequestProcessor extends RequestProcessorBase {
     public RequestProcessor(Configuration config, Socket socket, AclsProxy proxy) {
         super(config, socket);
         this.proxy = proxy;
-        this.client = new AclsClient(config);
+        this.client = new AclsClient(config.getServerHost(), config.getServerPort());
     }
 
     protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
