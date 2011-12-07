@@ -26,6 +26,15 @@ import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
+/**
+ * The request processor component for the dummy ACLS server.  This version
+ * supports only the subset used by a vMFL client.
+ * 
+ * FIXME - it doesn't don't support FACILITY_COUNT or FACILITY_LIST which the
+ * proxy now uses.
+ * 
+ * @author scrawley
+ */
 public class RequestProcessor extends RequestProcessorBase implements Runnable {
     private static final Logger LOG = Logger.getLogger(AclsProxy.class);
     
