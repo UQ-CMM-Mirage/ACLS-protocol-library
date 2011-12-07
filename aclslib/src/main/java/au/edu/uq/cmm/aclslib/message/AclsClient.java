@@ -1,4 +1,4 @@
-package au.edu.uq.cmm.aclslib.proxy;
+package au.edu.uq.cmm.aclslib.message;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -8,13 +8,14 @@ import java.net.Socket;
 
 import org.apache.log4j.Logger;
 
-import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
-import au.edu.uq.cmm.aclslib.message.Request;
-import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.message.ResponseReaderImpl;
-import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 
+/**
+ * A simple low-level ACLS client class that handles a request / response
+ * interaction between ourselves and an ACLS server (or proxy).
+ * 
+ * @author scrawley
+ */
 public class AclsClient {
     private static final Logger LOG = Logger.getLogger(AclsClient.class);
     private final Configuration config;
@@ -36,6 +37,7 @@ public class AclsClient {
                 return new ResponseReaderImpl().readWithStatusLine(is);
             } catch (ServerStatusException ex) {
                 LOG.error("ACLS server refused request: " + ex);
+                // FIXME - I think this is wrong.
                 return new ProxyErrorResponse("Proxy got status error from ACLS server");
             } finally {
                 aclsSocket.close();

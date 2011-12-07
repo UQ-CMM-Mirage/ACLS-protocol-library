@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.FacilityCountResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityListResponse;
 import au.edu.uq.cmm.aclslib.message.Request;

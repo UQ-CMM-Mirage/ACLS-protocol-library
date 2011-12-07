@@ -6,6 +6,7 @@ import java.net.Socket;
 
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
+import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
