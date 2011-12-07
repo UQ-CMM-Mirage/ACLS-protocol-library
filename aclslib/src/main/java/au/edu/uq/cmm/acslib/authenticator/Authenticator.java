@@ -7,6 +7,8 @@ import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
+import au.edu.uq.cmm.aclslib.message.SimpleRequest;
+import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.proxy.AclsClient;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 
@@ -46,7 +48,29 @@ public class Authenticator {
         }
     }
 
-    private boolean authenticate(String userName, String password) {
+    public boolean authenticate(String userName, String password) {
+        if (useVirtual()) {
+            return virtualFacilityLogin(userName, password);
+        } else {
+            return realFacilityLogin(userName, password);
+        }
+    }
+    
+    private boolean useVirtual() {
+        Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
+        Response response = client.serverSendReceive(request);
+        switch (response.getType()) {
+        case USE_VIRTUAL:
+            YesNoResponse uv = (YesNoResponse) response;
+            return uv.isYes();
+        default:
+            throw new AclsProtocolException(
+                    "Unexpected response to USE_VIRTUAL request - " + 
+                            response.getType());
+        }
+    }
+
+    private boolean virtualFacilityLogin(String userName, String password) {
         String dummyFacilityId = config.getDummyFacility();
         Request request = new LoginRequest(
                 RequestType.VIRTUAL_LOGIN, userName, password, dummyFacilityId);
@@ -59,6 +83,22 @@ public class Authenticator {
         default:
             throw new AclsProtocolException(
                     "Unexpected response to VIRTUAL_LOGIN request - " + 
+                    response.getType());
+        }
+    }
+    
+    private boolean realFacilityLogin(String userName, String password) {
+        Request request = new LoginRequest(
+                RequestType.LOGIN, userName, password, null);
+        Response response = client.serverSendReceive(request);
+        switch (response.getType()) {
+        case LOGIN_ALLOWED:
+            return true;
+        case LOGIN_REFUSED:
+            return false;
+        default:
+            throw new AclsProtocolException(
+                    "Unexpected response to LOGIN request - " + 
                     response.getType());
         }
     }
