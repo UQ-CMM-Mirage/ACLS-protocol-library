@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.FacilityCountResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityListResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -12,16 +13,19 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
-import au.edu.uq.cmm.aclslib.server.ServerException;
+import au.edu.uq.cmm.aclslib.service.ServiceException;
+import au.edu.uq.cmm.aclslib.service.ThreadServiceBase;
 
-public class FacilityChecker implements Runnable {
+public class FacilityChecker extends ThreadServiceBase {
     private static final Logger LOG = Logger.getLogger(FacilityChecker.class);
 
     private Configuration config;
+    private AclsClient client;
     private int facilityCount = 0;
 
     public FacilityChecker(Configuration config) {
         this.config = config;
+        this.client = new AclsClient(config);
     }
 
     public void run() {
@@ -55,23 +59,23 @@ public class FacilityChecker implements Runnable {
 
     private List<String> queryFacilityList() {
         Request request = new SimpleRequest(RequestType.FACILITY_LIST);
-        Response response = RequestProcessor.serverSendReceive(request, config);
+        Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_LIST:
             return ((FacilityListResponse) response).getList();
         default:
-            throw new ServerException("Unexpected response: " + response.getType());
+            throw new ServiceException("Unexpected response: " + response.getType());
         }
     }
 
-    private int queryFacilityCount() throws ServerException {
+    private int queryFacilityCount() throws ServiceException {
         Request request = new SimpleRequest(RequestType.FACILITY_COUNT);
-        Response response = RequestProcessor.serverSendReceive(request, config);
+        Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_COUNT:
             return ((FacilityCountResponse) response).getCount();
         default:
-            throw new ServerException("Unexpected response: " + response.getType());
+            throw new ServiceException("Unexpected response: " + response.getType());
         }
     }
 }
