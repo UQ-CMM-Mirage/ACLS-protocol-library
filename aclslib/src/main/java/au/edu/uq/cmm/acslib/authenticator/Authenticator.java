@@ -12,6 +12,13 @@ import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 
+/**
+ * The Authenticator class uses an ACLS server as a means of checking a
+ * username and password.  This requires a registered dummy facility 
+ * that we can "login" to.
+ * 
+ * @author scrawley
+ */
 public class Authenticator {
     private static final Logger LOG = Logger.getLogger(Authenticator.class);
     private Configuration config;
