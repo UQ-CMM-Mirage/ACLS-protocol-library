@@ -8,8 +8,6 @@ import java.net.Socket;
 
 import org.apache.log4j.Logger;
 
-import au.edu.uq.cmm.aclslib.server.Configuration;
-
 /**
  * A simple low-level ACLS client class that handles a request / response
  * interaction between ourselves and an ACLS server (or proxy).
