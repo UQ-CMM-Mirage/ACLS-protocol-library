@@ -12,6 +12,7 @@ public class Facility {
     private String facilityId;
     private boolean useTimer;
     private String facilityName;
+    private boolean dummy;
 
     public String getAccessName() {
         return accessName;
@@ -50,6 +51,10 @@ public class Facility {
         return useTimer;
     }
 
+    public boolean isDummy() {
+        return dummy;
+    }
+
     public void setAccessName(String accessName) {
         this.accessName = accessName;
     }
@@ -80,6 +85,10 @@ public class Facility {
 
     public void setUseTimer(boolean useTimer) {
         this.useTimer = useTimer;
+    }
+
+    public void setDummy(boolean dummy) {
+        this.dummy = dummy;
     }
 
 }

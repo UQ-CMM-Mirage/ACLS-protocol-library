@@ -111,4 +111,13 @@ public class Configuration {
         return null;
     }
 
+    public String getDummyFacility() {
+        for (Facility facility : facilityMap.values()) {
+            if (facility.isDummy()) {
+                return facility.getFacilityId();
+            }
+        }
+        throw new IllegalStateException("There are no dummy facilities");
+    }
+
 }

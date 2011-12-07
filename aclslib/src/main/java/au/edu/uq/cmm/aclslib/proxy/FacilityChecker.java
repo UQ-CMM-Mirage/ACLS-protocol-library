@@ -19,10 +19,12 @@ public class FacilityChecker extends ThreadServiceBase {
     private static final Logger LOG = Logger.getLogger(FacilityChecker.class);
 
     private Configuration config;
+    private AclsClient client;
     private int facilityCount = 0;
 
     public FacilityChecker(Configuration config) {
         this.config = config;
+        this.client = new AclsClient(config);
     }
 
     public void run() {
@@ -56,7 +58,7 @@ public class FacilityChecker extends ThreadServiceBase {
 
     private List<String> queryFacilityList() {
         Request request = new SimpleRequest(RequestType.FACILITY_LIST);
-        Response response = RequestProcessor.serverSendReceive(request, config);
+        Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_LIST:
             return ((FacilityListResponse) response).getList();
@@ -67,7 +69,7 @@ public class FacilityChecker extends ThreadServiceBase {
 
     private int queryFacilityCount() throws ServiceException {
         Request request = new SimpleRequest(RequestType.FACILITY_COUNT);
-        Response response = RequestProcessor.serverSendReceive(request, config);
+        Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_COUNT:
             return ((FacilityCountResponse) response).getCount();
