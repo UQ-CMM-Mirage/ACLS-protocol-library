@@ -19,35 +19,42 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                 try {
                     serviceThread.join();
                 } catch (InterruptedException ex) {
+                    serviceThread.interrupt();
+                    try {
+                        serviceThread.join();
+                    } catch (InterruptedException ex2) {
+                        LOG.error("Monitor thread interrupted while waiting " +
+                        		"for service thread to finish", ex);
+                    }
                     break;
                 }
             }
         }
     }
 
-    private Thread watchdogThread;
+    private Thread monitorThread;
 
     public synchronized void startup() {
-        if (watchdogThread != null) {
+        if (monitorThread != null) {
             return;
         }
-        watchdogThread = new Thread(new Monitor());
-        watchdogThread.setDaemon(true);
-        watchdogThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+        monitorThread = new Thread(new Monitor());
+        monitorThread.setDaemon(true);
+        monitorThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable ex) {
                 LOG.error("Monitor thread died!", ex);
-                watchdogThread = null;
+                monitorThread = null;
             }
         });
-        watchdogThread.start();
+        monitorThread.start();
         notifyAll();
     }
 
     public synchronized void shutdown() {
-        watchdogThread.interrupt();
+        monitorThread.interrupt();
         try {
-            watchdogThread.join();
-            watchdogThread = null;
+            monitorThread.join();
+            monitorThread = null;
             notifyAll();
         } catch (InterruptedException ex) {
             // ignore
@@ -55,7 +62,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     }
 
     public synchronized void awaitShutdown() throws InterruptedException {
-        while (watchdogThread != null) {
+        while (monitorThread != null) {
             wait();
         }
     }
