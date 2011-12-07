@@ -2,12 +2,11 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
+import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
@@ -20,9 +19,7 @@ import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.message.ResponseReaderImpl;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
-import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
 import au.edu.uq.cmm.aclslib.server.Facility;
@@ -32,12 +29,13 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
  * @author scrawley
  */
 public class RequestProcessor extends RequestProcessorBase {
-    
+    private AclsClient client;
     private AclsProxy proxy;
 
     public RequestProcessor(Configuration config, Socket socket, AclsProxy proxy) {
         super(config, socket);
         this.proxy = proxy;
+        this.client = new AclsClient(config);
     }
 
     protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
@@ -115,7 +113,7 @@ public class RequestProcessor extends RequestProcessorBase {
     private void processStaffLoginRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
         // Pass a 'staff' request as-is.
-        Response r = serverSendReceive(m);
+        Response r = client.serverSendReceive(m);
         switch (r.getType()) {
         case STAFF_LOGIN_ALLOWED:
         case STAFF_LOGIN_REFUSED:
@@ -132,7 +130,7 @@ public class RequestProcessor extends RequestProcessorBase {
     private void processSystemPasswordRequest(Facility f, Request m, BufferedWriter w) 
             throws IOException {
         // Pass a 'system password' request as-is.
-        Response r = serverSendReceive(m);
+        Response r = client.serverSendReceive(m);
         switch (r.getType()) {
         case SYSTEM_PASSWORD_YES:
         case SYSTEM_PASSWORD_NO:
@@ -183,7 +181,7 @@ public class RequestProcessor extends RequestProcessorBase {
         String notes = nr.getNotes();
         Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), 
                 f.getFacilityName() + ": " + notes);
-        Response r = serverSendReceive(vnr);
+        Response r = client.serverSendReceive(vnr);
         switch (r.getType()) {
         case NOTES_ALLOWED:
         case NOTES_REFUSED:
@@ -206,7 +204,7 @@ public class RequestProcessor extends RequestProcessorBase {
                 a.getUserName(), a.getAccount(), f.getFacilityId());
         {
             Response r;
-            Response vr = serverSendReceive(vl);
+            Response vr = client.serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_ACCOUNT_ALLOWED:
                 proxy.sendEvent(new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
@@ -237,7 +235,7 @@ public class RequestProcessor extends RequestProcessorBase {
                 l.getUserName(), l.getAccount(), f.getFacilityId());
         {
             Response r;
-            Response vr = serverSendReceive(vl);
+            Response vr = client.serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_LOGOUT_ALLOWED:
                 proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
@@ -267,7 +265,7 @@ public class RequestProcessor extends RequestProcessorBase {
                 l.getUserName(), l.getPassword(), f.getFacilityId());
         {
             Response r;
-            Response vr = serverSendReceive(vl);
+            Response vr = client.serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_LOGIN_ALLOWED:
                 LoginResponse vlr = (LoginResponse) vr;
@@ -287,32 +285,6 @@ public class RequestProcessor extends RequestProcessorBase {
                 r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
             }
             sendResponse(w, r);
-        }
-    }
-    
-    private Response serverSendReceive(Request request) {
-        return serverSendReceive(request, getConfig());
-    }
-
-    static Response serverSendReceive(Request request, Configuration config) {
-        try {
-            Socket aclsSocket = new Socket(
-                    config.getServerHost(), config.getServerPort());
-            try {
-                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
-                        aclsSocket.getOutputStream()));
-                InputStream is = aclsSocket.getInputStream();
-                sendRequest(w, request);
-                return new ResponseReaderImpl().readWithStatusLine(is);
-            } catch (ServerStatusException ex) {
-                LOG.error("ACLS server refused request: " + ex);
-                return new ProxyErrorResponse("Proxy got status error from ACLS server");
-            } finally {
-                aclsSocket.close();
-            }
-        } catch (IOException ex) {
-            LOG.warn("IO error while trying to talk to ACLS server", ex);
-            return new ProxyErrorResponse("Proxy cannot talk to ACLS server");
         }
     }
 }

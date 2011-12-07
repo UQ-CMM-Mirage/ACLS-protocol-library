@@ -11,7 +11,9 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
 
 
 /**
+ * A dummy ACLS server for testing the ACL proxy.
  * 
+ * @author scrawley
  */
 public class AclsDummyServer {
     private static final Logger LOG = Logger.getLogger(AclsDummyServer.class);

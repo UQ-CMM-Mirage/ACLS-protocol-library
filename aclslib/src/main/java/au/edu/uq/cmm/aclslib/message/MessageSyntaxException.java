@@ -6,9 +6,8 @@ package au.edu.uq.cmm.aclslib.message;
  * 
  * @author scrawley
  */
+@SuppressWarnings("serial")
 public class MessageSyntaxException extends AclsProtocolException {
-    private static final long serialVersionUID = 1642749026917856081L;
-
     public MessageSyntaxException(String msg) {
         super(msg);
     }

@@ -9,8 +9,11 @@ import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
 
+import au.edu.uq.cmm.aclslib.service.MonitoredThreadServiceBase;
+import au.edu.uq.cmm.aclslib.service.ServiceException;
 
-public class RequestListener implements Runnable {
+
+public class RequestListener extends MonitoredThreadServiceBase {
     private static final Logger LOG = Logger.getLogger(RequestListener.class);
     private Configuration config;
     private RequestProcessorFactory factory;
@@ -35,7 +38,7 @@ public class RequestListener implements Runnable {
                     " port " + ss.getLocalPort());
         } catch (IOException ex) {
             LOG.error("Error while creating / binding the proxy's server socket", ex);
-            throw new ServerException("Startup / restart failed", ex);
+            throw new ServiceException("Startup / restart failed", ex);
         }
         while (true) {
             try {
