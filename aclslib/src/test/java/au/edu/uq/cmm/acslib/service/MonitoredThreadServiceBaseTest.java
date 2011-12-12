@@ -69,7 +69,6 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
         service.shutdown();
         Assert.assertEquals("finished", status.pollFirst(2, TimeUnit.SECONDS));
-        
     }
     
     @Test
@@ -85,6 +84,5 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertEquals(null, status.pollFirst(2, TimeUnit.SECONDS));
         service.shutdown();
         Assert.assertEquals(null, status.pollFirst(2, TimeUnit.SECONDS));
-        
     }
 }
