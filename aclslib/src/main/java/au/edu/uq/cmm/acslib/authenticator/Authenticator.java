@@ -21,12 +21,12 @@ import au.edu.uq.cmm.aclslib.server.Configuration;
  */
 public class Authenticator {
     private static final Logger LOG = Logger.getLogger(Authenticator.class);
-    private Configuration config;
     private AclsClient client;
+    private String dummyFacility;
 
-    public Authenticator(Configuration config) {
-        this.config = config;
-        this.client = new AclsClient(config);
+    public Authenticator(String serverHost, int serverPort, String dummyFacility) {
+        this.client = new AclsClient(serverHost, serverPort);
+        this.dummyFacility = dummyFacility;
     }
 
     public static void main(String args[]) {
@@ -43,7 +43,10 @@ public class Authenticator {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
             }
-            boolean ok = new Authenticator(config).authenticate(user, password);
+            Authenticator authenticator = new Authenticator(
+                    config.getServerHost(), config.getServerPort(), 
+                    config.getDummyFacility());
+            boolean ok = authenticator.authenticate(user, password);
             if (ok) {
                 System.out.println("Credentials accepted");
             } else {
@@ -78,9 +81,8 @@ public class Authenticator {
     }
 
     private boolean virtualFacilityLogin(String userName, String password) {
-        String dummyFacilityId = config.getDummyFacility();
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, dummyFacilityId);
+                RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:

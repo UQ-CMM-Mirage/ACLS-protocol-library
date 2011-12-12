@@ -106,7 +106,7 @@ public class AclsProxy extends CompositeServiceBase {
 
     private void probeServer() throws ServiceException {
         LOG.info("Probing ACLS server");
-        AclsClient client = new AclsClient(config);
+        AclsClient client = new AclsClient(config.getServerHost(), config.getServerPort());
         Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {

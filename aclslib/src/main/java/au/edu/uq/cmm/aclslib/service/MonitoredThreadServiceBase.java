@@ -6,18 +6,26 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     private static final Logger LOG = Logger.getLogger(MonitoredThreadServiceBase.class);
     
     private class Monitor implements Runnable {
+        private Throwable lastException;
+        
         public void run() {
             while (true) {
                 Thread serviceThread = new Thread(MonitoredThreadServiceBase.this);
                 serviceThread.setDaemon(true);
                 serviceThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                     public void uncaughtException(Thread t, Throwable ex) {
+                        lastException = ex;
                         LOG.error("Service thread died", ex);
                     }
                 });
+                lastException = null;
                 serviceThread.start();
                 try {
                     serviceThread.join();
+                    if (!restartDecider.isRestartable(lastException)) {
+                        LOG.error("Service thread not restartable - bailing out");
+                        break;
+                    }
                 } catch (InterruptedException ex) {
                     serviceThread.interrupt();
                     try {
@@ -33,6 +41,16 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     }
 
     private Thread monitorThread;
+    private RestartDecider restartDecider;
+    
+    
+    protected MonitoredThreadServiceBase() {
+        this(new DefaultRestartDecider());
+    }
+    
+    protected MonitoredThreadServiceBase(RestartDecider restartDecider) {
+        this.restartDecider = restartDecider;
+    }
 
     public synchronized void startup() {
         if (monitorThread != null) {
