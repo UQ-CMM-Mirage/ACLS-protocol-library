@@ -8,8 +8,6 @@ import java.net.Socket;
 
 import org.apache.log4j.Logger;
 
-import au.edu.uq.cmm.aclslib.server.Configuration;
-
 /**
  * A simple low-level ACLS client class that handles a request / response
  * interaction between ourselves and an ACLS server (or proxy).
@@ -18,16 +16,21 @@ import au.edu.uq.cmm.aclslib.server.Configuration;
  */
 public class AclsClient {
     private static final Logger LOG = Logger.getLogger(AclsClient.class);
-    private final Configuration config;
+    private final String serverHost;
+    private final int serverPort;
     
-    public AclsClient(Configuration config) {
-        this.config = config;
+    public AclsClient(String serverHost, int serverPort) {
+        this.serverHost = serverHost;
+        this.serverPort = serverPort;
     }
+    
+//    public AclsClient(Configuration config) {
+//        this(config.getServerHost(), config.getServerPort());
+//    }
     
     public Response serverSendReceive(Request r) {
         try {
-            Socket aclsSocket = new Socket(
-                    config.getServerHost(), config.getServerPort());
+            Socket aclsSocket = new Socket(serverHost, serverPort);
             try {
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
