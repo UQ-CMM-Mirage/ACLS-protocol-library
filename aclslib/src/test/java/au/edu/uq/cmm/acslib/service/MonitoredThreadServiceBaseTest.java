@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Assert;
 import org.junit.Test;
 
+import au.edu.uq.cmm.aclslib.service.DefaultRestartDecider;
 import au.edu.uq.cmm.aclslib.service.MonitoredThreadServiceBase;
 import au.edu.uq.cmm.aclslib.service.Service;
 
@@ -19,6 +20,7 @@ public class MonitoredThreadServiceBaseTest {
         private final AtomicBoolean killSwitch;
         
         public TestService(Deque<String> status, AtomicBoolean killSwitch) {
+            super(new DefaultRestartDecider(1, 1, 500));
             this.status = status;
             this.killSwitch = killSwitch;
         }
