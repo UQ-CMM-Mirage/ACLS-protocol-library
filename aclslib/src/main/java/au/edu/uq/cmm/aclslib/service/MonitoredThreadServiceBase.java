@@ -7,10 +7,11 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     
     private class Monitor implements Runnable {
         private Throwable lastException;
+        private Thread serviceThread;
         
         public void run() {
             while (true) {
-                Thread serviceThread = new Thread(MonitoredThreadServiceBase.this);
+                serviceThread = new Thread(MonitoredThreadServiceBase.this);
                 serviceThread.setDaemon(true);
                 serviceThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                     public void uncaughtException(Thread t, Throwable ex) {
@@ -24,6 +25,9 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                     serviceThread.join();
                     if (!restartDecider.isRestartable(lastException)) {
                         LOG.error("Service thread not restartable - bailing out");
+                        synchronized (MonitoredThreadServiceBase.this) {
+                            state = State.FAILED;
+                        }
                         break;
                     }
                 } catch (InterruptedException ex) {
@@ -34,12 +38,22 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                         LOG.error("Monitor thread interrupted while waiting " +
                         		"for service thread to finish", ex);
                     }
+                    synchronized (MonitoredThreadServiceBase.this) {
+                        state = State.SHUT_DOWN;
+                    }
                     break;
                 }
             }
         }
+
+        private void interruptServiceThread() {
+            if (serviceThread != null) {
+                serviceThread.interrupt();
+            }
+        }
     }
 
+    private State state = State.INITIAL;
     private Thread monitorThread;
     private RestartDecider restartDecider;
     
@@ -52,36 +66,56 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
         this.restartDecider = restartDecider;
     }
 
-    public synchronized void startup() {
-        if (monitorThread != null) {
+    public synchronized final void startup() {
+        if (monitorThread != null && monitorThread.isAlive()) {
             return;
         }
-        monitorThread = new Thread(new Monitor());
+        final Monitor monitor = new Monitor();
+        monitorThread = new Thread(monitor);
         monitorThread.setDaemon(true);
         monitorThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable ex) {
                 LOG.error("Monitor thread died!", ex);
-                monitorThread = null;
+                synchronized (MonitoredThreadServiceBase.this) {
+                    monitor.interruptServiceThread();
+                    state = State.FAILED;
+                }
             }
         });
         monitorThread.start();
+        state = State.RUNNING;
         notifyAll();
     }
 
-    public synchronized void shutdown() {
-        monitorThread.interrupt();
+    public final void shutdown() {
+        Thread m;
+        synchronized (this) {
+            if (monitorThread == null) {
+                state = State.SHUT_DOWN;
+                return;
+            }
+            monitorThread.interrupt();
+            m = monitorThread;
+        }
         try {
-            monitorThread.join();
-            monitorThread = null;
-            notifyAll();
+            m.join();
+            synchronized (this) {
+                monitorThread = null;
+                state = State.SHUT_DOWN;
+                notifyAll();
+            }
         } catch (InterruptedException ex) {
             // ignore
         }
     }
 
-    public synchronized void awaitShutdown() throws InterruptedException {
+    public synchronized final void awaitShutdown() throws InterruptedException {
         while (monitorThread != null) {
             wait();
         }
+    }
+
+    public synchronized final State getState() {
+        return state;
     }
 }

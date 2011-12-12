@@ -15,12 +15,13 @@ import au.edu.uq.cmm.aclslib.service.Service;
 
 public class MonitoredThreadServiceBaseTest {
     
-    private static class TestService extends MonitoredThreadServiceBase {
+    private class MTSBTestService extends MonitoredThreadServiceBase {
         private final Deque<String> status;
         private final AtomicBoolean killSwitch;
         
-        public TestService(Deque<String> status, AtomicBoolean killSwitch) {
-            super(new DefaultRestartDecider(1, 1, 500));
+        public MTSBTestService(Deque<String> status, AtomicBoolean killSwitch,
+                int threshold, int initialThreshold, int throttleTime) {
+            super(new DefaultRestartDecider(threshold, initialThreshold, throttleTime));
             this.status = status;
             this.killSwitch = killSwitch;
         }
@@ -42,12 +43,12 @@ public class MonitoredThreadServiceBaseTest {
             status.add("finished");
         }
     }
-
+    
     @Test
     public void testStartupShutdown() throws InterruptedException {
         BlockingDeque<String> status = new LinkedBlockingDeque<String>();
         AtomicBoolean killSwitch = new AtomicBoolean();
-        Service service = new TestService(status, killSwitch);
+        Service service = new MTSBTestService(status, killSwitch, 1, 1, 500);
         Assert.assertNull(status.pollFirst());
         service.startup();
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
@@ -59,7 +60,7 @@ public class MonitoredThreadServiceBaseTest {
     public void testStartupDieRestartShutdown() throws InterruptedException {
         BlockingDeque<String> status = new LinkedBlockingDeque<String>();
         AtomicBoolean killSwitch = new AtomicBoolean();
-        Service service = new TestService(status, killSwitch);
+        Service service = new MTSBTestService(status, killSwitch, 1, 1, 500);
         Assert.assertNull(status.pollFirst());
         service.startup();
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
@@ -68,6 +69,22 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
         service.shutdown();
         Assert.assertEquals("finished", status.pollFirst(2, TimeUnit.SECONDS));
+        
+    }
+    
+    @Test
+    public void testStartupDieRestartShutdown2() throws InterruptedException {
+        BlockingDeque<String> status = new LinkedBlockingDeque<String>();
+        AtomicBoolean killSwitch = new AtomicBoolean();
+        Service service = new MTSBTestService(status, killSwitch, 1000, 1000, 500);
+        Assert.assertNull(status.pollFirst());
+        service.startup();
+        Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
+        killSwitch.set(true);
+        Assert.assertEquals("arrggghhh", status.pollFirst(2, TimeUnit.SECONDS));
+        Assert.assertEquals(null, status.pollFirst(2, TimeUnit.SECONDS));
+        service.shutdown();
+        Assert.assertEquals(null, status.pollFirst(2, TimeUnit.SECONDS));
         
     }
 }

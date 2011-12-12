@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 public abstract class ThreadServiceBase implements Service, Runnable {
     private static final Logger LOG = Logger.getLogger(ThreadServiceBase.class);
 
+    private boolean hasStarted;
     private Thread thread;
 
     public synchronized void startup() {
@@ -20,10 +21,14 @@ public abstract class ThreadServiceBase implements Service, Runnable {
             }
         });
         thread.start();
+        hasStarted = true;
         notifyAll();
     }
 
     public synchronized void shutdown() {
+        if (thread == null) {
+            return;
+        }
         thread.interrupt();
         try {
             thread.join();
@@ -39,4 +44,14 @@ public abstract class ThreadServiceBase implements Service, Runnable {
             wait();
         }
     }
+
+    public synchronized State getState() {
+        if (thread == null) {
+            return hasStarted ? State.SHUT_DOWN : State.INITIAL;
+        } else {
+            return thread.isAlive() ? State.RUNNING : State.FAILED;
+        }
+    }
+    
+    
 }

@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 
 public abstract class CompositeServiceBase implements Service {
     private static final Logger LOG = Logger.getLogger(CompositeServiceBase.class);
-    private boolean running = false;
+    private State state = State.INITIAL;
     private boolean changingState = false;
 
     public void startup() {
@@ -12,7 +12,7 @@ public abstract class CompositeServiceBase implements Service {
             if (changingState) {
                 throw new IllegalStateException("State change already in progress");
             }
-            if (running == true) {
+            if (state == State.RUNNING) {
                 return;
             }
             changingState = true;
@@ -22,7 +22,7 @@ public abstract class CompositeServiceBase implements Service {
         LOG.info("Startup completed");
         synchronized (this) {
             changingState = false;
-            running = true;
+            state = State.RUNNING;
             this.notifyAll();
         }
     }
@@ -32,7 +32,7 @@ public abstract class CompositeServiceBase implements Service {
             if (changingState) {
                 throw new IllegalStateException("State change already in progress");
             }
-            if (running == false) {
+            if (state != State.RUNNING) {
                 return;
             }
             changingState = true;
@@ -42,17 +42,21 @@ public abstract class CompositeServiceBase implements Service {
         LOG.info("Shutdown completed");
         synchronized (this) {
             changingState = false;
-            running = false;
+            state = State.SHUT_DOWN;
             this.notifyAll();
         }
     }
     
     public void awaitShutdown() throws InterruptedException {
         synchronized (this) {
-            while (running) {
+            while (state != State.SHUT_DOWN) {
                 wait();
             }
         }
+    }
+
+    public synchronized final State getState() {
+        return state;
     }
 
     protected abstract void doShutdown();
