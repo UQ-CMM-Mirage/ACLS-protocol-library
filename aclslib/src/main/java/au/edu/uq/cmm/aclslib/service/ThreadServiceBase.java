@@ -2,6 +2,14 @@ package au.edu.uq.cmm.aclslib.service;
 
 import org.apache.log4j.Logger;
 
+/**
+ * A Service class that extends this base class will inherit infrastructure 
+ * to run the service in a Thread, and methods to startup and shutdown the
+ * thread. The Service class merely needs to implement the {@link Runnable#run()} 
+ * method.
+ * 
+ * @author scrawley
+ */
 public abstract class ThreadServiceBase implements Service, Runnable {
     private static final Logger LOG = Logger.getLogger(ThreadServiceBase.class);
 

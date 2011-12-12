@@ -2,6 +2,15 @@ package au.edu.uq.cmm.aclslib.service;
 
 import org.apache.log4j.Logger;
 
+/**
+ * A Service class that extends this class gets infrastructure for starting up and
+ * shutting down a "composite" service, comprising other Service instances.  The
+ * class needs to implement the {@link #doStartup()} and {@link #doShutdown()}
+ * methods.  These typically just call {@link Service#startup()} and 
+ * {@link Service#shutdown()} on the component services.
+ * 
+ * @author scrawley
+ */
 public abstract class CompositeServiceBase implements Service {
     private static final Logger LOG = Logger.getLogger(CompositeServiceBase.class);
     private State state = State.INITIAL;

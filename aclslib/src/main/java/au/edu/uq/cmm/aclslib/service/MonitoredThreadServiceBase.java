@@ -2,6 +2,18 @@ package au.edu.uq.cmm.aclslib.service;
 
 import org.apache.log4j.Logger;
 
+/**
+ * A Service class that extends this base class will inherit infrastructure to
+ * run the service in a thread.  Additional infrastructure will automatically 
+ * restart the service thread if it dies with an unhandled exception.
+ * The Service class merely needs to implement the {@link Runnable#run()} 
+ * method.
+ * <p>
+ * The restart behavior can be customized by the subclass supplying a
+ * {@link RestartDecider} instance in the constructor.
+ * 
+ * @author scrawley
+ */
 public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     private static final Logger LOG = Logger.getLogger(MonitoredThreadServiceBase.class);
     
@@ -57,11 +69,17 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     private Thread monitorThread;
     private RestartDecider restartDecider;
     
-    
+    /**
+     * Instantiate using a default RestartDecider.
+     */
     protected MonitoredThreadServiceBase() {
         this(new DefaultRestartDecider());
     }
     
+    /**
+     * Instantiate using a supplied RestartDecider
+     * @param restartDecider
+     */
     protected MonitoredThreadServiceBase(RestartDecider restartDecider) {
         this.restartDecider = restartDecider;
     }
