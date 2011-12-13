@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import au.edu.uq.cmm.aclslib.service.Service;
+import au.edu.uq.cmm.aclslib.service.Service.State;
 import au.edu.uq.cmm.aclslib.service.ThreadServiceBase;
 
 public class ThreadServiceBaseTest {
@@ -47,9 +48,12 @@ public class ThreadServiceBaseTest {
         AtomicBoolean killSwitch = new AtomicBoolean();
         Service service = new TestService(status, killSwitch);
         Assert.assertNull(status.pollFirst());
+        Assert.assertEquals(State.INITIAL, service.getState());
         service.startup();
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
+        Assert.assertEquals(State.RUNNING, service.getState());
         service.shutdown();
+        Assert.assertEquals(State.SHUT_DOWN, service.getState());
         Assert.assertEquals("finished", status.pollFirst(2, TimeUnit.SECONDS));
     }
     
@@ -59,10 +63,22 @@ public class ThreadServiceBaseTest {
         AtomicBoolean killSwitch = new AtomicBoolean();
         Service service = new TestService(status, killSwitch);
         Assert.assertNull(status.pollFirst());
+        Assert.assertEquals(State.INITIAL, service.getState());
         service.startup();
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
+        Assert.assertEquals(State.RUNNING, service.getState());
         killSwitch.set(true);
         Assert.assertEquals("arrggghhh", status.pollFirst(2, TimeUnit.SECONDS));
+        
+        // (Deal with the fact that it takes time to get to the FAILED state.)
+        for (int i = 0; i < 10; i++) {
+            if (service.getState() == State.RUNNING) {
+                Thread.sleep(1);
+            }
+        }
+        Assert.assertEquals(State.FAILED, service.getState());
+        
         service.shutdown();
+        Assert.assertEquals(State.SHUT_DOWN, service.getState());
     }
 }

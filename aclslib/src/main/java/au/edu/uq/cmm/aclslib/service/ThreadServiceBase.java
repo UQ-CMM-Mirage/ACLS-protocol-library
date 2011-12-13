@@ -13,11 +13,12 @@ import org.apache.log4j.Logger;
 public abstract class ThreadServiceBase implements Service, Runnable {
     private static final Logger LOG = Logger.getLogger(ThreadServiceBase.class);
 
-    private boolean hasStarted;
+    private State state = State.INITIAL;
     private Thread thread;
 
     public synchronized void startup() {
         if (thread != null) {
+            state = State.RUNNING;
             return;
         }
         thread = new Thread(this);
@@ -25,23 +26,34 @@ public abstract class ThreadServiceBase implements Service, Runnable {
         thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable ex) {
                 LOG.error("Thread died", ex);
-                thread = null;
+                synchronized (ThreadServiceBase.this) {
+                    thread = null;
+                    state = State.FAILED;
+                }
             }
         });
+        state = State.RUNNING;
         thread.start();
-        hasStarted = true;
-        notifyAll();
     }
 
-    public synchronized void shutdown() {
-        if (thread == null) {
-            return;
+    public void shutdown() {
+        Thread t;
+        synchronized (this) {
+            if (thread == null) {
+                state = State.SHUT_DOWN;
+                notifyAll();
+                return;
+            }
+            thread.interrupt();
+            t = thread;
         }
-        thread.interrupt();
         try {
-            thread.join();
-            thread = null;
-            notifyAll();
+            t.join();
+            synchronized (this) {
+                state = State.SHUT_DOWN;
+                thread = null;
+                notifyAll();
+            }
         } catch (InterruptedException ex) {
             // ignore
         }
@@ -54,11 +66,7 @@ public abstract class ThreadServiceBase implements Service, Runnable {
     }
 
     public synchronized State getState() {
-        if (thread == null) {
-            return hasStarted ? State.SHUT_DOWN : State.INITIAL;
-        } else {
-            return thread.isAlive() ? State.RUNNING : State.FAILED;
-        }
+        return state;
     }
     
     

@@ -86,6 +86,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
 
     public synchronized final void startup() {
         if (monitorThread != null && monitorThread.isAlive()) {
+            state = State.RUNNING;
             return;
         }
         final Monitor monitor = new Monitor();
@@ -100,9 +101,8 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                 }
             }
         });
-        monitorThread.start();
         state = State.RUNNING;
-        notifyAll();
+        monitorThread.start();
     }
 
     public final void shutdown() {
@@ -110,6 +110,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
         synchronized (this) {
             if (monitorThread == null) {
                 state = State.SHUT_DOWN;
+                notifyAll();
                 return;
             }
             monitorThread.interrupt();
