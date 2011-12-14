@@ -2,6 +2,12 @@ package au.edu.uq.cmm.aclslib.server;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
+/**
+ * This class gives the configuration details of an ACLS facility
+ * for ACLS proxying and file grabbing.
+ * 
+ * @author scrawley
+ */
 public class Facility {
     
     private boolean useFullScreen;
@@ -13,6 +19,8 @@ public class Facility {
     private boolean useTimer;
     private String facilityName;
     private boolean dummy;
+    private boolean useFileLocks = true;
+    private int fileSettlingTime;
 
     public String getAccessName() {
         return accessName;
@@ -91,4 +99,19 @@ public class Facility {
         this.dummy = dummy;
     }
 
+    public boolean isUseFileLocks() {
+        return this.useFileLocks;
+    }
+
+    public void setUseFileLocks(boolean useFileLocks) {
+        this.useFileLocks = useFileLocks;
+    }
+    
+    public int getFileSettlingTime() {
+        return this.fileSettlingTime;
+    }
+
+    public void setFileSettlingTime(int fileSettlingTime) {
+        this.fileSettlingTime = fileSettlingTime;
+    }
 }

@@ -15,9 +15,10 @@ public abstract class CompositeServiceBase implements Service {
     private static final Logger LOG = Logger.getLogger(CompositeServiceBase.class);
     private State state = State.INITIAL;
     private boolean changingState = false;
+    private final Object lock = new Object();
 
     public void startup() {
-        synchronized (this) {
+        synchronized (lock) {
             if (changingState) {
                 throw new IllegalStateException("State change already in progress");
             }
@@ -29,15 +30,15 @@ public abstract class CompositeServiceBase implements Service {
         LOG.info("Starting up");
         doStartup();
         LOG.info("Startup completed");
-        synchronized (this) {
+        synchronized (lock) {
             changingState = false;
             state = State.RUNNING;
-            this.notifyAll();
+            lock.notifyAll();
         }
     }
 
-    public synchronized void shutdown() {
-        synchronized (this) {
+    public void shutdown() {
+        synchronized (lock) {
             if (changingState) {
                 throw new IllegalStateException("State change already in progress");
             }
@@ -49,23 +50,25 @@ public abstract class CompositeServiceBase implements Service {
         LOG.info("Shutting down");
         doShutdown();
         LOG.info("Shutdown completed");
-        synchronized (this) {
+        synchronized (lock) {
             changingState = false;
             state = State.SHUT_DOWN;
-            this.notifyAll();
+            lock.notifyAll();
         }
     }
     
     public void awaitShutdown() throws InterruptedException {
-        synchronized (this) {
+        synchronized (lock) {
             while (state != State.SHUT_DOWN) {
-                wait();
+                lock.wait();
             }
         }
     }
 
-    public synchronized final State getState() {
-        return state;
+    public final State getState() {
+        synchronized (lock) {
+            return state;
+        }
     }
 
     protected abstract void doShutdown();

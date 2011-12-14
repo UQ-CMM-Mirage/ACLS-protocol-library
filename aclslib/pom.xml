@@ -1,40 +1,51 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>au.edu.uq.cmm</groupId>
-  <artifactId>aclslib</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<groupId>au.edu.uq.cmm</groupId>
+	<artifactId>aclslib</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <name>aclslib</name>
-  <url>http://maven.apache.org</url>
+	<name>aclslib</name>
+	<url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>log4j</groupId>
-    	<artifactId>log4j</artifactId>
-    	<version>1.2.16</version>
-    </dependency>
-    <dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-mapper-asl</artifactId>
-    	<version>1.9.2</version>
-    </dependency>
-  </dependencies>
-  <description>A Java protocol library for encoding and decoding messages used in the ACLS login protocols.</description>
-  <inceptionYear>October 2011</inceptionYear>
-  <organization>
-  	<name>Centre for Microscopy and Microanalysis, University of Queensland</name>
-  </organization>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+	</dependencies>
+	<description>A Java protocol library for encoding and decoding messages used in the ACLS login protocols.</description>
+	<inceptionYear>2011</inceptionYear>
+	<organization>
+		<name>Centre for Microscopy and Microanalysis, University of Queensland</name>
+	</organization>
+	<distributionManagement>
+		<repository>
+			<id>metadata-net-releases</id>
+			<url>http://maven.metadata.net/artifactory/libs-releases-public</url>
+		</repository>
+		<snapshotRepository>
+			<id>metadata-net-snapshots</id>
+			<url>http://maven.metadata.net/artifactory/libs-snapshots-public</url>
+		</snapshotRepository>
+		<downloadUrl>http://maven.metadata.net/artifactory/repo/</downloadUrl>
+	</distributionManagement>
 </project>
