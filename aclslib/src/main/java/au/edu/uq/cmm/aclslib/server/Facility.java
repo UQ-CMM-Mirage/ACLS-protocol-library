@@ -13,6 +13,8 @@ public class Facility {
     private boolean useTimer;
     private String facilityName;
     private boolean dummy;
+    private boolean useFileLocks = true;
+    private int fileSettlingTime;
 
     public String getAccessName() {
         return accessName;
@@ -91,4 +93,19 @@ public class Facility {
         this.dummy = dummy;
     }
 
+    public boolean isUseFileLocks() {
+        return this.useFileLocks;
+    }
+
+    public void setUseFileLocks(boolean useFileLocks) {
+        this.useFileLocks = useFileLocks;
+    }
+    
+    public int getFileSettlingTime() {
+        return this.fileSettlingTime;
+    }
+
+    public void setFileSettlingTime(int fileSettlingTime) {
+        this.fileSettlingTime = fileSettlingTime;
+    }
 }
