@@ -37,7 +37,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                     serviceThread.join();
                     if (!restartDecider.isRestartable(lastException)) {
                         LOG.error("Service thread not restartable - bailing out");
-                        synchronized (MonitoredThreadServiceBase.this) {
+                        synchronized (lock) {
                             state = State.FAILED;
                         }
                         break;
@@ -50,7 +50,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                         LOG.error("Monitor thread interrupted while waiting " +
                         		"for service thread to finish", ex);
                     }
-                    synchronized (MonitoredThreadServiceBase.this) {
+                    synchronized (lock) {
                         state = State.SHUT_DOWN;
                     }
                     break;
@@ -68,6 +68,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     private State state = State.INITIAL;
     private Thread monitorThread;
     private RestartDecider restartDecider;
+    private final Object lock = new Object();
     
     /**
      * Instantiate using a default RestartDecider.
@@ -84,33 +85,35 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
         this.restartDecider = restartDecider;
     }
 
-    public synchronized final void startup() {
-        if (monitorThread != null && monitorThread.isAlive()) {
-            state = State.RUNNING;
-            return;
-        }
-        final Monitor monitor = new Monitor();
-        monitorThread = new Thread(monitor);
-        monitorThread.setDaemon(true);
-        monitorThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            public void uncaughtException(Thread t, Throwable ex) {
-                LOG.error("Monitor thread died!", ex);
-                synchronized (MonitoredThreadServiceBase.this) {
-                    monitor.interruptServiceThread();
-                    state = State.FAILED;
-                }
+    public final void startup() {
+        synchronized (lock) {
+            if (monitorThread != null && monitorThread.isAlive()) {
+                state = State.RUNNING;
+                return;
             }
-        });
-        state = State.RUNNING;
-        monitorThread.start();
+            final Monitor monitor = new Monitor();
+            monitorThread = new Thread(monitor);
+            monitorThread.setDaemon(true);
+            monitorThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread t, Throwable ex) {
+                    LOG.error("Monitor thread died!", ex);
+                    synchronized (lock) {
+                        monitor.interruptServiceThread();
+                        state = State.FAILED;
+                    }
+                }
+            });
+            state = State.RUNNING;
+            monitorThread.start();
+        }
     }
 
     public final void shutdown() {
         Thread m;
-        synchronized (this) {
+        synchronized (lock) {
             if (monitorThread == null) {
                 state = State.SHUT_DOWN;
-                notifyAll();
+                lock.notifyAll();
                 return;
             }
             monitorThread.interrupt();
@@ -118,23 +121,27 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
         }
         try {
             m.join();
-            synchronized (this) {
+            synchronized (lock) {
                 monitorThread = null;
                 state = State.SHUT_DOWN;
-                notifyAll();
+                lock.notifyAll();
             }
         } catch (InterruptedException ex) {
             // ignore
         }
     }
 
-    public synchronized final void awaitShutdown() throws InterruptedException {
-        while (monitorThread != null) {
-            wait();
+    public final void awaitShutdown() throws InterruptedException {
+        synchronized (lock) {
+            while (monitorThread != null) {
+                lock.wait();
+            }
         }
     }
 
-    public synchronized final State getState() {
-        return state;
+    public final State getState() {
+        synchronized (lock) {
+            return state;
+        }
     }
 }

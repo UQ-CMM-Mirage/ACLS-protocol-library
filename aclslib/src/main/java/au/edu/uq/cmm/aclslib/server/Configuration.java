@@ -10,7 +10,11 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-
+/**
+ * This class represents the configuration details of an ACLS proxy.
+ * 
+ * @author scrawley
+ */
 public class Configuration {
     private static final Logger LOG = Logger.getLogger(Configuration.class);
 
