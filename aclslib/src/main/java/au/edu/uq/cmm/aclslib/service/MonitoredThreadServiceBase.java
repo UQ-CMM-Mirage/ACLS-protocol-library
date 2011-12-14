@@ -37,7 +37,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                     serviceThread.join();
                     if (!restartDecider.isRestartable(lastException)) {
                         LOG.error("Service thread not restartable - bailing out");
-                        synchronized (MonitoredThreadServiceBase.this) {
+                        synchronized (lock) {
                             state = State.FAILED;
                         }
                         break;
@@ -50,7 +50,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                         LOG.error("Monitor thread interrupted while waiting " +
                         		"for service thread to finish", ex);
                     }
-                    synchronized (MonitoredThreadServiceBase.this) {
+                    synchronized (lock) {
                         state = State.SHUT_DOWN;
                     }
                     break;

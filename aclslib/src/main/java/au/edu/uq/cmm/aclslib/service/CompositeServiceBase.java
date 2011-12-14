@@ -37,7 +37,7 @@ public abstract class CompositeServiceBase implements Service {
         }
     }
 
-    public synchronized void shutdown() {
+    public void shutdown() {
         synchronized (lock) {
             if (changingState) {
                 throw new IllegalStateException("State change already in progress");
