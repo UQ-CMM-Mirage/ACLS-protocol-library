@@ -2,6 +2,12 @@ package au.edu.uq.cmm.aclslib.server;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
+/**
+ * This class gives the configuration details of an ACLS facility
+ * for ACLS proxying and file grabbing.
+ * 
+ * @author scrawley
+ */
 public class Facility {
     
     private boolean useFullScreen;
