@@ -15,33 +15,36 @@ public abstract class ThreadServiceBase implements Service, Runnable {
 
     private State state = State.INITIAL;
     private Thread thread;
+    private final Object lock = new Object();
 
-    public synchronized void startup() {
-        if (thread != null) {
-            state = State.RUNNING;
-            return;
-        }
-        thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            public void uncaughtException(Thread t, Throwable ex) {
-                LOG.error("Thread died", ex);
-                synchronized (ThreadServiceBase.this) {
-                    thread = null;
-                    state = State.FAILED;
-                }
+    public void startup() {
+        synchronized (lock) {
+            if (thread != null) {
+                state = State.RUNNING;
+                return;
             }
-        });
-        state = State.RUNNING;
-        thread.start();
+            thread = new Thread(this);
+            thread.setDaemon(true);
+            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread t, Throwable ex) {
+                    LOG.error("Thread died", ex);
+                    synchronized (lock) {
+                        thread = null;
+                        state = State.FAILED;
+                    }
+                }
+            });
+            state = State.RUNNING;
+            thread.start();
+        }
     }
 
     public void shutdown() {
         Thread t;
-        synchronized (this) {
+        synchronized (lock) {
             if (thread == null) {
                 state = State.SHUT_DOWN;
-                notifyAll();
+                lock.notifyAll();
                 return;
             }
             thread.interrupt();
@@ -49,24 +52,28 @@ public abstract class ThreadServiceBase implements Service, Runnable {
         }
         try {
             t.join();
-            synchronized (this) {
+            synchronized (lock) {
                 state = State.SHUT_DOWN;
                 thread = null;
-                notifyAll();
+                lock.notifyAll();
             }
         } catch (InterruptedException ex) {
             // ignore
         }
     }
 
-    public synchronized void awaitShutdown() throws InterruptedException {
-        while (thread != null) {
-            wait();
+    public void awaitShutdown() throws InterruptedException {
+        synchronized (lock) {
+            while (thread != null) {
+                lock.wait();
+            }
         }
     }
 
-    public synchronized State getState() {
-        return state;
+    public State getState() {
+        synchronized (lock) {
+            return state;
+        }
     }
     
     
