@@ -36,8 +36,9 @@ public interface Service {
      * to the shutdown state.
      * 
      * @throws ServiceException
+     * @throws InterruptedException 
      */
-    void shutdown() throws ServiceException;
+    void shutdown() throws ServiceException, InterruptedException;
     
     /**
      * Wait for the service to enter the shutdown state; e.g. in response to
