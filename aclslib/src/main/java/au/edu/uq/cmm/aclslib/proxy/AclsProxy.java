@@ -94,11 +94,13 @@ public class AclsProxy extends CompositeServiceBase {
         }
     }
 
-    protected void doShutdown() {
+    @Override
+    protected void doShutdown() throws ServiceException, InterruptedException {
         facilityChecker.shutdown();
         requestListener.shutdown();
     }
 
+    @Override
     protected void doStartup() throws ServiceException {
         requestListener.startup();
         facilityChecker.startup();
