@@ -1,4 +1,4 @@
-package au.edu.uq.cmm.acslib.authenticator;
+package au.edu.uq.cmm.aclslib.authenticator;
 
 import org.apache.log4j.Logger;
 
