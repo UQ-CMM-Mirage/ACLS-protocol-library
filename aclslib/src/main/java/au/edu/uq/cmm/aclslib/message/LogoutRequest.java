@@ -33,7 +33,7 @@ public class LogoutRequest extends AbstractRequest {
 
     public String unparse() {
         return generateHeader() + userName + DELIMITER + 
-                (password == null ? "" : (DELIMITER + password)) +
+                (password == null ? "" : (password + DELIMITER)) +
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 (getType() == RequestType.LOGOUT ? "" : 
                     (FACILITY_DELIMITER + facility + DELIMITER));

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,6 +41,13 @@ public class AclsProxy extends CompositeServiceBase {
     private Service facilityChecker;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
+    // The virtual logout requests requires a password (!?!), so we've 
+    // got no choice but to remember it.
+    // FIXME - this will need to be persisted if sessions are to survive 
+    // beyond a restart.
+    private Map<String, String> passwordCache = new HashMap<String, String>();
+  
+
     
     public AclsProxy(Configuration config) {
         this.config = config;
@@ -179,6 +187,10 @@ public class AclsProxy extends CompositeServiceBase {
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+
+    public Map<String, String> getPasswordCache() {
+        return passwordCache;
     }
 
 }

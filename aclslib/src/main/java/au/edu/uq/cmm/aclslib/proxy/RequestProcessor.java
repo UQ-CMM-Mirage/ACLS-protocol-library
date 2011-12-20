@@ -3,8 +3,6 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
@@ -34,13 +32,6 @@ public class RequestProcessor extends RequestProcessorBase {
     private AclsClient client;
     private AclsProxy proxy;
     
-    // The virtual logout requests requires a password (!?!), so we've 
-    // got no choice but to remember it.
-    // FIXME - this will need to be persisted if sessions are to survive 
-    // beyond a restart.
-    private Map<String, String> passwordCache = new HashMap<String, String>();
-  
-
     public RequestProcessor(Configuration config, Socket socket, AclsProxy proxy) {
         super(config, socket);
         this.proxy = proxy;
@@ -238,7 +229,7 @@ public class RequestProcessor extends RequestProcessorBase {
         // Turn a 'logout' request into a 'virtual_logout' request, and 
         // map the response to the appropriate 'logout' response.
         LogoutRequest l = (LogoutRequest) m;
-        String password = passwordCache.get(l.getUserName());
+        String password = proxy.getPasswordCache().get(l.getUserName());
         Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
                 l.getUserName(), password, l.getAccount(), f.getFacilityId());
         Response r;
@@ -273,7 +264,7 @@ public class RequestProcessor extends RequestProcessorBase {
         Response vr = client.serverSendReceive(vl);
         switch (vr.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:
-            passwordCache.put(l.getUserName(), l.getPassword());
+            proxy.getPasswordCache().put(l.getUserName(), l.getPassword());
             LoginResponse vlr = (LoginResponse) vr;
             r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
                     vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
