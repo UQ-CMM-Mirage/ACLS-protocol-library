@@ -39,8 +39,9 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
             case STAFF_LOGIN:
                 return readLoginRequest(scanner, type);
             case LOGOUT: 
-            case VIRTUAL_LOGOUT:
                 return readLogoutRequest(scanner, type);
+            case VIRTUAL_LOGOUT:
+                return readVirtualLogoutRequest(scanner, type);
             case ACCOUNT: 
             case VIRTUAL_ACCOUNT:
             case NEW_VIRTUAL_ACCOUNT:
@@ -96,6 +97,23 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         return new LoginRequest(type, userName, password, facility);
     }
 
+    private Request readVirtualLogoutRequest(Scanner scanner, RequestType type) {
+        String userName = nextName(scanner);
+        expect(scanner, AbstractMessage.DELIMITER);
+        String password = nextPassword(scanner);
+        expect(scanner, AbstractMessage.DELIMITER);
+        expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
+        String account = nextAccount(scanner);
+        String facility = null;
+        if (type == RequestType.VIRTUAL_LOGOUT) {
+            expect(scanner, AbstractMessage.DELIMITER);
+            expect(scanner, AbstractMessage.FACILITY_DELIMITER);
+            facility = nextSubfacility(scanner);
+        }
+        expectEnd(scanner);
+        return new LogoutRequest(type, userName, password, account, facility);
+    }
+
     private Request readLogoutRequest(Scanner scanner, RequestType type) {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
@@ -108,10 +126,8 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
             facility = nextSubfacility(scanner);
         }
         expectEnd(scanner);
-        return new LogoutRequest(type, userName, account, facility);
-    }
-
-    private Request readAccountRequest(Scanner scanner, RequestType type) {
+        return new LogoutRequest(type, userName, null, account, facility);
+    }private Request readAccountRequest(Scanner scanner, RequestType type) {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
