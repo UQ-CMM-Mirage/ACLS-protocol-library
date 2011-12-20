@@ -3,6 +3,8 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
@@ -31,6 +33,13 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 public class RequestProcessor extends RequestProcessorBase {
     private AclsClient client;
     private AclsProxy proxy;
+    
+    // The virtual logout requests requires a password (!?!), so we've 
+    // got no choice but to remember it.
+    // FIXME - this will need to be persisted if sessions are to survive 
+    // beyond a restart.
+    private Map<String, String> passwordCache = new HashMap<String, String>();
+  
 
     public RequestProcessor(Configuration config, Socket socket, AclsProxy proxy) {
         super(config, socket);
@@ -202,28 +211,26 @@ public class RequestProcessor extends RequestProcessorBase {
         AccountRequest a = (AccountRequest) m;
         Request vl = new AccountRequest(RequestType.VIRTUAL_ACCOUNT, 
                 a.getUserName(), a.getAccount(), f.getFacilityId());
-        {
-            Response r;
-            Response vr = client.serverSendReceive(vl);
-            switch (vr.getType()) {
-            case VIRTUAL_ACCOUNT_ALLOWED:
-                proxy.sendEvent(new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
-                r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
-                        ((AccountResponse) vr).getLoginTimestamp());
-                break;
-            case VIRTUAL_LOGOUT_REFUSED:
-                r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
-                break;
-            case COMMAND_ERROR:
-            case NO_RESPONSE:
-                r = vr;
-                break;
-            default:
-                LOG.error("Unexpected response for virtual account: " + vr.getType());
-                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
-            }
-            sendResponse(w, r);
+        Response r;
+        Response vr = client.serverSendReceive(vl);
+        switch (vr.getType()) {
+        case VIRTUAL_ACCOUNT_ALLOWED:
+            proxy.sendEvent(new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
+            r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
+                    ((AccountResponse) vr).getLoginTimestamp());
+            break;
+        case VIRTUAL_LOGOUT_REFUSED:
+            r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
+            break;
+        case COMMAND_ERROR:
+        case NO_RESPONSE:
+            r = vr;
+            break;
+        default:
+            LOG.error("Unexpected response for virtual account: " + vr.getType());
+            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
+        sendResponse(w, r);
     }
 
     private void processLogoutRequest(Facility f, Request m, BufferedWriter w) 
@@ -231,29 +238,28 @@ public class RequestProcessor extends RequestProcessorBase {
         // Turn a 'logout' request into a 'virtual_logout' request, and 
         // map the response to the appropriate 'logout' response.
         LogoutRequest l = (LogoutRequest) m;
+        String password = passwordCache.get(l.getUserName());
         Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
-                l.getUserName(), l.getAccount(), f.getFacilityId());
-        {
-            Response r;
-            Response vr = client.serverSendReceive(vl);
-            switch (vr.getType()) {
-            case VIRTUAL_LOGOUT_ALLOWED:
-                proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
-                r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
-                break;
-            case VIRTUAL_LOGOUT_REFUSED:
-                r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
-                break;
-            case COMMAND_ERROR:
-            case NO_RESPONSE:
-                r = vr;
-                break;
-            default:
-                LOG.error("Unexpected response for virtual logout: " + vr.getType());
-                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
-            }
-            sendResponse(w, r);
+                l.getUserName(), password, l.getAccount(), f.getFacilityId());
+        Response r;
+        Response vr = client.serverSendReceive(vl);
+        switch (vr.getType()) {
+        case VIRTUAL_LOGOUT_ALLOWED:
+            proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
+            r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+            break;
+        case VIRTUAL_LOGOUT_REFUSED:
+            r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+            break;
+        case COMMAND_ERROR:
+        case NO_RESPONSE:
+            r = vr;
+            break;
+        default:
+            LOG.error("Unexpected response for virtual logout: " + vr.getType());
+            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
+        sendResponse(w, r);
     }
 
     private void processLoginRequest(Facility f, Request m, BufferedWriter w) 
@@ -263,28 +269,27 @@ public class RequestProcessor extends RequestProcessorBase {
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.VIRTUAL_LOGIN, 
                 l.getUserName(), l.getPassword(), f.getFacilityId());
-        {
-            Response r;
-            Response vr = client.serverSendReceive(vl);
-            switch (vr.getType()) {
-            case VIRTUAL_LOGIN_ALLOWED:
-                LoginResponse vlr = (LoginResponse) vr;
-                r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
-                        vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
-                        vlr.getAccounts(), vlr.getCertification(), vlr.isOnsiteAssist());
-                break;
-            case VIRTUAL_LOGIN_REFUSED:
-                r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
-                break;
-            case COMMAND_ERROR:
-            case NO_RESPONSE:
-                r = vr;
-                break;
-            default:
-                LOG.error("Unexpected response for virtual login: " + vr.getType());
-                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
-            }
-            sendResponse(w, r);
+        Response r;
+        Response vr = client.serverSendReceive(vl);
+        switch (vr.getType()) {
+        case VIRTUAL_LOGIN_ALLOWED:
+            passwordCache.put(l.getUserName(), l.getPassword());
+            LoginResponse vlr = (LoginResponse) vr;
+            r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
+                    vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
+                    vlr.getAccounts(), vlr.getCertification(), vlr.isOnsiteAssist());
+            break;
+        case VIRTUAL_LOGIN_REFUSED:
+            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
+            break;
+        case COMMAND_ERROR:
+        case NO_RESPONSE:
+            r = vr;
+            break;
+        default:
+            LOG.error("Unexpected response for virtual login: " + vr.getType());
+            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
+        sendResponse(w, r);
     }
 }
