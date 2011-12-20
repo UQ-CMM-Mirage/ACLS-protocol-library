@@ -95,7 +95,7 @@ public class RequestReaderTest {
     @Test
     public void testReadVirtualLogout() {
         RequestReader r = reader();
-        Request req = r.read(source("12:steve|]acc1|?here|"));
+        Request req = r.read(source("12:steve|secret|]acc1|?here|"));
         assertEquals(RequestType.VIRTUAL_LOGOUT, req.getType());
         LogoutRequest logout = (LogoutRequest) req;
         assertEquals("steve", logout.getUserName());
