@@ -230,28 +230,33 @@ public class RequestProcessor extends RequestProcessorBase {
         // map the response to the appropriate 'logout' response.
         LogoutRequest l = (LogoutRequest) m;
         String password = proxy.getPasswordCache().get(l.getUserName());
-        if (password == null) {
-            LOG.debug("No cached password found for " + l.getUserName());
-        }
-        Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
-                l.getUserName(), password, l.getAccount(), f.getFacilityId());
         Response r;
-        Response vr = client.serverSendReceive(vl);
-        switch (vr.getType()) {
-        case VIRTUAL_LOGOUT_ALLOWED:
+        if (password == null) {
+            // We need a password to successfully log out of the ACLS server. 
+            // So if there isn't one we have to pretend we logged out.
+            LOG.debug("No cached password found for " + l.getUserName());
             proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
             r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
-            break;
-        case VIRTUAL_LOGOUT_REFUSED:
-            r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
-            break;
-        case COMMAND_ERROR:
-        case NO_RESPONSE:
-            r = vr;
-            break;
-        default:
-            LOG.error("Unexpected response for virtual logout: " + vr.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+        } else {
+            Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
+                    l.getUserName(), password, l.getAccount(), f.getFacilityId());
+            Response vr = client.serverSendReceive(vl);
+            switch (vr.getType()) {
+            case VIRTUAL_LOGOUT_ALLOWED:
+                proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
+                r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+                break;
+            case VIRTUAL_LOGOUT_REFUSED:
+                r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+                break;
+            case COMMAND_ERROR:
+            case NO_RESPONSE:
+                r = vr;
+                break;
+            default:
+                LOG.error("Unexpected response for virtual logout: " + vr.getType());
+                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            }
         }
         sendResponse(w, r);
     }
