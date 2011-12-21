@@ -230,6 +230,9 @@ public class RequestProcessor extends RequestProcessorBase {
         // map the response to the appropriate 'logout' response.
         LogoutRequest l = (LogoutRequest) m;
         String password = proxy.getPasswordCache().get(l.getUserName());
+        if (password == null) {
+            LOG.debug("No cached password found for " + l.getUserName());
+        }
         Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
                 l.getUserName(), password, l.getAccount(), f.getFacilityId());
         Response r;
@@ -265,6 +268,7 @@ public class RequestProcessor extends RequestProcessorBase {
         switch (vr.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:
             proxy.getPasswordCache().put(l.getUserName(), l.getPassword());
+            LOG.debug("Cached password for " + l.getUserName());
             LoginResponse vlr = (LoginResponse) vr;
             r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
                     vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
