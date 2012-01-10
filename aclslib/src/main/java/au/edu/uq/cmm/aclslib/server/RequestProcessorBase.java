@@ -61,7 +61,7 @@ public abstract class RequestProcessorBase  implements Runnable {
             // IP address.  If the IP address is not known to us, we can't map it
             // to a virtual facility id to log the user in ... so the only sensible
             // thing to do is send a status error.
-            Facility f = config.lookupFacilityByAddress(addr);
+            FacilityConfig f = config.lookupFacilityByAddress(addr);
             if (f == null) {
                 LOG.debug("Unknown facility: IP is " + addr);
                 w.append("Proxy has no facility details for " + addr + "\r\n").flush();
@@ -93,7 +93,7 @@ public abstract class RequestProcessorBase  implements Runnable {
         }
     }
 
-    protected abstract void doProcess(Facility f, Request m, BufferedWriter w) throws IOException;
+    protected abstract void doProcess(FacilityConfig f, Request m, BufferedWriter w) throws IOException;
 
     public Configuration getConfig() {
         return config;
