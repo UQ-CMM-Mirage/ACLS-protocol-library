@@ -2,7 +2,7 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.util.EventObject;
 
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 
 @SuppressWarnings("serial")
 public abstract class AclsFacilityEvent extends EventObject {
@@ -10,14 +10,10 @@ public abstract class AclsFacilityEvent extends EventObject {
     private String userName;
     private String account;
 
-    public AclsFacilityEvent(Facility source, String userName, String account) {
+    public AclsFacilityEvent(FacilityConfig source, String userName, String account) {
         super(source);
         this.userName = userName;
         this.account = account;
-    }
-    
-    public Facility getFacility() {
-        return (Facility) getSource();
     }
 
     public String getUserName() {
@@ -26,5 +22,9 @@ public abstract class AclsFacilityEvent extends EventObject {
 
     public String getAccount() {
         return account;
+    }
+
+    public String getFacilityId() {
+        return ((FacilityConfig) getSource()).getFacilityId();
     }
 }

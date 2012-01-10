@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -22,7 +23,7 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.SimpleFacilityConfigImpl;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
 import au.edu.uq.cmm.aclslib.service.CompositeServiceBase;
@@ -40,6 +41,13 @@ public class AclsProxy extends CompositeServiceBase {
     private Service facilityChecker;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
+    // The virtual logout requests requires a password (!?!), so we've 
+    // got no choice but to remember it.
+    // FIXME - this will need to be persisted if sessions are to survive 
+    // beyond a restart.
+    private Map<String, String> passwordCache = new HashMap<String, String>();
+  
+
     
     public AclsProxy(Configuration config) {
         this.config = config;
@@ -130,9 +138,9 @@ public class AclsProxy extends CompositeServiceBase {
         Configuration sampleConfig = new Configuration();
         sampleConfig.setServerHost("aclsHost.example.com");
         sampleConfig.setProxyHost("proxyHost.example.com");
-        Map<String, Facility> facilityMap = new TreeMap<String, Facility>();
+        Map<String, SimpleFacilityConfigImpl> facilityMap = new TreeMap<String, SimpleFacilityConfigImpl>();
         sampleConfig.setFacilities(facilityMap);
-        Facility f1 = new Facility();
+        SimpleFacilityConfigImpl f1 = new SimpleFacilityConfigImpl();
         f1.setAccessName("jim");
         f1.setAccessPassword("secret");
         f1.setFolderName("/trollscope");
@@ -141,7 +149,7 @@ public class AclsProxy extends CompositeServiceBase {
         f1.setFacilityName("Trollscope 2000T");
         f1.setUseFullScreen(true);
         facilityMap.put("192.168.1.1", f1);
-        Facility f2 = new Facility();
+        SimpleFacilityConfigImpl f2 = new SimpleFacilityConfigImpl();
         f2.setFacilityId("F002");
         f2.setFacilityName("The hatstand in the corner");
         f2.setUseFullScreen(false);
@@ -179,6 +187,10 @@ public class AclsProxy extends CompositeServiceBase {
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+
+    public Map<String, String> getPasswordCache() {
+        return passwordCache;
     }
 
 }

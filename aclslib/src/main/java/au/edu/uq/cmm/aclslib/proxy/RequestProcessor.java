@@ -3,8 +3,6 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
@@ -24,7 +22,7 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 /**
@@ -34,20 +32,13 @@ public class RequestProcessor extends RequestProcessorBase {
     private AclsClient client;
     private AclsProxy proxy;
     
-    // The virtual logout requests requires a password (!?!), so we've 
-    // got no choice but to remember it.
-    // FIXME - this will need to be persisted if sessions are to survive 
-    // beyond a restart.
-    private Map<String, String> passwordCache = new HashMap<String, String>();
-  
-
     public RequestProcessor(Configuration config, Socket socket, AclsProxy proxy) {
         super(config, socket);
         this.proxy = proxy;
         this.client = new AclsClient(config.getServerHost(), config.getServerPort());
     }
 
-    protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
+    protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) throws IOException {
         // These methods will deal with the server interaction (if required)
         // and create and return the relevant response.
         LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
@@ -98,7 +89,7 @@ public class RequestProcessor extends RequestProcessorBase {
         }
     }
 
-    private void processUseFullScreenRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseFullScreenRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
         Response r = new YesNoResponse(f.isUseFullScreen() ? 
@@ -106,7 +97,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processNetDriveRequest(Facility f, Request m, BufferedWriter w) 
+    private void processNetDriveRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses facility-specific configuration settings
         Response r;
@@ -119,7 +110,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processStaffLoginRequest(Facility f, Request m, BufferedWriter w) 
+    private void processStaffLoginRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Pass a 'staff' request as-is.
         Response r = client.serverSendReceive(m);
@@ -136,7 +127,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processSystemPasswordRequest(Facility f, Request m, BufferedWriter w) 
+    private void processSystemPasswordRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Pass a 'system password' request as-is.
         Response r = client.serverSendReceive(m);
@@ -153,14 +144,14 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processUseVirtualRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseVirtualRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a hard-wired response.  We don't support proxying of virtual facilities.
         Response r = new YesNoResponse(ResponseType.USE_VIRTUAL, false);
         sendResponse(w, r);
     }
 
-    private void processUseTimerRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseTimerRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
         Response r = new YesNoResponse(f.isUseTimer() ? 
@@ -168,7 +159,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processUseProjectRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseProjectRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a general configuration setting
         Response r = new YesNoResponse(getConfig().isUseProject() ? 
@@ -176,14 +167,14 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processFacilityRequest(Facility f, Request m, BufferedWriter w) 
+    private void processFacilityRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
         Response r = new FacilityNameResponse(f.getFacilityName());
         sendResponse(w, r);
     }
 
-    private void processNotesRequest(Facility f, Request m, BufferedWriter w) 
+    private void processNotesRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Modify a 'notes' request by adding the facility name to the notes text.
         NoteRequest nr = (NoteRequest) m;
@@ -204,7 +195,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processAccountRequest(Facility f, Request m, BufferedWriter w) 
+    private void processAccountRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Turn an 'account' request into a 'virtual_account' request, and 
         // map the response to the appropriate 'logout' response.
@@ -233,36 +224,44 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processLogoutRequest(Facility f, Request m, BufferedWriter w) 
+    private void processLogoutRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Turn a 'logout' request into a 'virtual_logout' request, and 
         // map the response to the appropriate 'logout' response.
         LogoutRequest l = (LogoutRequest) m;
-        String password = passwordCache.get(l.getUserName());
-        Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
-                l.getUserName(), password, l.getAccount(), f.getFacilityId());
+        String password = proxy.getPasswordCache().get(l.getUserName());
         Response r;
-        Response vr = client.serverSendReceive(vl);
-        switch (vr.getType()) {
-        case VIRTUAL_LOGOUT_ALLOWED:
+        if (password == null) {
+            // We need a password to successfully log out of the ACLS server. 
+            // So if there isn't one we have to pretend we logged out.
+            LOG.debug("No cached password found for " + l.getUserName());
             proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
             r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
-            break;
-        case VIRTUAL_LOGOUT_REFUSED:
-            r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
-            break;
-        case COMMAND_ERROR:
-        case NO_RESPONSE:
-            r = vr;
-            break;
-        default:
-            LOG.error("Unexpected response for virtual logout: " + vr.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+        } else {
+            Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
+                    l.getUserName(), password, l.getAccount(), f.getFacilityId());
+            Response vr = client.serverSendReceive(vl);
+            switch (vr.getType()) {
+            case VIRTUAL_LOGOUT_ALLOWED:
+                proxy.sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
+                r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+                break;
+            case VIRTUAL_LOGOUT_REFUSED:
+                r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+                break;
+            case COMMAND_ERROR:
+            case NO_RESPONSE:
+                r = vr;
+                break;
+            default:
+                LOG.error("Unexpected response for virtual logout: " + vr.getType());
+                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            }
         }
         sendResponse(w, r);
     }
 
-    private void processLoginRequest(Facility f, Request m, BufferedWriter w) 
+    private void processLoginRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Turn a 'login' request into a 'virtual_login' request, and 
         // map the response to the appropriate 'login' response.
@@ -273,7 +272,8 @@ public class RequestProcessor extends RequestProcessorBase {
         Response vr = client.serverSendReceive(vl);
         switch (vr.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:
-            passwordCache.put(l.getUserName(), l.getPassword());
+            proxy.getPasswordCache().put(l.getUserName(), l.getPassword());
+            LOG.debug("Cached password for " + l.getUserName());
             LoginResponse vlr = (LoginResponse) vr;
             r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
                     vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),

@@ -12,7 +12,7 @@ import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 import au.edu.uq.cmm.aclslib.service.ThreadServiceBase;
 
@@ -50,7 +50,7 @@ public class FacilityChecker extends ThreadServiceBase {
         List<String> facilityIds = queryFacilityList();
         LOG.debug("Facility list - " + facilityIds);
         for (String id : facilityIds) {
-            Facility facility = config.lookupFacilityById(id);
+            FacilityConfig facility = config.lookupFacilityById(id);
             if (facility == null) {
                 LOG.error("The server has a facility that we don't recognize: " + id);
             }

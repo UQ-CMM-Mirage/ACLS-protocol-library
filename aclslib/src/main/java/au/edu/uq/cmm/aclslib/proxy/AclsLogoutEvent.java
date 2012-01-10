@@ -1,17 +1,17 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 
 @SuppressWarnings("serial")
 public class AclsLogoutEvent extends AclsFacilityEvent {
     
-    public AclsLogoutEvent(Facility source, String userName, String account) {
+    public AclsLogoutEvent(FacilityConfig source, String userName, String account) {
         super(source, userName, account);
     }
 
     @Override
     public String toString() {
-        return "AclsLogoutEvent [facility=" + getFacility().getFacilityName()
+        return "AclsLogoutEvent [facility=" + getFacilityId()
                 + ", userName=" + getUserName() + ", account="
                 + getAccount() + "]";
     }
