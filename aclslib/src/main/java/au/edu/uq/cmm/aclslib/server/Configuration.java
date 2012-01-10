@@ -18,7 +18,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class Configuration {
     private static final Logger LOG = Logger.getLogger(Configuration.class);
 
-    private Map<String, Facility> facilityMap;
+    private Map<String, SimpleFacilityConfigImpl> facilityMap;
     private int proxyPort = 1024;
     private int serverPort = 1024;
     private String serverHost;
@@ -26,7 +26,7 @@ public class Configuration {
     private boolean useProject;
     
 
-    public Map<String, Facility> getFacilities() {
+    public Map<String, SimpleFacilityConfigImpl> getFacilities() {
         return facilityMap;
     }
 
@@ -46,16 +46,16 @@ public class Configuration {
         return useProject;
     }
 
-    public Facility lookupFacilityByAddress(InetAddress addr) {
-        Facility facility = facilityMap.get(addr.getHostAddress());
+    public FacilityConfig lookupFacilityByAddress(InetAddress addr) {
+        FacilityConfig facility = facilityMap.get(addr.getHostAddress());
         if (facility == null) {
             facility = facilityMap.get(addr.getHostName());
         }
         return facility;
     }
 
-    public Facility lookupFacilityById(String id) {
-        for (Facility f : facilityMap.values()) {
+    public FacilityConfig lookupFacilityById(String id) {
+        for (FacilityConfig f : facilityMap.values()) {
             if (id.equals(f.getFacilityId())) {
                 return f;
             }
@@ -63,7 +63,7 @@ public class Configuration {
         return null;
     }
 
-    public void setFacilities(Map<String, Facility> facilityMap) {
+    public void setFacilities(Map<String, SimpleFacilityConfigImpl> facilityMap) {
         this.facilityMap = facilityMap;
     }
 
@@ -116,7 +116,7 @@ public class Configuration {
     }
 
     public String getDummyFacility() {
-        for (Facility facility : facilityMap.values()) {
+        for (FacilityConfig facility : facilityMap.values()) {
             if (facility.isDummy()) {
                 return facility.getFacilityId();
             }

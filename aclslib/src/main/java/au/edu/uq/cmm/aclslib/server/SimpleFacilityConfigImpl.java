@@ -8,7 +8,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  * 
  * @author scrawley
  */
-public class Facility {
+public class SimpleFacilityConfigImpl implements FacilityConfig {
     
     private boolean useFullScreen;
     private String driveName;

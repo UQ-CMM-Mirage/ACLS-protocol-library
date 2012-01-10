@@ -23,7 +23,7 @@ import au.edu.uq.cmm.aclslib.message.SystemPasswordResponse;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.proxy.AclsProxy;
 import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 /**
@@ -42,7 +42,7 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
         super(config, socket);
     }
 
-    protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
+    protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) throws IOException {
         LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
         switch (m.getType()) {
         case VIRTUAL_LOGIN:

@@ -22,7 +22,7 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.Facility;
+import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 /**
@@ -38,7 +38,7 @@ public class RequestProcessor extends RequestProcessorBase {
         this.client = new AclsClient(config.getServerHost(), config.getServerPort());
     }
 
-    protected void doProcess(Facility f, Request m, BufferedWriter w) throws IOException {
+    protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) throws IOException {
         // These methods will deal with the server interaction (if required)
         // and create and return the relevant response.
         LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
@@ -89,7 +89,7 @@ public class RequestProcessor extends RequestProcessorBase {
         }
     }
 
-    private void processUseFullScreenRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseFullScreenRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
         Response r = new YesNoResponse(f.isUseFullScreen() ? 
@@ -97,7 +97,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processNetDriveRequest(Facility f, Request m, BufferedWriter w) 
+    private void processNetDriveRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses facility-specific configuration settings
         Response r;
@@ -110,7 +110,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processStaffLoginRequest(Facility f, Request m, BufferedWriter w) 
+    private void processStaffLoginRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Pass a 'staff' request as-is.
         Response r = client.serverSendReceive(m);
@@ -127,7 +127,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processSystemPasswordRequest(Facility f, Request m, BufferedWriter w) 
+    private void processSystemPasswordRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Pass a 'system password' request as-is.
         Response r = client.serverSendReceive(m);
@@ -144,14 +144,14 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processUseVirtualRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseVirtualRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a hard-wired response.  We don't support proxying of virtual facilities.
         Response r = new YesNoResponse(ResponseType.USE_VIRTUAL, false);
         sendResponse(w, r);
     }
 
-    private void processUseTimerRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseTimerRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
         Response r = new YesNoResponse(f.isUseTimer() ? 
@@ -159,7 +159,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processUseProjectRequest(Facility f, Request m, BufferedWriter w) 
+    private void processUseProjectRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a general configuration setting
         Response r = new YesNoResponse(getConfig().isUseProject() ? 
@@ -167,14 +167,14 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processFacilityRequest(Facility f, Request m, BufferedWriter w) 
+    private void processFacilityRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Uses a facility-specific configuration setting
         Response r = new FacilityNameResponse(f.getFacilityName());
         sendResponse(w, r);
     }
 
-    private void processNotesRequest(Facility f, Request m, BufferedWriter w) 
+    private void processNotesRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Modify a 'notes' request by adding the facility name to the notes text.
         NoteRequest nr = (NoteRequest) m;
@@ -195,7 +195,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processAccountRequest(Facility f, Request m, BufferedWriter w) 
+    private void processAccountRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Turn an 'account' request into a 'virtual_account' request, and 
         // map the response to the appropriate 'logout' response.
@@ -224,7 +224,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processLogoutRequest(Facility f, Request m, BufferedWriter w) 
+    private void processLogoutRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Turn a 'logout' request into a 'virtual_logout' request, and 
         // map the response to the appropriate 'logout' response.
@@ -261,7 +261,7 @@ public class RequestProcessor extends RequestProcessorBase {
         sendResponse(w, r);
     }
 
-    private void processLoginRequest(Facility f, Request m, BufferedWriter w) 
+    private void processLoginRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws IOException {
         // Turn a 'login' request into a 'virtual_login' request, and 
         // map the response to the appropriate 'login' response.
