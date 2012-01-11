@@ -23,6 +23,7 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
+import au.edu.uq.cmm.aclslib.server.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.server.SimpleFacilityConfigImpl;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
@@ -75,7 +76,7 @@ public class AclsProxy extends CompositeServiceBase {
             configFile = args[0];
         }
         try {
-            Configuration config = Configuration.loadConfiguration(configFile);
+            Configuration config = StaticConfiguration.loadConfiguration(configFile);
             if (config == null) {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
@@ -135,7 +136,7 @@ public class AclsProxy extends CompositeServiceBase {
     }
 
     public static void createSampleConfigurationFile() {
-        Configuration sampleConfig = new Configuration();
+        StaticConfiguration sampleConfig = new StaticConfiguration();
         sampleConfig.setServerHost("aclsHost.example.com");
         sampleConfig.setProxyHost("proxyHost.example.com");
         Map<String, SimpleFacilityConfigImpl> facilityMap = new TreeMap<String, SimpleFacilityConfigImpl>();

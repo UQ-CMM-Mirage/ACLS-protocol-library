@@ -11,6 +11,7 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
+import au.edu.uq.cmm.aclslib.server.StaticConfiguration;
 
 /**
  * The Authenticator class uses an ACLS server as a means of checking a
@@ -38,7 +39,7 @@ public class Authenticator {
         String user = args[1];
         String password = args[2];
         try {
-            Configuration config = Configuration.loadConfiguration(configFile);
+            Configuration config = StaticConfiguration.loadConfiguration(configFile);
             if (config == null) {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
