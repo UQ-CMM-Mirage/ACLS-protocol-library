@@ -18,7 +18,7 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
  */
 public class AclsDummyServer {
     private static final Logger LOG = Logger.getLogger(AclsDummyServer.class);
-    private static Configuration config;   
+    private static StaticConfiguration config;   
 
     public static void main(String[] args) {
         String configFile = null;

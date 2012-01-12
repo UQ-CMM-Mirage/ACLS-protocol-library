@@ -30,5 +30,7 @@ public interface FacilityConfig {
     public abstract boolean isUseFileLocks();
 
     public abstract int getFileSettlingTime();
+    
+    public abstract String getAddress();
 
 }

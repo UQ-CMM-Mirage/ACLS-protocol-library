@@ -59,7 +59,12 @@ public class StaticConfiguration extends ConfigurationBase implements Configurat
             } else if (!cf.canRead()) {
                 LOG.error("Configuration file '" + cf + "' is not readable");
             } else {
-                return mapper.readValue(cf, StaticConfiguration.class);
+                StaticConfiguration res = mapper.readValue(cf, StaticConfiguration.class);
+                for (Map.Entry<String, SimpleFacilityConfigImpl> entry : 
+                            res.facilityMap.entrySet()) {
+                    entry.getValue().setAddress(entry.getKey());
+                }
+                return res;
             }
         } catch (JsonParseException e) {
             LOG.error(e);

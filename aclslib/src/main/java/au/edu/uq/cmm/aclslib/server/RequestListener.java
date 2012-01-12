@@ -32,9 +32,10 @@ public class RequestListener extends MonitoredThreadServiceBase {
     public void run() {
         ServerSocket ss;
         try {
-            // FIXME - parameterize the bind address.
+            LOG.debug("Starting proxy listener for address = '" + bindAddr +
+                    "', port = " + port);
             ss = new ServerSocket(port, 5, bindAddr);
-            LOG.debug("Proxy listening for requests on " + ss.getInetAddress() + 
+            LOG.debug("Proxy is listening for requests on " + ss.getInetAddress() + 
                     " port " + ss.getLocalPort());
         } catch (IOException ex) {
             LOG.error("Error while creating / binding the proxy's server socket", ex);

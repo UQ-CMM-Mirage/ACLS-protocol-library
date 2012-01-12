@@ -21,6 +21,7 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
     private boolean dummy;
     private boolean useFileLocks = true;
     private int fileSettlingTime;
+    private String address;
 
     public String getAccessName() {
         return accessName;
@@ -113,5 +114,14 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
 
     public void setFileSettlingTime(int fileSettlingTime) {
         this.fileSettlingTime = fileSettlingTime;
+    }
+
+    @JsonIgnore
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
