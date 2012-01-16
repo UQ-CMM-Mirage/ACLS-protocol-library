@@ -1,12 +1,12 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.net.Socket;
 
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
+import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
@@ -38,7 +38,8 @@ public class RequestProcessor extends RequestProcessorBase {
         this.client = new AclsClient(config.getServerHost(), config.getServerPort());
     }
 
-    protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) throws IOException {
+    protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) 
+            throws AclsException {
         // These methods will deal with the server interaction (if required)
         // and create and return the relevant response.
         LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
@@ -90,7 +91,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processUseFullScreenRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Uses a facility-specific configuration setting
         Response r = new YesNoResponse(f.isUseFullScreen() ? 
                 ResponseType.FULL_SCREEN_YES : ResponseType.FULL_SCREEN_NO);
@@ -98,7 +99,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processNetDriveRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Uses facility-specific configuration settings
         Response r;
         if (f.isUseNetDrive()) {
@@ -111,7 +112,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processStaffLoginRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Pass a 'staff' request as-is.
         Response r = client.serverSendReceive(m);
         switch (r.getType()) {
@@ -128,7 +129,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processSystemPasswordRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Pass a 'system password' request as-is.
         Response r = client.serverSendReceive(m);
         switch (r.getType()) {
@@ -145,14 +146,14 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processUseVirtualRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Uses a hard-wired response.  We don't support proxying of virtual facilities.
         Response r = new YesNoResponse(ResponseType.USE_VIRTUAL, false);
         sendResponse(w, r);
     }
 
     private void processUseTimerRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Uses a facility-specific configuration setting
         Response r = new YesNoResponse(f.isUseTimer() ? 
                 ResponseType.TIMER_YES : ResponseType.TIMER_NO);
@@ -160,7 +161,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processUseProjectRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Uses a general configuration setting
         Response r = new YesNoResponse(getConfig().isUseProject() ? 
                 ResponseType.PROJECT_YES : ResponseType.PROJECT_NO);
@@ -168,14 +169,14 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processFacilityRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Uses a facility-specific configuration setting
         Response r = new FacilityNameResponse(f.getFacilityName());
         sendResponse(w, r);
     }
 
     private void processNotesRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Modify a 'notes' request by adding the facility name to the notes text.
         NoteRequest nr = (NoteRequest) m;
         String notes = nr.getNotes();
@@ -196,7 +197,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processAccountRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Turn an 'account' request into a 'virtual_account' request, and 
         // map the response to the appropriate 'logout' response.
         AccountRequest a = (AccountRequest) m;
@@ -225,7 +226,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processLogoutRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Turn a 'logout' request into a 'virtual_logout' request, and 
         // map the response to the appropriate 'logout' response.
         LogoutRequest l = (LogoutRequest) m;
@@ -262,7 +263,7 @@ public class RequestProcessor extends RequestProcessorBase {
     }
 
     private void processLoginRequest(FacilityConfig f, Request m, BufferedWriter w) 
-            throws IOException {
+            throws AclsException {
         // Turn a 'login' request into a 'virtual_login' request, and 
         // map the response to the appropriate 'login' response.
         LoginRequest l = (LoginRequest) m;

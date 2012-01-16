@@ -3,6 +3,7 @@ package au.edu.uq.cmm.aclslib.authenticator;
 import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.message.AclsClient;
+import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -11,6 +12,7 @@ import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
+import au.edu.uq.cmm.aclslib.server.StaticConfiguration;
 
 /**
  * The Authenticator class uses an ACLS server as a means of checking a
@@ -38,7 +40,7 @@ public class Authenticator {
         String user = args[1];
         String password = args[2];
         try {
-            Configuration config = Configuration.loadConfiguration(configFile);
+            Configuration config = StaticConfiguration.loadConfiguration(configFile);
             if (config == null) {
                 LOG.info("Can't read/load proxy configuration file");
                 System.exit(2);
@@ -58,7 +60,7 @@ public class Authenticator {
         }
     }
 
-    public boolean authenticate(String userName, String password) {
+    public boolean authenticate(String userName, String password) throws AclsException {
         if (useVirtual()) {
             return virtualFacilityLogin(userName, password);
         } else {
@@ -66,7 +68,7 @@ public class Authenticator {
         }
     }
     
-    private boolean useVirtual() {
+    private boolean useVirtual() throws AclsException {
         Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
@@ -80,7 +82,7 @@ public class Authenticator {
         }
     }
 
-    private boolean virtualFacilityLogin(String userName, String password) {
+    private boolean virtualFacilityLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
                 RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility);
         Response response = client.serverSendReceive(request);
@@ -96,7 +98,7 @@ public class Authenticator {
         }
     }
     
-    private boolean realFacilityLogin(String userName, String password) {
+    private boolean realFacilityLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
                 RequestType.LOGIN, userName, password, null);
         Response response = client.serverSendReceive(request);

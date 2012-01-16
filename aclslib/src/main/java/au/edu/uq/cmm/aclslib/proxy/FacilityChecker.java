@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.message.AclsClient;
+import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.FacilityCountResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityListResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -30,7 +31,15 @@ public class FacilityChecker extends ThreadServiceBase {
 
     public void run() {
         while (true) {
-            checkFacilities();
+            try {
+                checkFacilities();
+            } catch (AclsException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Facility check failed", ex);
+                } else {
+                    LOG.info("Facility check failed: " + ex.getMessage());
+                }
+            }
             try {
                 Thread.sleep(5 * 60 * 1000);
             } catch (InterruptedException ex) {
@@ -39,7 +48,7 @@ public class FacilityChecker extends ThreadServiceBase {
         } 
     }
 
-    private void checkFacilities() {
+    private void checkFacilities() throws AclsException {
         int newCount = queryFacilityCount();
         if (facilityCount == newCount) {
             LOG.debug("Facility count hasn't changed");
@@ -57,7 +66,7 @@ public class FacilityChecker extends ThreadServiceBase {
         }
     }
 
-    private List<String> queryFacilityList() {
+    private List<String> queryFacilityList() throws AclsException {
         Request request = new SimpleRequest(RequestType.FACILITY_LIST);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
@@ -68,7 +77,7 @@ public class FacilityChecker extends ThreadServiceBase {
         }
     }
 
-    private int queryFacilityCount() throws ServiceException {
+    private int queryFacilityCount() throws ServiceException, AclsException {
         Request request = new SimpleRequest(RequestType.FACILITY_COUNT);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
