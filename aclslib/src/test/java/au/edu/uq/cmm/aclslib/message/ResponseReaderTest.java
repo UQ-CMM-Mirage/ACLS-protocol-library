@@ -19,55 +19,55 @@ public class ResponseReaderTest {
     }
 
     @Test(expected=ServerStatusException.class)
-    public void testBadStatusLine() {
+    public void testBadStatusLine() throws AclsException {
         reader().readWithStatusLine(source("Bad wolf\n0:\n"));
     }
     
     @Test
-    public void testGoodStatusLine() {
+    public void testGoodStatusLine() throws AclsException {
         Message m = reader().readWithStatusLine(source("IP Accepted\n0:\n"));
         assertTrue(m instanceof CommandErrorResponse);
     }
     
     @Test
-    public void testCommandError() {
+    public void testCommandError() throws AclsException {
         Message m = reader().read(source("0:\n"));
         assertTrue(m instanceof CommandErrorResponse);
     }
     
     @Test
-    public void testCommandError2() {
+    public void testCommandError2() throws AclsException {
         Message m = reader().read(source("0:"));
         assertTrue(m instanceof CommandErrorResponse);
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand() {
+    public void testBadCommand() throws AclsException {
         reader().read(source("Z:\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand2() {
+    public void testBadCommand2() throws AclsException {
         reader().read(source("1\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand3() {
+    public void testBadCommand3() throws AclsException {
         reader().read(source("1?\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand4() {
+    public void testBadCommand4() throws AclsException {
         reader().read(source("9999:\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand5() {
+    public void testBadCommand5() throws AclsException {
         reader().read(source("0:whatever\n"));
     }
     
     @Test
-    public void testLogin() {
+    public void testLogin() throws AclsException {
         Response r = reader().read(source("11:steve|cmm|]acc1;|&Valid Certificate~No|\n"));
         assertEquals(ResponseType.LOGIN_ALLOWED, r.getType());
         LoginResponse login = (LoginResponse) r;
@@ -80,7 +80,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testLogin2() {
+    public void testLogin2() throws AclsException {
         Response r = reader().read(source("11:test|cmm|]general;special;|&No Certificate~No|\n"));
         assertEquals(ResponseType.LOGIN_ALLOWED, r.getType());
         LoginResponse login = (LoginResponse) r;
@@ -94,7 +94,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testVirtualLogin() {
+    public void testVirtualLogin() throws AclsException {
         Response r = reader().read(source("111:steve|cmm|]acc1;|&Valid Certificate~Yes|\n"));
         assertEquals(ResponseType.VIRTUAL_LOGIN_ALLOWED, r.getType());
         LoginResponse login = (LoginResponse) r;
@@ -107,7 +107,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testVirtualLogin2() {
+    public void testVirtualLogin2() throws AclsException {
         Response r = reader().read(
                 source("111:steve|cmm|[2012-01-01T00:00:00Z|]acc1;|&Valid Certificate~Yes|\n"));
         assertEquals(ResponseType.VIRTUAL_LOGIN_ALLOWED, r.getType());
@@ -122,7 +122,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testNewVirtualLogin() {
+    public void testNewVirtualLogin() throws AclsException {
         Response r = reader().read(source("141:steve|cmm|]acc1;|&Valid Certificate~No|\n"));
         assertEquals(ResponseType.NEW_VIRTUAL_LOGIN_ALLOWED, r.getType());
         LoginResponse login = (LoginResponse) r;
@@ -135,76 +135,76 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testLoginRefused() {
+    public void testLoginRefused() throws AclsException {
         Response r = reader().read(source("12:\n"));
         assertEquals(ResponseType.LOGIN_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testVirtualLoginRefused() {
+    public void testVirtualLoginRefused() throws AclsException {
         Response r = reader().read(source("112:\n"));
         assertEquals(ResponseType.VIRTUAL_LOGIN_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testNewVirtualLoginRefused() {
+    public void testNewVirtualLoginRefused() throws AclsException {
         Response r = reader().read(source("142:\n"));
         assertEquals(ResponseType.NEW_VIRTUAL_LOGIN_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testStaffLoginRefused() {
+    public void testStaffLoginRefused() throws AclsException {
         Response r = reader().read(source("212:\n"));
         assertEquals(ResponseType.STAFF_LOGIN_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testStaffLoginAllowed() {
+    public void testStaffLoginAllowed() throws AclsException {
         Response r = reader().read(source("211:\n"));
         assertEquals(ResponseType.STAFF_LOGIN_ALLOWED, r.getType());
         assertTrue(r instanceof AllowedResponse);
     }
     
     @Test
-    public void testLogoutRefused() {
+    public void testLogoutRefused() throws AclsException {
         Response r = reader().read(source("22:\n"));
         assertEquals(ResponseType.LOGOUT_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testLogoutAllowed() {
+    public void testLogoutAllowed() throws AclsException {
         Response r = reader().read(source("21:\n"));
         assertEquals(ResponseType.LOGOUT_ALLOWED, r.getType());
     }
     
     @Test
-    public void testAccountRefused() {
+    public void testAccountRefused() throws AclsException {
         Response r = reader().read(source("32:\n"));
         assertEquals(ResponseType.ACCOUNT_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testVirtualAccountRefused() {
+    public void testVirtualAccountRefused() throws AclsException {
         Response r = reader().read(source("132:\n"));
         assertEquals(ResponseType.VIRTUAL_ACCOUNT_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testNewVirtualAccountRefused() {
+    public void testNewVirtualAccountRefused() throws AclsException {
         Response r = reader().read(source("152:\n"));
         assertEquals(ResponseType.NEW_VIRTUAL_ACCOUNT_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testAccountAllowed() {
+    public void testAccountAllowed() throws AclsException {
         Response r = reader().read(source("31:[2012-01-01T00:00:00Z|\n"));
         assertEquals(ResponseType.ACCOUNT_ALLOWED, r.getType());
         assertTrue(r instanceof AccountResponse);
@@ -212,7 +212,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testVirtualAccountAllowed() {
+    public void testVirtualAccountAllowed() throws AclsException {
         Response r = reader().read(source("31:[2012-01-01T00:00:00Z|\n"));
         assertEquals(ResponseType.ACCOUNT_ALLOWED, r.getType());
         assertTrue(r instanceof AccountResponse);
@@ -220,7 +220,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testNewVirtualAccountAllowed() {
+    public void testNewVirtualAccountAllowed() throws AclsException {
         Response r = reader().read(source("31:[2012-01-01T00:00:00Z|\n"));
         assertEquals(ResponseType.ACCOUNT_ALLOWED, r.getType());
         assertTrue(r instanceof AccountResponse);
@@ -228,21 +228,21 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testNoteAllowed() {
+    public void testNoteAllowed() throws AclsException {
         Response r = reader().read(source("41:\n"));
         assertEquals(ResponseType.NOTES_ALLOWED, r.getType());
         assertTrue(r instanceof AllowedResponse);
     }
     
     @Test
-    public void testNoteRefused() {
+    public void testNoteRefused() throws AclsException {
         Response r = reader().read(source("42:\n"));
         assertEquals(ResponseType.NOTES_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testFacilityAllowed() {
+    public void testFacilityAllowed() throws AclsException {
         Response r = reader().read(source("51:?erehwon|\n"));
         assertEquals(ResponseType.FACILITY_ALLOWED, r.getType());
         assertTrue(r instanceof FacilityNameResponse);
@@ -251,14 +251,14 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFacilityRefused() {
+    public void testFacilityRefused() throws AclsException {
         Response r = reader().read(source("52:\n"));
         assertEquals(ResponseType.FACILITY_REFUSED, r.getType());
         assertTrue(r instanceof RefusedResponse);
     }
     
     @Test
-    public void testProjectYes() {
+    public void testProjectYes() throws AclsException {
         Response r = reader().read(source("61:\n"));
         assertEquals(ResponseType.PROJECT_YES, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -266,7 +266,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testProjectNo() {
+    public void testProjectNo() throws AclsException {
         Response r = reader().read(source("62:\n"));
         assertEquals(ResponseType.PROJECT_NO, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -274,7 +274,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testTimerYes() {
+    public void testTimerYes() throws AclsException {
         Response r = reader().read(source("71:\n"));
         assertEquals(ResponseType.TIMER_YES, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -282,7 +282,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testTimerNo() {
+    public void testTimerNo() throws AclsException {
         Response r = reader().read(source("72:\n"));
         assertEquals(ResponseType.TIMER_NO, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -290,7 +290,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFullScreenYes() {
+    public void testFullScreenYes() throws AclsException {
         Response r = reader().read(source("231:\n"));
         assertEquals(ResponseType.FULL_SCREEN_YES, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -298,7 +298,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFullScreenNo() {
+    public void testFullScreenNo() throws AclsException {
         Response r = reader().read(source("232:\n"));
         assertEquals(ResponseType.FULL_SCREEN_NO, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -306,7 +306,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFacilityYes() {
+    public void testFacilityYes() throws AclsException {
         Response r = reader().read(source("81:?vMFL|\n"));
         assertEquals(ResponseType.USE_VIRTUAL, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -314,7 +314,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFacilityNo() {
+    public void testFacilityNo() throws AclsException {
         Response r = reader().read(source("81:?No|\n"));
         assertEquals(ResponseType.USE_VIRTUAL, r.getType());
         assertTrue(r instanceof YesNoResponse);
@@ -322,7 +322,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFacilityCount() {
+    public void testFacilityCount() throws AclsException {
         Response r = reader().read(source("91:?42|\n"));
         assertEquals(ResponseType.FACILITY_COUNT, r.getType());
         assertTrue(r instanceof FacilityCountResponse);
@@ -330,7 +330,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testFacilityList() {
+    public void testFacilityList() throws AclsException {
         Response r = reader().read(source("101:;f1;f2;f3;|\n"));
         assertEquals(ResponseType.FACILITY_LIST, r.getType());
         assertTrue(r instanceof FacilityListResponse);
@@ -341,7 +341,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testSystemPasswordNo() {
+    public void testSystemPasswordNo() throws AclsException {
         Response r = reader().read(source("202:\n"));
         assertEquals(ResponseType.SYSTEM_PASSWORD_NO, r.getType());
         assertTrue(r instanceof SystemPasswordResponse);
@@ -349,7 +349,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testSystemPasswordYes() {
+    public void testSystemPasswordYes() throws AclsException {
         Response r = reader().read(source("201:/hi mum!|\n"));
         assertEquals(ResponseType.SYSTEM_PASSWORD_YES, r.getType());
         assertTrue(r instanceof SystemPasswordResponse);
@@ -357,7 +357,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testNetDriveNo() {
+    public void testNetDriveNo() throws AclsException {
         Response r = reader().read(source("222:\n"));
         assertEquals(ResponseType.NET_DRIVE_NO, r.getType());
         assertTrue(r instanceof NetDriveResponse);
@@ -365,7 +365,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testNetDriveYes() {
+    public void testNetDriveYes() throws AclsException {
         Response r = reader().read(source("221:Z]/foo/bar[joe~secret|\n"));
         assertEquals(ResponseType.NET_DRIVE_YES, r.getType());
         assertTrue(r instanceof NetDriveResponse);
@@ -377,7 +377,7 @@ public class ResponseReaderTest {
     }
     
     @Test
-    public void testNetDriveYesEmpty() {
+    public void testNetDriveYesEmpty() throws AclsException {
         Response r = reader().read(source("221:][~|\n"));
         assertEquals(ResponseType.NET_DRIVE_YES, r.getType());
         assertTrue(r instanceof NetDriveResponse);

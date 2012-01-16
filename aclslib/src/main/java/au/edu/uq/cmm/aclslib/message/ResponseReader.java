@@ -14,19 +14,16 @@ public interface ResponseReader {
      * 
      * @param source the input stream
      * @return the response message, if parsing was successful.
-     * @throws AclsProtocolException if there is a problem with the request; e.g. a 
-     * message syntax error.
+     * @throws AclsException 
      */
-    Response read(InputStream source) throws AclsProtocolException;
+    Response read(InputStream source) throws AclsException;
     
     /**
      * Read and parse status line followed by a response from the supplied input stream
      * 
      * @param source the input stream
      * @return the response message, if parsing was successful.
-     * @throws AclsProtocolException if there is a problem with the request; e.g. a 
-     * message syntax error or a status line other than the expected "IP Accepted"
-     * status.
+     * @throws AclsException 
      */
-    Response readWithStatusLine(InputStream source) throws AclsProtocolException;
+    Response readWithStatusLine(InputStream source) throws AclsException;
 }

@@ -16,6 +16,8 @@ public interface RequestReader {
      * @return the request message, if parsing was successful.
      * @throws AclsProtocolException if there is a problem with the request; e.g. a 
      * message syntax error.
+     * @throws AclsCommsException if there is no request; e.g. if the stream 
+     * was closed or ended immediately.
      */
-    Request read(InputStream source) throws AclsProtocolException;
+    Request read(InputStream source) throws AclsProtocolException, AclsCommsException;
 }

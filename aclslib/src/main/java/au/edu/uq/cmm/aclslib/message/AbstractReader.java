@@ -54,26 +54,21 @@ public class AbstractReader {
     public AbstractReader(Logger log) {
         this.log = log;
     }
-    
-    protected final Scanner createLineScanner(BufferedReader source) {
-        String line;
-        try {
-            line = source.readLine();
-            if (line == null) {
-                return new Scanner("");
-            }
-            log.debug("Raw request/response line is (" + line + ")");
-            line += "\r\n";
-        } catch (IOException ex) {
-            log.error("Unexpected IO error while creating buffer", ex);
-            throw new AssertionError("UTF-8 not supported");
+
+    protected final Scanner createLineScanner(BufferedReader source) 
+            throws IOException {
+        String line = source.readLine();
+        if (line == null) {
+            return new Scanner("");
         }
+        log.debug("Raw request/response line is (" + line + ")");
+        line += "\r\n";
         Scanner scanner = new Scanner(line);
         scanner.useDelimiter(DEFAULT_DELIMITERS);
         return scanner;
     }
 
-    protected void expect(Scanner source, String expected) {
+    protected void expect(Scanner source, String expected) throws MessageSyntaxException {
         if (!source.hasNext()) {
             throw new MessageSyntaxException(
                     "Expected '" + expected + "' but got end-of-message");
@@ -81,14 +76,14 @@ public class AbstractReader {
         expect(source.next(), expected);
     }
 
-    protected void expect(String token, String expected) {
+    protected void expect(String token, String expected) throws MessageSyntaxException {
         if (!expected.equals(token)) {
             throw new MessageSyntaxException(
                     "Expected '" + expected + "' but got '" + token + "'");
         }
     }
 
-    protected void expectEnd(Scanner source) {
+    protected void expectEnd(Scanner source) throws MessageSyntaxException {
         if (source.hasNext()) {
             String token = source.next().trim();
             if (token.equals(AbstractMessage.DELIMITER)) {

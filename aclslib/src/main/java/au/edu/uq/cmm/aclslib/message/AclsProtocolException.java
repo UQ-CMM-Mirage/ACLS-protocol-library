@@ -6,8 +6,10 @@ package au.edu.uq.cmm.aclslib.message;
  * 
  * @author scrawley
  */
-@SuppressWarnings("serial")
-public class AclsProtocolException extends RuntimeException {
+public class AclsProtocolException extends AclsException {
+    
+    private static final long serialVersionUID = 3336781869526143080L;
+
     public AclsProtocolException(String message) {
         super(message);
     }
