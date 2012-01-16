@@ -3,6 +3,7 @@ package au.edu.uq.cmm.aclslib.authenticator;
 import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.message.AclsClient;
+import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -59,7 +60,7 @@ public class Authenticator {
         }
     }
 
-    public boolean authenticate(String userName, String password) {
+    public boolean authenticate(String userName, String password) throws AclsException {
         if (useVirtual()) {
             return virtualFacilityLogin(userName, password);
         } else {
@@ -67,7 +68,7 @@ public class Authenticator {
         }
     }
     
-    private boolean useVirtual() {
+    private boolean useVirtual() throws AclsException {
         Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
@@ -81,7 +82,7 @@ public class Authenticator {
         }
     }
 
-    private boolean virtualFacilityLogin(String userName, String password) {
+    private boolean virtualFacilityLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
                 RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility);
         Response response = client.serverSendReceive(request);
@@ -97,7 +98,7 @@ public class Authenticator {
         }
     }
     
-    private boolean realFacilityLogin(String userName, String password) {
+    private boolean realFacilityLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
                 RequestType.LOGIN, userName, password, null);
         Response response = client.serverSendReceive(request);

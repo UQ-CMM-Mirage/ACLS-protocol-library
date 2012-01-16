@@ -75,5 +75,4 @@ public class StaticConfiguration extends ConfigurationBase implements Configurat
         }
         return null;
     }
-
 }

@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -23,23 +24,37 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         super(LOG);
     }
 
-    public Response read(InputStream source) {
+    public Response read(InputStream source) throws AclsException {
         BufferedReader br = new BufferedReader(new InputStreamReader(source));
-        return readResponse(createLineScanner(br));
+        try {
+            return readResponse(createLineScanner(br));
+        } catch (IOException ex) {
+            throw new AclsCommsException("IO error while reading response", ex);
+        }
     }
-    
-    public Response readWithStatusLine(InputStream source) {
+
+    public Response readWithStatusLine(InputStream source) throws AclsException {
         BufferedReader br = new BufferedReader(new InputStreamReader(source));
-        Scanner scanner = createLineScanner(br);
+        Scanner scanner;
+        try {
+            scanner = createLineScanner(br);
+        } catch (IOException ex) {
+            throw new AclsCommsException("IO error while reading status", ex);
+        }
         String statusLine = scanner.nextLine();
         if (!statusLine.equals(AbstractMessage.ACCEPTED_IP_TAG)) {
             throw new ServerStatusException(statusLine);
         }
-        scanner = createLineScanner(br);
+        try {
+            scanner = createLineScanner(br);
+        } catch (IOException ex) {
+            throw new AclsProtocolException("IO error while reading response message", ex);
+        }
         return readResponse(scanner);
     }
-    
-    private Response readResponse(Scanner scanner) {
+
+    private Response readResponse(Scanner scanner) 
+            throws MessageSyntaxException {
         String command = scanner.next();
         expect(scanner, AbstractMessage.COMMAND_DELIMITER);
         try {
@@ -102,7 +117,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         }
     }
 
-    private Response readNetDrive(Scanner scanner, ResponseType type) {
+    private Response readNetDrive(Scanner scanner, ResponseType type) 
+            throws MessageSyntaxException {
         if (type == ResponseType.NET_DRIVE_NO) {
             return new NetDriveResponse();
         }
@@ -118,7 +134,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         return new NetDriveResponse(driveName, folderName, accessName, accessPassword);
     }
 
-    private Response readSystemPassword(Scanner scanner, ResponseType type) {
+    private Response readSystemPassword(Scanner scanner, ResponseType type) 
+            throws MessageSyntaxException {
         String password = null;
         if (type == ResponseType.SYSTEM_PASSWORD_YES) {
             expect(scanner, AbstractMessage.SYSTEM_PASSWORD_DELIMITER);
@@ -131,7 +148,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         return new SystemPasswordResponse(password);
     }
 
-    private Response readFacilityType(Scanner scanner) {
+    private Response readFacilityType(Scanner scanner) 
+            throws MessageSyntaxException {
         expect(scanner, AbstractMessage.FACILITY_DELIMITER);
         String valueString = scanner.next();
         boolean value;
@@ -147,7 +165,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         return new YesNoResponse(ResponseType.USE_VIRTUAL, value);
     }
 
-    private Response readFacilityCount(Scanner scanner) {
+    private Response readFacilityCount(Scanner scanner) 
+            throws MessageSyntaxException {
         expect(scanner, AbstractMessage.FACILITY_DELIMITER);
         String countString = scanner.next();
         int count;
@@ -161,34 +180,40 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         return new FacilityCountResponse(count);
     }
 
-    private Response readYesNo(Scanner scanner, ResponseType type, boolean b) {
+    private Response readYesNo(Scanner scanner, ResponseType type, boolean b) 
+            throws MessageSyntaxException {
         expectEnd(scanner);
         return new YesNoResponse(type, b);
     }
 
-    private Response readCommandError(Scanner scanner) {
+    private Response readCommandError(Scanner scanner) 
+            throws MessageSyntaxException {
         expectEnd(scanner);
         return new CommandErrorResponse();
     }
 
-    private Response readRefused(Scanner scanner, ResponseType type) {
+    private Response readRefused(Scanner scanner, ResponseType type) 
+            throws MessageSyntaxException {
         expectEnd(scanner);
         return new RefusedResponse(type);
     }
 
-    private Response readAllowed(Scanner scanner, ResponseType type) {
+    private Response readAllowed(Scanner scanner, ResponseType type) 
+            throws MessageSyntaxException {
         expectEnd(scanner);
         return new AllowedResponse(type);
     }
 
-    private Response readFacility(Scanner scanner) {
+    private Response readFacility(Scanner scanner) 
+            throws MessageSyntaxException {
         expect(scanner, AbstractMessage.FACILITY_DELIMITER);
         String facility = nextFacility(scanner);
         expectEnd(scanner);
         return new FacilityNameResponse(facility);
     }
 
-    private Response readFacilityList(Scanner scanner) {
+    private Response readFacilityList(Scanner scanner) 
+            throws MessageSyntaxException {
         expect(scanner, AbstractMessage.ACCOUNT_SEPARATOR);
         List<String> list = new ArrayList<String>();
         String token = nextSubfacility(scanner);
@@ -205,7 +230,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         return new FacilityListResponse(list);
     }
 
-    private Response readLoginResponse(Scanner scanner, ResponseType type) {
+    private Response readLoginResponse(Scanner scanner, ResponseType type) 
+            throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String orgName = nextOrganization(scanner);
@@ -237,7 +263,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
                 accounts, certification, onsiteAssist);
     }
 
-    private Response readAccountResponse(Scanner scanner, ResponseType type) {
+    private Response readAccountResponse(Scanner scanner, ResponseType type) 
+            throws MessageSyntaxException {
         expect(scanner, AbstractMessage.TIME_DELIMITER);
         String timestamp = nextTimestamp(scanner);
         expectEnd(scanner);

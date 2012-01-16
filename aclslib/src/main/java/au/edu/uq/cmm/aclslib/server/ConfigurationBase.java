@@ -7,6 +7,8 @@ public abstract class ConfigurationBase implements Configuration {
     private String serverHost;
     private String proxyHost;
     private boolean useProject;
+    private String captureDirectory;
+    private String baseFileUrl;
 
     public ConfigurationBase() {
         super();
@@ -59,6 +61,22 @@ public abstract class ConfigurationBase implements Configuration {
             }
         }
         throw new IllegalStateException("There are no dummy facilities");
+    }
+
+    public String getCaptureDirectory() {
+        return captureDirectory;
+    }
+
+    public void setCaptureDirectory(String captureDirectory) {
+        this.captureDirectory = captureDirectory;
+    }
+
+    public String getBaseFileUrl() {
+        return baseFileUrl;
+    }
+
+    public void setBaseFileUrl(String baseFileUrl) {
+        this.baseFileUrl = baseFileUrl;
     }
 
 }

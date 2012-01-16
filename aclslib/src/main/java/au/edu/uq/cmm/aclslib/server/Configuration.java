@@ -5,22 +5,26 @@ import java.util.Collection;
 
 public interface Configuration {
 
-    public abstract int getProxyPort();
+    int getProxyPort();
 
-    public abstract String getServerHost();
+     String getServerHost();
 
-    public abstract int getServerPort();
+     int getServerPort();
 
-    public abstract boolean isUseProject();
+     boolean isUseProject();
 
-    public abstract FacilityConfig lookupFacilityByAddress(InetAddress addr);
+     FacilityConfig lookupFacilityByAddress(InetAddress addr);
 
-    public abstract FacilityConfig lookupFacilityById(String id);
+     FacilityConfig lookupFacilityById(String id);
 
-    public abstract String getProxyHost();
+     String getProxyHost();
 
-    public abstract String getDummyFacility();
+     String getDummyFacility();
     
-    public abstract Collection<FacilityConfig> getFacilities();
+     Collection<FacilityConfig> getFacilities();
+    
+     String getBaseFileUrl();
+     
+     String getCaptureDirectory();
 
 }

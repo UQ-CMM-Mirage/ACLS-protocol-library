@@ -18,27 +18,27 @@ public class RequestReaderTest {
     }   
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand() {
+    public void testBadCommand() throws AclsException {
         reader().read(source("Z:\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand2() {
+    public void testBadCommand2() throws AclsException {
         reader().read(source("1\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand3() {
+    public void testBadCommand3() throws AclsException {
         reader().read(source("1?\n"));
     }
     
     @Test(expected=MessageSyntaxException.class)
-    public void testBadCommand4() {
+    public void testBadCommand4() throws AclsException {
         reader().read(source("9999:\n"));
     }
     
     @Test
-    public void testReadLogin() {
+    public void testReadLogin() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("1:steve|secret|"));
         assertEquals(RequestType.LOGIN, req.getType());
@@ -49,7 +49,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testReadStaffLogin() {
+    public void testReadStaffLogin() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("21:steve|secret|"));
         assertEquals(RequestType.STAFF_LOGIN, req.getType());
@@ -60,7 +60,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testReadVirtualLogin() {
+    public void testReadVirtualLogin() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("11:steve|secret|?here|"));
         assertEquals(RequestType.VIRTUAL_LOGIN, req.getType());
@@ -71,7 +71,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testReadNewVirtualLogin() {
+    public void testReadNewVirtualLogin() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("14:steve|secret?|?here|"));
         assertEquals(RequestType.NEW_VIRTUAL_LOGIN, req.getType());
@@ -82,7 +82,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testReadLogout() {
+    public void testReadLogout() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("2:steve|]acc1|"));
         assertEquals(RequestType.LOGOUT, req.getType());
@@ -93,7 +93,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testReadVirtualLogout() {
+    public void testReadVirtualLogout() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("12:steve|secret|]acc1|?here|"));
         assertEquals(RequestType.VIRTUAL_LOGOUT, req.getType());
@@ -104,7 +104,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testReadAccount() {
+    public void testReadAccount() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("3:steve|]acc1|"));
         assertEquals(RequestType.ACCOUNT, req.getType());
@@ -115,7 +115,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testReadVirtualAccount() {
+    public void testReadVirtualAccount() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("13:steve|]acc1|?here|"));
         assertEquals(RequestType.VIRTUAL_ACCOUNT, req.getType());
@@ -126,7 +126,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testReadNewVirtualAccount() {
+    public void testReadNewVirtualAccount() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("15:steve|]acc1|?here|"));
         assertEquals(RequestType.NEW_VIRTUAL_ACCOUNT, req.getType());
@@ -137,7 +137,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testReadNotes() {
+    public void testReadNotes() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source(
                 "4:charlie|]unicorn|~Put a banana in your ear|"));
@@ -149,7 +149,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testFacility() {
+    public void testFacility() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("5:"));
         assertEquals(RequestType.FACILITY_NAME, req.getType());
@@ -157,7 +157,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testProject() {
+    public void testProject() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("6:"));
         assertEquals(RequestType.USE_PROJECT, req.getType());
@@ -165,7 +165,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testTimer() {
+    public void testTimer() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("7:"));
         assertEquals(RequestType.USE_TIMER, req.getType());
@@ -173,7 +173,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testFullScreen() {
+    public void testFullScreen() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("23:"));
         assertEquals(RequestType.USE_FULL_SCREEN, req.getType());
@@ -181,7 +181,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void testFacilityType() {
+    public void testFacilityType() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("8:"));
         assertEquals(RequestType.USE_VIRTUAL, req.getType());
@@ -189,7 +189,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testFacilityCount() {
+    public void testFacilityCount() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("9:"));
         assertEquals(RequestType.FACILITY_COUNT, req.getType());
@@ -197,7 +197,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testFacilityList() {
+    public void testFacilityList() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("10:"));
         assertEquals(RequestType.FACILITY_LIST, req.getType());
@@ -205,7 +205,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testSystemPassword() {
+    public void testSystemPassword() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("20:"));
         assertEquals(RequestType.SYSTEM_PASSWORD, req.getType());
@@ -213,7 +213,7 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testNetDrive() {
+    public void testNetDrive() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("22:"));
         assertEquals(RequestType.NET_DRIVE, req.getType());

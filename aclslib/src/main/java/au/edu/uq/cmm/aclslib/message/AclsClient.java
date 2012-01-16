@@ -24,11 +24,7 @@ public class AclsClient {
         this.serverPort = serverPort;
     }
     
-//    public AclsClient(Configuration config) {
-//        this(config.getServerHost(), config.getServerPort());
-//    }
-    
-    public Response serverSendReceive(Request r) {
+    public Response serverSendReceive(Request r) throws AclsException {
         try {
             Socket aclsSocket = new Socket(serverHost, serverPort);
             try {

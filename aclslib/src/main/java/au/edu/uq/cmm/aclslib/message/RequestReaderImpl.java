@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.NoSuchElementException;
@@ -21,13 +22,19 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         super(LOG);
     }
 
-    public Request read(InputStream source) {
-        Scanner scanner = createLineScanner(new BufferedReader(new InputStreamReader(source)));
+    public Request read(InputStream source) throws AclsProtocolException {
+        Scanner scanner;
+        try {
+            scanner = createLineScanner(
+                new BufferedReader(new InputStreamReader(source)));
+        } catch (IOException ex) {
+            throw new AclsCommsException("IO error with reading request", ex);
+        }
         String command;
         try {
             command = scanner.next();
         } catch (NoSuchElementException ex) {
-            return null;
+            throw new AclsCommsException("Empty request message", ex);
         }
         expect(scanner, AbstractMessage.COMMAND_DELIMITER);
         try {
@@ -66,12 +73,14 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         }
     }
 
-    private Request readQuery(Scanner scanner, RequestType type) {
+    private Request readQuery(Scanner scanner, RequestType type) 
+            throws MessageSyntaxException {
         expectEnd(scanner);
         return new SimpleRequest(type);
     }
 
-    private Request readNotesRequest(Scanner scanner) {
+    private Request readNotesRequest(Scanner scanner) 
+            throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
@@ -83,7 +92,8 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         return new NoteRequest(userName, account, notes);
     }
 
-    private Request readLoginRequest(Scanner scanner, RequestType type) {
+    private Request readLoginRequest(Scanner scanner, RequestType type) 
+            throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String password = nextPassword(scanner);
@@ -97,7 +107,8 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         return new LoginRequest(type, userName, password, facility);
     }
 
-    private Request readVirtualLogoutRequest(Scanner scanner, RequestType type) {
+    private Request readVirtualLogoutRequest(Scanner scanner, RequestType type) 
+            throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String password = nextPassword(scanner);
@@ -114,7 +125,8 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         return new LogoutRequest(type, userName, password, account, facility);
     }
 
-    private Request readLogoutRequest(Scanner scanner, RequestType type) {
+    private Request readLogoutRequest(Scanner scanner, RequestType type) 
+            throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
@@ -127,7 +139,10 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         }
         expectEnd(scanner);
         return new LogoutRequest(type, userName, null, account, facility);
-    }private Request readAccountRequest(Scanner scanner, RequestType type) {
+    }
+    
+    private Request readAccountRequest(Scanner scanner, RequestType type) 
+            throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);

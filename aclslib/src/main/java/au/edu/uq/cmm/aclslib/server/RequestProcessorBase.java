@@ -10,6 +10,8 @@ import java.net.Socket;
 import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.message.AbstractMessage;
+import au.edu.uq.cmm.aclslib.message.AclsCommsException;
+import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.CommandErrorResponse;
 import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -31,17 +33,22 @@ public abstract class RequestProcessorBase  implements Runnable {
         this.config = config;
     }
 
-    protected void sendErrorResponse(BufferedWriter w) throws IOException {
+    protected void sendErrorResponse(BufferedWriter w) throws AclsCommsException {
         sendResponse(w, new CommandErrorResponse());
     }
 
-    protected void sendResponse(BufferedWriter w, Response r) throws IOException {
+    protected void sendResponse(BufferedWriter w, Response r) 
+        throws AclsCommsException {
+        try {
         if (r instanceof ProxyErrorResponse) {
             LOG.error("Proxy error - " + ((ProxyErrorResponse) r).getMessage());
             w.append(new CommandErrorResponse().unparse() + "\r\n").flush();
         } else {
             LOG.debug("Sending response " + r.getType().name() + "(" + r.unparse() + ")");
             w.append(r.unparse() + "\r\n").flush();
+        }
+        } catch (IOException ex) {
+            throw new AclsCommsException("Couldn't write message", ex);
         }
     }
 
@@ -73,16 +80,14 @@ public abstract class RequestProcessorBase  implements Runnable {
             InputStream is = socket.getInputStream();
             RequestReader reader = new RequestReaderImpl();
             Request m = reader.read(is);
-            if (m == null) {
-                LOG.debug("No request: client probing (?)");
-                return;
-            }
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)
             // and create and return the relevant response.
             LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
             doProcess(f, m, w);
         } catch (IOException ex) {
+            LOG.error(ex);
+        } catch (AclsException ex) {
             LOG.error(ex);
         } finally {
             try {
@@ -93,7 +98,8 @@ public abstract class RequestProcessorBase  implements Runnable {
         }
     }
 
-    protected abstract void doProcess(FacilityConfig f, Request m, BufferedWriter w) throws IOException;
+    protected abstract void doProcess(FacilityConfig f, Request m, BufferedWriter w) 
+            throws AclsException;
 
     public Configuration getConfig() {
         return config;

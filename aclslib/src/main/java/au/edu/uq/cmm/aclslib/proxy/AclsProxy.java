@@ -17,16 +17,19 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.message.AclsClient;
+import au.edu.uq.cmm.aclslib.message.AclsCommsException;
+import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
+import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.StaticConfiguration;
-import au.edu.uq.cmm.aclslib.server.SimpleFacilityConfigImpl;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
+import au.edu.uq.cmm.aclslib.server.SimpleFacilityConfigImpl;
+import au.edu.uq.cmm.aclslib.server.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.service.CompositeServiceBase;
 import au.edu.uq.cmm.aclslib.service.Service;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
@@ -119,7 +122,19 @@ public class AclsProxy extends CompositeServiceBase {
         LOG.info("Probing ACLS server");
         AclsClient client = new AclsClient(config.getServerHost(), config.getServerPort());
         Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
-        Response response = client.serverSendReceive(request);
+        Response response;
+        try {
+            response = client.serverSendReceive(request);
+        } catch (AclsCommsException ex) {
+            throw new ServiceException(
+                    "The ACLS server is not responding", ex);
+        } catch (ServerStatusException ex) {
+            throw new ServiceException(
+                    "The ACLS server rejected our probe", ex);
+        } catch (AclsException ex) {
+            throw new ServiceException(
+                    "The ACLS server is not behaving correctly", ex);
+        } 
         switch (response.getType()) {
         case USE_VIRTUAL:
             YesNoResponse uv = (YesNoResponse) response;
@@ -131,7 +146,7 @@ public class AclsProxy extends CompositeServiceBase {
         default:
             LOG.error("Unexpected response for USE_VIRTUAL request: " + response.getType());
             throw new ServiceException(
-                    "The ACLS server gave an unexpected response to our probe");
+                    "The ACLS server gave an unexpected response to our probe (see log)");
         }
     }
 
@@ -139,7 +154,8 @@ public class AclsProxy extends CompositeServiceBase {
         StaticConfiguration sampleConfig = new StaticConfiguration();
         sampleConfig.setServerHost("aclsHost.example.com");
         sampleConfig.setProxyHost("proxyHost.example.com");
-        Map<String, SimpleFacilityConfigImpl> facilityMap = new TreeMap<String, SimpleFacilityConfigImpl>();
+        Map<String, SimpleFacilityConfigImpl> facilityMap =
+                new TreeMap<String, SimpleFacilityConfigImpl>();
         sampleConfig.setFacilities(facilityMap);
         SimpleFacilityConfigImpl f1 = new SimpleFacilityConfigImpl();
         f1.setAccessName("jim");
