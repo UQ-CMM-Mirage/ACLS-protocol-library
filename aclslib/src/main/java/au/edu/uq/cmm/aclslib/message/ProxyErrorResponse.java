@@ -5,7 +5,7 @@ public class ProxyErrorResponse extends AbstractResponse {
     private String message;
 
     public ProxyErrorResponse(String message) {
-        super(null);
+        super(ResponseType.NO_RESPONSE);
         this.message = message;
     }
 
