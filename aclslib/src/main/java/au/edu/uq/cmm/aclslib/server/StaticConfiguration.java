@@ -31,6 +31,8 @@ public class StaticConfiguration implements Configuration {
     private String feedTitle;
     private String feedAuthor;
     private String feedAuthorEmail;
+    private String feedUrl;
+    private int feedPageSize = 20;
 
     private Map<String, SimpleFacilityConfigImpl> facilityMap;
 
@@ -131,6 +133,30 @@ public class StaticConfiguration implements Configuration {
         this.feedAuthorEmail = feedAuthorEmail;
     }
     
+    public String getFeedUrl() {
+        return feedUrl;
+    }
+
+    public void setFeedUrl(String feedUrl) {
+        this.feedUrl = feedUrl;
+    }
+    
+    public int getFeedPageSize() {
+        return feedPageSize ;
+    }
+
+    public void setFeedPageSize(int feedPageSize) {
+        this.feedPageSize = feedPageSize;
+    }
+
+    public Map<String, SimpleFacilityConfigImpl> getFacilityMap() {
+        return facilityMap;
+    }
+
+    public void setFacilityMap(Map<String, SimpleFacilityConfigImpl> facilityMap) {
+        this.facilityMap = facilityMap;
+    }
+
     public Collection<FacilityConfig> getFacilities() {
         return new ArrayList<FacilityConfig>(facilityMap.values());
     }

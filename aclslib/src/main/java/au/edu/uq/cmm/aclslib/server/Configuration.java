@@ -34,5 +34,9 @@ public interface Configuration {
      String getFeedAuthor();
      
      String getFeedAuthorEmail();
+     
+     String getFeedUrl();
+     
+     int getFeedPageSize();
 
 }
