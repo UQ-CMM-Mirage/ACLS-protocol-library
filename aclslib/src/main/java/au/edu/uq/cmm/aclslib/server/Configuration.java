@@ -43,10 +43,10 @@ public interface Configuration {
     /**
      * Get the Facility descriptor for the Facility with a given name.
      * 
-     * @param addr the alleged Facility's address
+     * @param name the facility name
      * @return the Facility descriptor or null.
      */
-    FacilityConfig lookupFacilityById(String id);
+    FacilityConfig lookupFacilityByName(String name);
 
     /**
      * Get the hostname or IP address of the ACLSProxy.

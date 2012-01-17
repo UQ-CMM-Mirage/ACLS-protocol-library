@@ -162,13 +162,13 @@ public class AclsProxy extends CompositeServiceBase {
         f1.setAccessPassword("secret");
         f1.setFolderName("/trollscope");
         f1.setDriveName("T");
-        f1.setFacilityId("F001");
-        f1.setFacilityName("Trollscope 2000T");
+        f1.setFacilityName("F001");
+        f1.setFacilityDescription("Trollscope 2000T");
         f1.setUseFullScreen(true);
         facilityMap.put("192.168.1.1", f1);
         SimpleFacilityConfigImpl f2 = new SimpleFacilityConfigImpl();
-        f2.setFacilityId("F002");
-        f2.setFacilityName("The hatstand in the corner");
+        f2.setFacilityName("F002");
+        f2.setFacilityDescription("The hatstand in the corner");
         f2.setUseFullScreen(false);
         facilityMap.put("hatstand.example.com", f2);
         try {

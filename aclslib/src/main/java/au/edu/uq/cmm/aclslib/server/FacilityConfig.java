@@ -34,13 +34,13 @@ public interface FacilityConfig {
     /**
      * Get the name of the facility
      */
-    String getFacilityId();
+    String getFacilityName();
 
     /**
-     * The other name of the facility
+     * Get the long-form description of the facility.  (ACLS calls 
+     * this the name)
      */
-    @Deprecated
-    String getFacilityName();
+    String getFacilityDescription();
 
     /**
      * Get the remote "folder name" that the Facility should attempt

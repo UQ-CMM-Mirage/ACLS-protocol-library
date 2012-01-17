@@ -79,7 +79,7 @@ public class StaticConfiguration implements Configuration {
     public final String getDummyFacility() {
         for (FacilityConfig facility : getFacilities()) {
             if (facility.isDummy()) {
-                return facility.getFacilityId();
+                return facility.getFacilityName();
             }
         }
         throw new IllegalStateException("There are no dummy facilities");
@@ -169,9 +169,9 @@ public class StaticConfiguration implements Configuration {
         return facility;
     }
 
-    public FacilityConfig lookupFacilityById(String id) {
+    public FacilityConfig lookupFacilityByName(String name) {
         for (FacilityConfig f : facilityMap.values()) {
-            if (id.equals(f.getFacilityId())) {
+            if (name.equals(f.getFacilityName())) {
                 return f;
             }
         }

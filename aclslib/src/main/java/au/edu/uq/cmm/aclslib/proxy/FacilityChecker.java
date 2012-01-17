@@ -59,7 +59,7 @@ public class FacilityChecker extends ThreadServiceBase {
         List<String> facilityIds = queryFacilityList();
         LOG.debug("Facility list - " + facilityIds);
         for (String id : facilityIds) {
-            FacilityConfig facility = config.lookupFacilityById(id);
+            FacilityConfig facility = config.lookupFacilityByName(id);
             if (facility == null) {
                 LOG.error("The server has a facility that we don't recognize: " + id);
             }
