@@ -1,36 +1,92 @@
 package au.edu.uq.cmm.aclslib.server;
 
 /**
- * Configuration details API for a proxied facility.
+ * Configuration details API for a proxied ACLS facility.  Some
+ * of these properties configure the behavior of the proxy and the
+ * grabber.  Others are passed to the ACLS facility itself (via
+ * the protocol).
+ * <p>
+ * (The names of some of these properties reflect the sometimes
+ * strange terminology used by ACLS and its documentation.)
  * 
  * @author scrawley
  */
 public interface FacilityConfig {
 
-    public abstract String getAccessName();
+    /**
+     * Get the user name that the Facility should use when mounting
+     * its shared drive.
+     */
+    String getAccessName();
 
-    public abstract String getAccessPassword();
+    /**
+     * Get the password that the Facility should use when mounting
+     * its shared drive.
+     */
+    String getAccessPassword();
 
-    public abstract String getDriveName();
+    /**
+     * Get the drive name (e.g. "X") that the Facility should use 
+     * to mount its shared drive.
+     */
+    String getDriveName();
 
-    public abstract String getFacilityId();
+    /**
+     * Get the name of the facility
+     */
+    String getFacilityId();
 
-    public abstract String getFacilityName();
+    /**
+     * The other name of the facility
+     */
+    @Deprecated
+    String getFacilityName();
 
-    public abstract String getFolderName();
+    /**
+     * Get the remote "folder name" that the Facility should attempt
+     * to mount.  This should be a UNC name of an SMB share; e.g. 
+     * "\\host\share".
+     */
+    String getFolderName();
 
-    public abstract boolean isUseFullScreen();
+    /**
+     * If true, tell the client to grab the screen when no use is
+     * logged in.
+     */
+    boolean isUseFullScreen();
 
-    public abstract boolean isUseNetDrive();
+    /**
+     * This is a derived property.  Should be true if the drive name
+     * is non-empty.
+     */
+    boolean isUseNetDrive();
 
-    public abstract boolean isUseTimer();
+    /**
+     * If true, tell the client to start a logout timer.
+     */
+    boolean isUseTimer();
 
-    public abstract boolean isDummy();
+    /**
+     * If true, this Facility is the dummy (virtual) facility to be 
+     * used for username / password checking; e.g. using Benny.
+     */
+    boolean isDummy();
 
-    public abstract boolean isUseFileLocks();
+    /**
+     * If true, the file grabber should acquire a file lock before copying
+     * (grabbing) a file from this facility's shared drive area.
+     */
+    boolean isUseFileLocks();
 
-    public abstract int getFileSettlingTime();
-    
-    public abstract String getAddress();
+    /**
+     * The file settling time is the time (in milliseconds) to wait after 
+     * the last file modification event before the grabber attempts to grab the file.
+     */
+    int getFileSettlingTime();
+
+    /**
+     * Get the registered IP address or DNS name of the facility.
+     */
+    String getAddress();
 
 }
