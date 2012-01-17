@@ -17,10 +17,119 @@ import org.codehaus.jackson.map.ObjectMapper;
  * 
  * @author scrawley
  */
-public class StaticConfiguration extends ConfigurationBase implements Configuration {
+public class StaticConfiguration implements Configuration {
     private static final Logger LOG = Logger.getLogger(StaticConfiguration.class);
 
-    Map<String, SimpleFacilityConfigImpl> facilityMap;
+    private int proxyPort = 1024;
+    private int serverPort = 1024;
+    private String serverHost;
+    private String proxyHost;
+    private boolean useProject;
+    private String captureDirectory;
+    private String baseFileUrl;
+    private String feedId;
+    private String feedTitle;
+    private String feedAuthor;
+    private String feedAuthorEmail;
+
+    private Map<String, SimpleFacilityConfigImpl> facilityMap;
+
+    public final int getProxyPort() {
+        return proxyPort;
+    }
+
+    public final String getServerHost() {
+        return serverHost;
+    }
+
+    public final int getServerPort() {
+        return serverPort;
+    }
+
+    public final boolean isUseProject() {
+        return useProject;
+    }
+
+    public final void setProxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
+    }
+
+    public final void setServerHost(String serverHost) {
+        this.serverHost = serverHost;
+    }
+
+    public final void setServerPort(int serverPort) {
+        this.serverPort = serverPort;
+    }
+
+    public final void setUseProject(boolean useProject) {
+        this.useProject = useProject;
+    }
+
+    public final String getProxyHost() {
+        return proxyHost;
+    }
+
+    public final void setProxyHost(String proxyHost) {
+        this.proxyHost = proxyHost;
+    }
+
+    public final String getDummyFacility() {
+        for (FacilityConfig facility : getFacilities()) {
+            if (facility.isDummy()) {
+                return facility.getFacilityId();
+            }
+        }
+        throw new IllegalStateException("There are no dummy facilities");
+    }
+
+    public String getCaptureDirectory() {
+        return captureDirectory;
+    }
+
+    public void setCaptureDirectory(String captureDirectory) {
+        this.captureDirectory = captureDirectory;
+    }
+
+    public String getBaseFileUrl() {
+        return baseFileUrl;
+    }
+
+    public void setBaseFileUrl(String baseFileUrl) {
+        this.baseFileUrl = baseFileUrl;
+    }
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
+
+    public String getFeedTitle() {
+        return feedTitle;
+    }
+
+    public void setFeedTitle(String feedTitle) {
+        this.feedTitle = feedTitle;
+    }
+
+    public String getFeedAuthor() {
+        return feedAuthor;
+    }
+
+    public void setFeedAuthor(String feedAuthor) {
+        this.feedAuthor = feedAuthor;
+    }
+
+    public String getFeedAuthorEmail() {
+        return feedAuthorEmail;
+    }
+
+    public void setFeedAuthorEmail(String feedAuthorEmail) {
+        this.feedAuthorEmail = feedAuthorEmail;
+    }
     
     public Collection<FacilityConfig> getFacilities() {
         return new ArrayList<FacilityConfig>(facilityMap.values());
