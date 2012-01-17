@@ -26,5 +26,17 @@ public interface Configuration {
      String getBaseFileUrl();
      
      String getCaptureDirectory();
+     
+     String getFeedId();
+     
+     String getFeedTitle();
+     
+     String getFeedAuthor();
+     
+     String getFeedAuthorEmail();
+     
+     String getFeedUrl();
+     
+     int getFeedPageSize();
 
 }
