@@ -79,37 +79,44 @@ public interface Configuration {
     String getCaptureDirectory();
 
     /**
-     * The URL or IRI for the atom feed.  This is what is used as
+     * Get the URL or IRI for the atom feed.  This is what is used as
      * the "atom:id" for the feed.
      */
     String getFeedId();
 
     /**
-     * The string used as the feed's atom:title
+     * Get the string used as the feed's atom:title
      */
     String getFeedTitle();
 
     /**
-     * The string used as the feed's author name
+     * Get the string used as the feed's author name
      */
     String getFeedAuthor();
 
     /**
-     * The string used as the feed's author email.  This can be
+     * Get the string used as the feed's author email.  This can be
      * empty or null.
      */
     String getFeedAuthorEmail();
 
     /**
-     * The URL for fetching the feed.
+     * Get the URL for fetching the feed.
      */
     String getFeedUrl();
 
     /**
-     * The page size for the atom feed.  This should be a number greater or
+     * Get the page size for the atom feed.  This should be a number greater or
      * equal to 1.  (Setting this to a very large number effectively turns 
      * off feed paging.)
      */
     int getFeedPageSize();
+
+    /**
+     * Get the interval (in minutes) between calls to the ACLS server to re-check 
+     * for new virtual vMFL facilities.  If the interval is zero or negative,
+     * there is no re-checking.
+     */
+    long getFacilityRecheckInterval();
 
 }

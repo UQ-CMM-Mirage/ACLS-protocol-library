@@ -30,6 +30,8 @@ public class FacilityChecker extends ThreadServiceBase {
     }
 
     public void run() {
+        long sleepMinutes = config.getFacilityRecheckInterval();
+                
         while (true) {
             try {
                 checkFacilities();
@@ -41,7 +43,15 @@ public class FacilityChecker extends ThreadServiceBase {
                 }
             }
             try {
-                Thread.sleep(5 * 60 * 1000);
+                if (sleepMinutes > 0) {
+                    Thread.sleep(sleepMinutes * 60 * 1000);
+                } else {
+                    // Wait until interrupted.
+                    Object lock = new Object();
+                    synchronized (lock) {
+                        lock.wait();
+                    }
+                }
             } catch (InterruptedException ex) {
                 break;
             }
