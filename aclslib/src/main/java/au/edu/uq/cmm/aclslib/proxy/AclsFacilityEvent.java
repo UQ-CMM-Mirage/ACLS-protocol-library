@@ -24,7 +24,7 @@ public abstract class AclsFacilityEvent extends EventObject {
         return account;
     }
 
-    public String getFacilityId() {
+    public String getFacilityName() {
         return ((FacilityConfig) getSource()).getFacilityName();
     }
 }

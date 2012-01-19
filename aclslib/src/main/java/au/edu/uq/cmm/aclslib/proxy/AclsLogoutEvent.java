@@ -11,7 +11,7 @@ public class AclsLogoutEvent extends AclsFacilityEvent {
 
     @Override
     public String toString() {
-        return "AclsLogoutEvent [facility=" + getFacilityId()
+        return "AclsLogoutEvent [facility=" + getFacilityName()
                 + ", userName=" + getUserName() + ", account="
                 + getAccount() + "]";
     }
