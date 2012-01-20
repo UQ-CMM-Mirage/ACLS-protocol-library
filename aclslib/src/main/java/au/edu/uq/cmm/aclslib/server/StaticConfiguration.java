@@ -33,7 +33,9 @@ public class StaticConfiguration implements Configuration {
     private String feedAuthorEmail;
     private String feedUrl;
     private int feedPageSize = 20;
+    private long facilityRecheckInterval = 0;
 
+    
     private Map<String, SimpleFacilityConfigImpl> facilityMap;
 
     public final int getProxyPort() {
@@ -79,7 +81,7 @@ public class StaticConfiguration implements Configuration {
     public final String getDummyFacility() {
         for (FacilityConfig facility : getFacilities()) {
             if (facility.isDummy()) {
-                return facility.getFacilityId();
+                return facility.getFacilityName();
             }
         }
         throw new IllegalStateException("There are no dummy facilities");
@@ -149,6 +151,14 @@ public class StaticConfiguration implements Configuration {
         this.feedPageSize = feedPageSize;
     }
 
+    public long getFacilityRecheckInterval() {
+        return facilityRecheckInterval;
+    }
+
+    public void setFacilityRecheckInterval(long facilityRecheckInterval) {
+        this.facilityRecheckInterval = facilityRecheckInterval;
+    }
+
     public Map<String, SimpleFacilityConfigImpl> getFacilityMap() {
         return facilityMap;
     }
@@ -169,9 +179,9 @@ public class StaticConfiguration implements Configuration {
         return facility;
     }
 
-    public FacilityConfig lookupFacilityById(String id) {
+    public FacilityConfig lookupFacilityByName(String name) {
         for (FacilityConfig f : facilityMap.values()) {
-            if (id.equals(f.getFacilityId())) {
+            if (name.equals(f.getFacilityName())) {
                 return f;
             }
         }
