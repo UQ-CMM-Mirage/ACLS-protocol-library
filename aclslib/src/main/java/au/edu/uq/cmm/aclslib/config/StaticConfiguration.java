@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -19,7 +18,8 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
- * This class represents the configuration details of an ACLS proxy.
+ * This class represents the configuration details of an ACLS proxy backed by a
+ * JSON file.
  * 
  * @author scrawley
  */
