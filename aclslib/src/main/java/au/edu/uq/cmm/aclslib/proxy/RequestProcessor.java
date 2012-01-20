@@ -171,7 +171,7 @@ public class RequestProcessor extends RequestProcessorBase {
     private void processFacilityRequest(FacilityConfig f, Request m, BufferedWriter w) 
             throws AclsException {
         // Uses a facility-specific configuration setting
-        Response r = new FacilityNameResponse(f.getFacilityName());
+        Response r = new FacilityNameResponse(f.getFacilityDescription());
         sendResponse(w, r);
     }
 
@@ -181,7 +181,7 @@ public class RequestProcessor extends RequestProcessorBase {
         NoteRequest nr = (NoteRequest) m;
         String notes = nr.getNotes();
         Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), 
-                f.getFacilityName() + ": " + notes);
+                f.getFacilityDescription() + ": " + notes);
         Response r = client.serverSendReceive(vnr);
         switch (r.getType()) {
         case NOTES_ALLOWED:
@@ -202,7 +202,7 @@ public class RequestProcessor extends RequestProcessorBase {
         // map the response to the appropriate 'logout' response.
         AccountRequest a = (AccountRequest) m;
         Request vl = new AccountRequest(RequestType.VIRTUAL_ACCOUNT, 
-                a.getUserName(), a.getAccount(), f.getFacilityId());
+                a.getUserName(), a.getAccount(), f.getFacilityName());
         Response r;
         Response vr = client.serverSendReceive(vl);
         switch (vr.getType()) {
@@ -240,7 +240,7 @@ public class RequestProcessor extends RequestProcessorBase {
             r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
         } else {
             Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
-                    l.getUserName(), password, l.getAccount(), f.getFacilityId());
+                    l.getUserName(), password, l.getAccount(), f.getFacilityName());
             Response vr = client.serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_LOGOUT_ALLOWED:
@@ -268,7 +268,7 @@ public class RequestProcessor extends RequestProcessorBase {
         // map the response to the appropriate 'login' response.
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.VIRTUAL_LOGIN, 
-                l.getUserName(), l.getPassword(), f.getFacilityId());
+                l.getUserName(), l.getPassword(), f.getFacilityName());
         Response r;
         Response vr = client.serverSendReceive(vl);
         switch (vr.getType()) {

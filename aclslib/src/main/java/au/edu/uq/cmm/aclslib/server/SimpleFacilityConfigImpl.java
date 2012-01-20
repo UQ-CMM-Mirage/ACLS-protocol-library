@@ -15,9 +15,9 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
     private String accessPassword;
     private String accessName;
     private String folderName;
-    private String facilityId;
-    private boolean useTimer;
     private String facilityName;
+    private boolean useTimer;
+    private String facilityDescription;
     private boolean dummy;
     private boolean useFileLocks = true;
     private int fileSettlingTime;
@@ -35,12 +35,12 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
         return driveName;
     }
 
-    public String getFacilityId() {
-        return facilityId;
-    }
-
     public String getFacilityName() {
         return facilityName;
+    }
+
+    public String getFacilityDescription() {
+        return facilityDescription;
     }
 
     public String getFolderName() {
@@ -76,12 +76,12 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
         this.driveName = driveName;
     }
 
-    public void setFacilityId(String facilityId) {
-        this.facilityId = facilityId;
+    public void setFacilityName(String name) {
+        this.facilityName = name;
     }
 
-    public void setFacilityName(String facilityName) {
-        this.facilityName = facilityName;
+    public void setFacilityDescription(String desc) {
+        this.facilityDescription = facilityName;
     }
 
     public void setFolderName(String folderName) {
