@@ -2,6 +2,8 @@ package au.edu.uq.cmm.aclslib.authenticator;
 
 import org.apache.log4j.Logger;
 
+import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
@@ -11,8 +13,6 @@ import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
-import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.StaticConfiguration;
 
 /**
  * The Authenticator class uses an ACLS server as a means of checking a

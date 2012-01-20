@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
 
+import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.service.MonitoredThreadServiceBase;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 

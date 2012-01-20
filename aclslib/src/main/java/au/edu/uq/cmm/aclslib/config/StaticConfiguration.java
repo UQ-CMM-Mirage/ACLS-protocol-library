@@ -1,8 +1,14 @@
-package au.edu.uq.cmm.aclslib.server;
+package au.edu.uq.cmm.aclslib.config;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -191,33 +197,103 @@ public class StaticConfiguration implements Configuration {
     public void setFacilities(Map<String, SimpleFacilityConfigImpl> facilityMap) {
         this.facilityMap = facilityMap;
     }
-
-    public static StaticConfiguration loadConfiguration(String configFile) {
-        // Load configuration from a JSON file.
+    
+    /**
+     * Read the configuration from an input stream
+     * 
+     * @param configFile
+     * @return the configuration or null if there was a problem reading.
+     * @throws ConfigurationException 
+     */
+    public static StaticConfiguration readConfiguration(InputStream is)
+            throws ConfigurationException {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            File cf = new File(configFile == null ? "config.json" : configFile);
-            if (!cf.exists()) {
-                LOG.error("Configuration file '" + cf + "' not found");
-            } else if (!cf.isFile()) {
-                LOG.error("Configuration file '" + cf + "' is not a regular file");
-            } else if (!cf.canRead()) {
-                LOG.error("Configuration file '" + cf + "' is not readable");
-            } else {
-                StaticConfiguration res = mapper.readValue(cf, StaticConfiguration.class);
-                for (Map.Entry<String, SimpleFacilityConfigImpl> entry : 
-                            res.facilityMap.entrySet()) {
-                    entry.getValue().setAddress(entry.getKey());
-                }
-                return res;
+            StaticConfiguration res = mapper.readValue(is, StaticConfiguration.class);
+            for (Map.Entry<String, SimpleFacilityConfigImpl> entry : 
+                res.facilityMap.entrySet()) {
+                entry.getValue().setAddress(entry.getKey());
             }
-        } catch (JsonParseException e) {
-            LOG.error(e);
-        } catch (JsonMappingException e) {
-            LOG.error(e);
-        } catch (IOException e) {
-            LOG.error(e);
+            return res;
+        } catch (JsonParseException ex) {
+            throw new ConfigurationException("The configuration is not valid JSON", ex);
+        } catch (JsonMappingException ex) {
+            throw new ConfigurationException("The configuration JSON doesn't match " +
+                    "the StaticConfiguration class", ex);
+        } catch (IOException ex) {
+            throw new ConfigurationException(
+                    "IO error while reading the configuration", ex);
+        } 
+    }
+
+    /**
+     * Load the configuration from a file.
+     * 
+     * @param configFile
+     * @return the configuration or null if it couldn't be found / read.
+     * @throws ConfigurationException 
+     */
+    public static StaticConfiguration loadConfiguration(String configFile) 
+            throws ConfigurationException {
+        InputStream is = null;
+        try {
+            File cf = new File(configFile == null ? "config.json" : configFile);
+                is = new FileInputStream(cf);
+                return readConfiguration(is);
+        } catch (IOException ex) {
+            throw new ConfigurationException("Cannot open file '" + configFile + "'", ex);
+        } finally {
+            closeQuietly(is);
         }
-        return null;
+    }
+
+    /**
+     * Load the configuration from a URL.  This understands any URL that the
+     * JVM has a protocol handler for, and also "classpath:" URLs. 
+     * @return the configuration or null
+     * @param urlString the URL for the config file
+     * @throws URISyntaxException 
+     * @throws MalformedURLException 
+     */
+    public static StaticConfiguration loadConfigurationFromUrl(String urlString) 
+            throws ConfigurationException {
+        InputStream is = null;
+        try {
+            URI uri = new URI(urlString);
+            if (uri.getScheme().equals("classpath")) {
+                String path = uri.getSchemeSpecificPart();
+                LOG.debug("Loading configuration from classpath resource '" +
+                        path + "'");
+                is = StaticConfiguration.class.getClassLoader().getResourceAsStream(path);
+                if (is == null) {
+                    throw new IllegalArgumentException("Cannot locate resource '" +
+                            path + "' on the classpath");
+                }
+            } else {
+                LOG.debug("Loading configuration from url '" + urlString + "'");
+                is = uri.toURL().openStream();
+            }
+            return readConfiguration(is);
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid urlString '" + urlString + "'", ex);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid urlString '" + urlString + "'", ex);
+        } catch (IOException ex) {
+            throw new ConfigurationException("Cannot open URL input stream", ex);
+        } finally {
+            closeQuietly(is);
+        }
+    }
+    
+    private static void closeQuietly(InputStream is) {
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } catch (IOException ex) {
+            // ignore
+        }
     }
 }

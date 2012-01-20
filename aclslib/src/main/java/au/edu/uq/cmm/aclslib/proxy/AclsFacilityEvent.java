@@ -2,7 +2,7 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.util.EventObject;
 
-import au.edu.uq.cmm.aclslib.server.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 @SuppressWarnings("serial")
 public abstract class AclsFacilityEvent extends EventObject {
