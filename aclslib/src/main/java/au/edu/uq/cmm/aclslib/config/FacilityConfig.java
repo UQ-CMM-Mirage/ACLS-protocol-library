@@ -1,4 +1,4 @@
-package au.edu.uq.cmm.aclslib.server;
+package au.edu.uq.cmm.aclslib.config;
 
 /**
  * Configuration details API for a proxied ACLS facility.  Some

@@ -1,6 +1,6 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import au.edu.uq.cmm.aclslib.server.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 @SuppressWarnings("serial")
 public class AclsLogoutEvent extends AclsFacilityEvent {
