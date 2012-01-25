@@ -31,18 +31,21 @@ public class AclsClient {
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
                 InputStream is = aclsSocket.getInputStream();
-                LOG.debug("Sending ACLS server request " + r.getType().name() + "(" + r.unparse() + ")");
+                LOG.debug("Sending ACLS server request " + r.getType().name() +
+                        "(" + r.unparse() + ")");
                 w.append(r.unparse() + "\r\n").flush();
                 return new ResponseReaderImpl().readWithStatusLine(is);
             } catch (ServerStatusException ex) {
-                LOG.error("ACLS server refused request: " + ex);
+                LOG.error("ACLS server (" + serverHost + ":" + serverPort +
+                		") refused request: " + ex);
                 // FIXME - I think this is wrong.
                 return new ProxyErrorResponse("Proxy got status error from ACLS server");
             } finally {
                 aclsSocket.close();
             }
         } catch (IOException ex) {
-            LOG.warn("IO error while trying to talk to ACLS server", ex);
+            LOG.warn("IO error while trying to talk to ACLS server (" +
+                    serverHost + ":" + serverPort + ")", ex);
             return new ProxyErrorResponse("Proxy cannot talk to ACLS server");
         }
     }
