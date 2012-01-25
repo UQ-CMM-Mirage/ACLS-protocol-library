@@ -1,4 +1,4 @@
-package au.edu.uq.cmm.aclslib.server;
+package au.edu.uq.cmm.aclslib.config;
 
 import java.net.InetAddress;
 import java.util.Collection;

@@ -3,6 +3,8 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.net.Socket;
 
+import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
@@ -21,8 +23,6 @@ import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.message.YesNoResponse;
-import au.edu.uq.cmm.aclslib.server.Configuration;
-import au.edu.uq.cmm.aclslib.server.FacilityConfig;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 /**
