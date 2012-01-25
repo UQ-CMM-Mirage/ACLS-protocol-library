@@ -81,7 +81,7 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
     }
 
     public void setFacilityDescription(String desc) {
-        this.facilityDescription = facilityName;
+        this.facilityDescription = desc;
     }
 
     public void setFolderName(String folderName) {

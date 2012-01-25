@@ -211,7 +211,7 @@ public class StaticConfiguration implements Configuration {
             ObjectMapper mapper = new ObjectMapper();
             StaticConfiguration res = mapper.readValue(is, StaticConfiguration.class);
             for (Map.Entry<String, SimpleFacilityConfigImpl> entry : 
-                res.facilityMap.entrySet()) {
+                    res.facilityMap.entrySet()) {
                 entry.getValue().setAddress(entry.getKey());
             }
             return res;
