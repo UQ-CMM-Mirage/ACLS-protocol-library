@@ -1,5 +1,8 @@
 package au.edu.uq.cmm.aclslib.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
@@ -22,6 +25,8 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
     private boolean useFileLocks = true;
     private int fileSettlingTime;
     private String address;
+    private List<DatafileConfig> datafileConfigs =
+            new ArrayList<DatafileConfig>();
 
     public String getAccessName() {
         return accessName;
@@ -123,5 +128,13 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public List<DatafileConfig> getDatafiles() {
+        return datafileConfigs;
+    }
+
+    public void setDatafileConfig(List<DatafileConfig> datafileConfigs) {
+        this.datafileConfigs = datafileConfigs;
     }
 }
