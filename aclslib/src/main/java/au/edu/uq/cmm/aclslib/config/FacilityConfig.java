@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.config;
 
+import java.util.List;
+
 /**
  * Configuration details API for a proxied ACLS facility.  Some
  * of these properties configure the behavior of the proxy and the
@@ -48,6 +50,11 @@ public interface FacilityConfig {
      * "\\host\share".
      */
     String getFolderName();
+    
+    /**
+     * Get the datafile configurations for the datafiles in a dataset. 
+     */
+    List<? extends DatafileConfig> getDatafiles();
 
     /**
      * If true, tell the client to grab the screen when no use is
@@ -88,5 +95,5 @@ public interface FacilityConfig {
      * Get the registered IP address or DNS name of the facility.
      */
     String getAddress();
-
+    
 }
