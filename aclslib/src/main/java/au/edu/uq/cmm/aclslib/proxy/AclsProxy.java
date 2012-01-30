@@ -17,7 +17,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
-import au.edu.uq.cmm.aclslib.config.SimpleFacilityConfigImpl;
+import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
@@ -154,10 +154,10 @@ public class AclsProxy extends CompositeServiceBase {
         StaticConfiguration sampleConfig = new StaticConfiguration();
         sampleConfig.setServerHost("aclsHost.example.com");
         sampleConfig.setProxyHost("proxyHost.example.com");
-        Map<String, SimpleFacilityConfigImpl> facilityMap =
-                new TreeMap<String, SimpleFacilityConfigImpl>();
+        Map<String, StaticFacilityConfig> facilityMap =
+                new TreeMap<String, StaticFacilityConfig>();
         sampleConfig.setFacilities(facilityMap);
-        SimpleFacilityConfigImpl f1 = new SimpleFacilityConfigImpl();
+        StaticFacilityConfig f1 = new StaticFacilityConfig();
         f1.setAccessName("jim");
         f1.setAccessPassword("secret");
         f1.setFolderName("/trollscope");
@@ -166,7 +166,7 @@ public class AclsProxy extends CompositeServiceBase {
         f1.setFacilityDescription("Trollscope 2000T");
         f1.setUseFullScreen(true);
         facilityMap.put("192.168.1.1", f1);
-        SimpleFacilityConfigImpl f2 = new SimpleFacilityConfigImpl();
+        StaticFacilityConfig f2 = new StaticFacilityConfig();
         f2.setFacilityName("F002");
         f2.setFacilityDescription("The hatstand in the corner");
         f2.setUseFullScreen(false);

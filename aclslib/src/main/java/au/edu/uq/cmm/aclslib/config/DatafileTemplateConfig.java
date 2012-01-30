@@ -6,7 +6,7 @@ package au.edu.uq.cmm.aclslib.config;
  * 
  * @author scrawley
  */
-public interface DatafileConfig {
+public interface DatafileTemplateConfig {
 
     /**
      * Get the regexes used to match the data file.

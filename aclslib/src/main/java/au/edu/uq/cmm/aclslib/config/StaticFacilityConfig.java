@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * This class gives the configuration details of an ACLS facility
@@ -11,7 +12,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  * 
  * @author scrawley
  */
-public class SimpleFacilityConfigImpl implements FacilityConfig {
+public class StaticFacilityConfig implements FacilityConfig {
     
     private boolean useFullScreen;
     private String driveName;
@@ -25,8 +26,8 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
     private boolean useFileLocks = true;
     private int fileSettlingTime;
     private String address;
-    private List<DatafileConfig> datafileConfigs =
-            new ArrayList<DatafileConfig>();
+    private List<DatafileTemplateConfig> templates =
+            new ArrayList<DatafileTemplateConfig>();
 
     public String getAccessName() {
         return accessName;
@@ -130,11 +131,12 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
         this.address = address;
     }
 
-    public List<DatafileConfig> getDatafiles() {
-        return datafileConfigs;
+    @JsonDeserialize(contentAs=StaticDatafileTemplateConfig.class)
+    public List<DatafileTemplateConfig> getDatafileTemplates() {
+        return templates;
     }
 
-    public void setDatafileConfig(List<DatafileConfig> datafileConfigs) {
-        this.datafileConfigs = datafileConfigs;
+    public void setDatafileTemplates(List<DatafileTemplateConfig> templates) {
+        this.templates = templates;
     }
 }
