@@ -19,6 +19,11 @@ public interface DatafileTemplateConfig {
     String getMimeType();
 
     /**
+     * The data file's suffix (as used in the queue)
+     */
+    String getSuffix();
+
+    /**
      * If true, the datafile is an optional member of the dataset
      */
     boolean isOptional();
