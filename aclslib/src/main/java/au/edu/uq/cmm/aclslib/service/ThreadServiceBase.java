@@ -19,23 +19,23 @@ public abstract class ThreadServiceBase implements Service, Runnable {
 
     public void startup() {
         synchronized (lock) {
-            if (thread != null) {
-                state = State.RUNNING;
-                return;
-            }
-            thread = new Thread(this);
-            thread.setDaemon(true);
-            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                public void uncaughtException(Thread t, Throwable ex) {
-                    LOG.error("Thread died", ex);
-                    synchronized (lock) {
-                        thread = null;
-                        state = State.FAILED;
+            if (thread == null) {
+                thread = new Thread(this);
+                thread.setDaemon(true);
+                thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                    public void uncaughtException(Thread t, Throwable ex) {
+                        LOG.error("Thread died", ex);
+                        synchronized (lock) {
+                            thread = null;
+                            state = State.FAILED;
+                            lock.notifyAll();
+                        }
                     }
-                }
-            });
+                });
+            }
             state = State.RUNNING;
             thread.start();
+            lock.notifyAll();
         }
     }
 
