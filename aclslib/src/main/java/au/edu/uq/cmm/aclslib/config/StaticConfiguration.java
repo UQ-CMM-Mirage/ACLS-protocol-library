@@ -42,7 +42,7 @@ public class StaticConfiguration implements Configuration {
     private long facilityRecheckInterval = 0;
 
     
-    private Map<String, SimpleFacilityConfigImpl> facilityMap;
+    private Map<String, StaticFacilityConfig> facilityMap;
 
     public final int getProxyPort() {
         return proxyPort;
@@ -165,11 +165,11 @@ public class StaticConfiguration implements Configuration {
         this.facilityRecheckInterval = facilityRecheckInterval;
     }
 
-    public Map<String, SimpleFacilityConfigImpl> getFacilityMap() {
+    public Map<String, StaticFacilityConfig> getFacilityMap() {
         return facilityMap;
     }
 
-    public void setFacilityMap(Map<String, SimpleFacilityConfigImpl> facilityMap) {
+    public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {
         this.facilityMap = facilityMap;
     }
 
@@ -194,7 +194,7 @@ public class StaticConfiguration implements Configuration {
         return null;
     }
 
-    public void setFacilities(Map<String, SimpleFacilityConfigImpl> facilityMap) {
+    public void setFacilities(Map<String, StaticFacilityConfig> facilityMap) {
         this.facilityMap = facilityMap;
     }
     
@@ -210,7 +210,7 @@ public class StaticConfiguration implements Configuration {
         try {
             ObjectMapper mapper = new ObjectMapper();
             StaticConfiguration res = mapper.readValue(is, StaticConfiguration.class);
-            for (Map.Entry<String, SimpleFacilityConfigImpl> entry : 
+            for (Map.Entry<String, StaticFacilityConfig> entry : 
                     res.facilityMap.entrySet()) {
                 entry.getValue().setAddress(entry.getKey());
             }

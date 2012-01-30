@@ -1,10 +1,14 @@
 package au.edu.uq.cmm.aclslib.config;
 
-public class SimpleDatafileConfigImpl implements DatafileConfig {
+public class StaticDatafileTemplateConfig implements DatafileTemplateConfig {
 
     private boolean optional;
     private String mimeType;
     private String filePattern;
+    
+    public StaticDatafileTemplateConfig() {
+        super();
+    }
 
     public String getFilePattern() {
         return filePattern;
