@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * This class gives the configuration details of an ACLS facility
@@ -130,6 +131,7 @@ public class StaticFacilityConfig implements FacilityConfig {
         this.address = address;
     }
 
+    @JsonDeserialize(contentAs=StaticDatafileTemplateConfig.class)
     public List<DatafileTemplateConfig> getDatafileTemplates() {
         return templates;
     }
