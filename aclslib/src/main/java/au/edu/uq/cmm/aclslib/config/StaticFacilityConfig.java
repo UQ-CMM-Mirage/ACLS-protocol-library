@@ -11,7 +11,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  * 
  * @author scrawley
  */
-public class SimpleFacilityConfigImpl implements FacilityConfig {
+public class StaticFacilityConfig implements FacilityConfig {
     
     private boolean useFullScreen;
     private String driveName;
@@ -25,8 +25,8 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
     private boolean useFileLocks = true;
     private int fileSettlingTime;
     private String address;
-    private List<DatafileConfig> datafileConfigs =
-            new ArrayList<DatafileConfig>();
+    private List<DatafileTemplateConfig> templates =
+            new ArrayList<DatafileTemplateConfig>();
 
     public String getAccessName() {
         return accessName;
@@ -130,11 +130,11 @@ public class SimpleFacilityConfigImpl implements FacilityConfig {
         this.address = address;
     }
 
-    public List<DatafileConfig> getDatafiles() {
-        return datafileConfigs;
+    public List<DatafileTemplateConfig> getDatafileTemplates() {
+        return templates;
     }
 
-    public void setDatafileConfig(List<DatafileConfig> datafileConfigs) {
-        this.datafileConfigs = datafileConfigs;
+    public void setDatafileTemplates(List<DatafileTemplateConfig> templates) {
+        this.templates = templates;
     }
 }

@@ -52,9 +52,9 @@ public interface FacilityConfig {
     String getFolderName();
     
     /**
-     * Get the datafile configurations for the datafiles in a dataset. 
+     * Get the datafile template configurations for the datafiles in a dataset. 
      */
-    List<? extends DatafileConfig> getDatafiles();
+    List<? extends DatafileTemplateConfig> getDatafileTemplates();
 
     /**
      * If true, tell the client to grab the screen when no use is
