@@ -5,6 +5,7 @@ public class StaticDatafileTemplateConfig implements DatafileTemplateConfig {
     private boolean optional;
     private String mimeType;
     private String filePattern;
+    private String suffix;
     
     public StaticDatafileTemplateConfig() {
         super();
@@ -32,6 +33,14 @@ public class StaticDatafileTemplateConfig implements DatafileTemplateConfig {
 
     public void setFilePattern(String filePattern) {
         this.filePattern = filePattern;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
     }
 
 }
