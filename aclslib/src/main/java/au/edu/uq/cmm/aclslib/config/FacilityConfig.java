@@ -55,6 +55,12 @@ public interface FacilityConfig {
      * Get the datafile template configurations for the datafiles in a dataset. 
      */
     List<? extends DatafileTemplateConfig> getDatafileTemplates();
+    
+    /**
+     * If true, perform case insensitive matching of datafiles against 
+     * templates.
+     */
+    boolean isCaseInsensitive();
 
     /**
      * If true, tell the client to grab the screen when no use is

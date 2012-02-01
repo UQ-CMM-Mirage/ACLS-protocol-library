@@ -24,9 +24,10 @@ public class StaticFacilityConfig implements FacilityConfig {
     private String facilityDescription;
     private boolean dummy;
     private boolean useFileLocks = true;
+    private boolean caseInsensitive;
     private int fileSettlingTime;
     private String address;
-    private List<DatafileTemplateConfig> templates =
+    private List<DatafileTemplateConfig> datafileTemplates =
             new ArrayList<DatafileTemplateConfig>();
 
     public String getAccessName() {
@@ -133,10 +134,18 @@ public class StaticFacilityConfig implements FacilityConfig {
 
     @JsonDeserialize(contentAs=StaticDatafileTemplateConfig.class)
     public List<DatafileTemplateConfig> getDatafileTemplates() {
-        return templates;
+        return datafileTemplates;
     }
 
     public void setDatafileTemplates(List<DatafileTemplateConfig> templates) {
-        this.templates = templates;
+        this.datafileTemplates = templates;
+    }
+
+    public boolean isCaseInsensitive() {
+        return caseInsensitive;
+    }
+
+    public void setCaseInsensitive(boolean caseInsensitive) {
+        this.caseInsensitive = caseInsensitive;
     }
 }

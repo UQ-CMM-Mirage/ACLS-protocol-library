@@ -64,7 +64,7 @@ public interface Configuration {
     /**
      * Get a collection containing all configured facilities.
      */
-    Collection<FacilityConfig> getFacilities();
+    Collection<FacilityConfig> getFacilityConfigs();
 
     /**
      * Get the base URL that will be used for the URLs of files
