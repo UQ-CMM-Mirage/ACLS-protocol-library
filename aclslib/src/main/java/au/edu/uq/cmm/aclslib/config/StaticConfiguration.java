@@ -85,7 +85,7 @@ public class StaticConfiguration implements Configuration {
     }
 
     public final String getDummyFacility() {
-        for (FacilityConfig facility : getFacilities()) {
+        for (FacilityConfig facility : getFacilityConfigs()) {
             if (facility.isDummy()) {
                 return facility.getFacilityName();
             }
@@ -173,7 +173,7 @@ public class StaticConfiguration implements Configuration {
         this.facilityMap = facilityMap;
     }
 
-    public Collection<FacilityConfig> getFacilities() {
+    public Collection<FacilityConfig> getFacilityConfigs() {
         return new ArrayList<FacilityConfig>(facilityMap.values());
     }
 
