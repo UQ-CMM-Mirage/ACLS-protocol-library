@@ -73,10 +73,16 @@ public interface Configuration {
     String getBaseFileUrl();
 
     /**
-     * Get the pathname of directory where captured (grabbed) files
-     * are written.
+     * Get the pathname of the directory where captured (grabbed) files
+     * and admin metadata file are written.
      */
     String getCaptureDirectory();
+    
+    /**
+     * Get the pathname of the directory where files and metadata are
+     * archived.
+     */
+    String getArchiveDirectory();
 
     /**
      * Get the URL or IRI for the atom feed.  This is what is used as

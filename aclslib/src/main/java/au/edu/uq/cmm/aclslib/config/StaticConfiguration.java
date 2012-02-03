@@ -32,6 +32,7 @@ public class StaticConfiguration implements Configuration {
     private String proxyHost;
     private boolean useProject;
     private String captureDirectory;
+    private String archiveDirectory;
     private String baseFileUrl;
     private String feedId;
     private String feedTitle;
@@ -99,6 +100,14 @@ public class StaticConfiguration implements Configuration {
 
     public void setCaptureDirectory(String captureDirectory) {
         this.captureDirectory = captureDirectory;
+    }
+
+    public String getArchiveDirectory() {
+        return archiveDirectory;
+    }
+
+    public void setArchiveDirectory(String archiveDirectory) {
+        this.archiveDirectory = archiveDirectory;
     }
 
     public String getBaseFileUrl() {
