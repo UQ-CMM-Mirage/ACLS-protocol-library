@@ -17,8 +17,8 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
-import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
+import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
