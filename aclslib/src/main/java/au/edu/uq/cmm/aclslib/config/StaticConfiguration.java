@@ -32,6 +32,7 @@ public class StaticConfiguration implements Configuration {
     private String proxyHost;
     private boolean useProject;
     private String captureDirectory;
+    private String archiveDirectory;
     private String baseFileUrl;
     private String feedId;
     private String feedTitle;
@@ -39,8 +40,10 @@ public class StaticConfiguration implements Configuration {
     private String feedAuthorEmail;
     private String feedUrl;
     private int feedPageSize = 20;
-    private long facilityRecheckInterval = 0;
-
+    private long facilityRecheckInterval;
+    private long queueExpiryTime;
+    private long queueExpiryInterval;
+    private boolean expireByDeleting;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -99,6 +102,14 @@ public class StaticConfiguration implements Configuration {
 
     public void setCaptureDirectory(String captureDirectory) {
         this.captureDirectory = captureDirectory;
+    }
+
+    public String getArchiveDirectory() {
+        return archiveDirectory;
+    }
+
+    public void setArchiveDirectory(String archiveDirectory) {
+        this.archiveDirectory = archiveDirectory;
     }
 
     public String getBaseFileUrl() {
@@ -167,6 +178,30 @@ public class StaticConfiguration implements Configuration {
 
     public Map<String, StaticFacilityConfig> getFacilityMap() {
         return facilityMap;
+    }
+
+    public long getQueueExpiryTime() {
+        return queueExpiryTime;
+    }
+
+    public void setQueueExpiryTime(long queueExpiryTime) {
+        this.queueExpiryTime = queueExpiryTime;
+    }
+
+    public long getQueueExpiryInterval() {
+        return queueExpiryInterval;
+    }
+
+    public void setQueueExpiryInterval(long queueExpiryInterval) {
+        this.queueExpiryInterval = queueExpiryInterval;
+    }
+
+    public boolean isExpireByDeleting() {
+        return expireByDeleting;
+    }
+
+    public void setExpireByDeleting(boolean expireByDeleting) {
+        this.expireByDeleting = expireByDeleting;
     }
 
     public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {
