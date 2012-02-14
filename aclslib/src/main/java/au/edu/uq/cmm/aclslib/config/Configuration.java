@@ -73,10 +73,16 @@ public interface Configuration {
     String getBaseFileUrl();
 
     /**
-     * Get the pathname of directory where captured (grabbed) files
-     * are written.
+     * Get the pathname of the directory where captured (grabbed) files
+     * and admin metadata file are written.
      */
     String getCaptureDirectory();
+    
+    /**
+     * Get the pathname of the directory where files and metadata are
+     * archived.
+     */
+    String getArchiveDirectory();
 
     /**
      * Get the URL or IRI for the atom feed.  This is what is used as
@@ -118,5 +124,23 @@ public interface Configuration {
      * there is no re-checking.
      */
     long getFacilityRecheckInterval();
-
+    
+    /**
+     * Get queue expiry time.  After an entry has been on the queue this long, 
+     * it is eligible for expiry.  (Value is in minutes.)  If zero or negative,
+     * queue entries don't expire automatically.
+     */
+    long getQueueExpiryTime();
+    
+    /**
+     * Get queue expiry interval.  This is the interval between successive queue
+     * checks.  (Value is in minutes.)  If zero or negative, automatic queue expiry
+     * checking is disabled.
+     */
+    long getQueueExpiryInterval();
+    
+    /**
+     * This determines if expired queue entries are archived or deleted outright. 
+     */
+    boolean isExpireByDeleting();
 }
