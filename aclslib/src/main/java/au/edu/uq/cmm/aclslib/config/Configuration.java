@@ -124,5 +124,23 @@ public interface Configuration {
      * there is no re-checking.
      */
     long getFacilityRecheckInterval();
-
+    
+    /**
+     * Get queue expiry time.  After an entry has been on the queue this long, 
+     * it is eligible for expiry.  (Value is in minutes.)  If zero or negative,
+     * queue entries don't expire automatically.
+     */
+    long getQueueExpiryTime();
+    
+    /**
+     * Get queue expiry interval.  This is the interval between successive queue
+     * checks.  (Value is in minutes.)  If zero or negative, automatic queue expiry
+     * checking is disabled.
+     */
+    long getQueueExpiryInterval();
+    
+    /**
+     * This determines if expired queue entries are archived or deleted outright. 
+     */
+    boolean isExpireByDeleting();
 }
