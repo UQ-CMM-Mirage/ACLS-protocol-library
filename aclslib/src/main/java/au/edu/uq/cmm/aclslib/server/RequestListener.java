@@ -5,6 +5,7 @@ import java.io.InterruptedIOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
@@ -13,13 +14,13 @@ import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.service.MonitoredThreadServiceBase;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 
-
 public class RequestListener extends MonitoredThreadServiceBase {
     private static final Logger LOG = Logger.getLogger(RequestListener.class);
     private Configuration config;
     private RequestProcessorFactory factory;
     private InetAddress bindAddr;
     private int port;
+    private ServerSocket ss;
     
     public RequestListener(Configuration config, int port, String bindHost,
             RequestProcessorFactory factory) throws UnknownHostException {
@@ -31,7 +32,6 @@ public class RequestListener extends MonitoredThreadServiceBase {
     }
 
     public void run() {
-        ServerSocket ss;
         try {
             LOG.debug("Starting proxy listener for address = '" + bindAddr +
                     "', port = " + port);
@@ -49,9 +49,24 @@ public class RequestListener extends MonitoredThreadServiceBase {
                 new Thread(factory.createProcessor(config, s)).start();
             } catch (InterruptedIOException ex) {
                 // FIXME - Synchronously shut down the processor pool.
+                LOG.info("Interrupted - we're done");
+                break;
             } catch (IOException ex) {
+                if (Thread.currentThread().isInterrupted()) {
+                    LOG.info("Interrupted - we're done (2)");
+                    break;
+                }
                 LOG.debug(ex);
             }
+        }
+    }
+    
+    protected void unblock() {
+        try {
+            LOG.info("Unblocking proxy listener");
+            ss.close();
+        } catch (IOException ex) {
+            LOG.debug(ex);
         }
     }
 

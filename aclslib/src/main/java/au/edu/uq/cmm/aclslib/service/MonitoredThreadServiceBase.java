@@ -43,8 +43,11 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                         break;
                     }
                 } catch (InterruptedException ex) {
+                    LOG.info("Monitor thread got the interrupt");
                     serviceThread.interrupt();
+                    unblock();
                     try {
+                        LOG.info("Interrupted service thread");
                         serviceThread.join();
                     } catch (InterruptedException ex2) {
                         LOG.error("Monitor thread interrupted while waiting " +
@@ -53,6 +56,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                     synchronized (lock) {
                         state = State.SHUT_DOWN;
                     }
+                    LOG.info("Finished interrupt processing");
                     break;
                 }
             }
@@ -84,11 +88,21 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     protected MonitoredThreadServiceBase(RestartDecider restartDecider) {
         this.restartDecider = restartDecider;
     }
+    
+    /**
+     * This is called by the monitor thread to unblock the service
+     * thread after interrupting it.
+     */
+    protected void unblock() {
+        // Do nothing by default.
+    }
 
     public final void startup() {
+        LOG.info("Starting up");
         synchronized (lock) {
             if (monitorThread != null && monitorThread.isAlive()) {
                 state = State.RUNNING;
+                LOG.info("Already running");
                 return;
             }
             final Monitor monitor = new Monitor();
@@ -106,14 +120,17 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
             state = State.RUNNING;
             monitorThread.start();
         }
+        LOG.info("Startup done");
     }
 
     public final void shutdown() {
         Thread m;
+        LOG.info("Shutting down");
         synchronized (lock) {
             if (monitorThread == null) {
                 state = State.SHUT_DOWN;
                 lock.notifyAll();
+                LOG.info("Already shut down");
                 return;
             }
             monitorThread.interrupt();
@@ -126,8 +143,10 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                 state = State.SHUT_DOWN;
                 lock.notifyAll();
             }
+            LOG.info("Shutdown completed");
         } catch (InterruptedException ex) {
-            // ignore
+            LOG.info("Shutdown interrupted");
+            Thread.currentThread().interrupt();
         }
     }
 

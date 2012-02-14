@@ -31,18 +31,18 @@ public class FacilityChecker extends ThreadServiceBase {
 
     public void run() {
         long sleepMinutes = config.getFacilityRecheckInterval();
-                
-        while (true) {
-            try {
-                checkFacilities();
-            } catch (AclsException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Facility check failed", ex);
-                } else {
-                    LOG.info("Facility check failed: " + ex.getMessage());
+
+        try {
+            while (true) {
+                try {
+                    checkFacilities();
+                } catch (AclsException ex) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Facility check failed", ex);
+                    } else {
+                        LOG.info("Facility check failed: " + ex.getMessage());
+                    }
                 }
-            }
-            try {
                 if (sleepMinutes > 0) {
                     Thread.sleep(sleepMinutes * 60 * 1000);
                 } else {
@@ -52,10 +52,10 @@ public class FacilityChecker extends ThreadServiceBase {
                         lock.wait();
                     }
                 }
-            } catch (InterruptedException ex) {
-                break;
             }
-        } 
+        } catch (InterruptedException ex) {
+            LOG.info("Interrupted - we're done");
+        }
     }
 
     private void checkFacilities() throws AclsException {

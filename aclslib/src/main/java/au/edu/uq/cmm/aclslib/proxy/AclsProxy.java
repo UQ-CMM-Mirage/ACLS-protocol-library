@@ -52,7 +52,6 @@ public class AclsProxy extends CompositeServiceBase {
     private Map<String, String> passwordCache = new HashMap<String, String>();
   
 
-    
     public AclsProxy(Configuration config) {
         this.config = config;
         try {
@@ -108,14 +107,18 @@ public class AclsProxy extends CompositeServiceBase {
 
     @Override
     protected void doShutdown() throws ServiceException, InterruptedException {
+        LOG.info("Shutting down");
         facilityChecker.shutdown();
         requestListener.shutdown();
+        LOG.info("Shutdown completed");
     }
 
     @Override
     protected void doStartup() throws ServiceException {
+        LOG.info("Starting up");
         requestListener.startup();
         facilityChecker.startup();
+        LOG.info("Startup completed");
     }
 
     public void probeServer() throws ServiceException {
