@@ -54,7 +54,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                         		"for service thread to finish", ex);
                     }
                     synchronized (lock) {
-                        state = State.SHUT_DOWN;
+                        state = State.STOPPED;
                     }
                     LOG.info("Finished interrupt processing");
                     break;
@@ -101,7 +101,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
         LOG.info("Starting up");
         synchronized (lock) {
             if (monitorThread != null && monitorThread.isAlive()) {
-                state = State.RUNNING;
+                state = State.STARTED;
                 LOG.info("Already running");
                 return;
             }
@@ -117,7 +117,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                     }
                 }
             });
-            state = State.RUNNING;
+            state = State.STARTED;
             monitorThread.start();
         }
         LOG.info("Startup done");
@@ -128,19 +128,20 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
         LOG.info("Shutting down");
         synchronized (lock) {
             if (monitorThread == null) {
-                state = State.SHUT_DOWN;
+                state = State.STOPPED;
                 lock.notifyAll();
                 LOG.info("Already shut down");
                 return;
             }
+            state = State.STOPPING;
             monitorThread.interrupt();
             m = monitorThread;
         }
         try {
             m.join();
             synchronized (lock) {
+                state = State.STOPPED;
                 monitorThread = null;
-                state = State.SHUT_DOWN;
                 lock.notifyAll();
             }
             LOG.info("Shutdown completed");

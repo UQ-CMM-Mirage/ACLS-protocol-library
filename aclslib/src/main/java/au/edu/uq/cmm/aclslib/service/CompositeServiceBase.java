@@ -14,52 +14,49 @@ import org.apache.log4j.Logger;
 public abstract class CompositeServiceBase implements Service {
     private static final Logger LOG = Logger.getLogger(CompositeServiceBase.class);
     private State state = State.INITIAL;
-    private boolean changingState = false;
     private final Object lock = new Object();
 
     public void startup() {
         synchronized (lock) {
-            if (changingState) {
+            if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
             }
-            if (state == State.RUNNING) {
+            if (state == State.STARTED) {
                 return;
             }
-            changingState = true;
+            state = State.STARTING;
         }
         LOG.info("Starting up");
         doStartup();
         LOG.info("Startup completed");
         synchronized (lock) {
-            changingState = false;
-            state = State.RUNNING;
+            state = State.STARTED;
             lock.notifyAll();
         }
     }
 
     public void shutdown() throws InterruptedException {
         synchronized (lock) {
-            if (changingState) {
+            if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
             }
-            if (state != State.RUNNING) {
+            if (state != State.STARTED) {
                 return;
             }
-            changingState = true;
+            state = State.STOPPING;
         }
         LOG.info("Shutting down");
         doShutdown();
         LOG.info("Shutdown completed");
         synchronized (lock) {
-            changingState = false;
-            state = State.SHUT_DOWN;
+            state = State.STOPPED;
             lock.notifyAll();
         }
     }
     
     public void awaitShutdown() throws InterruptedException {
         synchronized (lock) {
-            while (state != State.SHUT_DOWN) {
+            while (state != State.STOPPED) {
                 lock.wait();
             }
         }

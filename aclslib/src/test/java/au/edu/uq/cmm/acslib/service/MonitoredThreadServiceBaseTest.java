@@ -53,10 +53,10 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertNull(status.pollFirst());
         Assert.assertEquals(State.INITIAL, service.getState());
         service.startup();
-        Assert.assertEquals(State.RUNNING, service.getState());
+        Assert.assertEquals(State.STARTED, service.getState());
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
         service.shutdown();
-        Assert.assertEquals(State.SHUT_DOWN, service.getState());
+        Assert.assertEquals(State.STOPPED, service.getState());
         Assert.assertEquals("finished", status.pollFirst(2, TimeUnit.SECONDS));
     }
     
@@ -69,13 +69,13 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertEquals(State.INITIAL, service.getState());
         service.startup();
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
-        Assert.assertEquals(State.RUNNING, service.getState());
+        Assert.assertEquals(State.STARTED, service.getState());
         killSwitch.set(true);
         Assert.assertEquals("arrggghhh", status.pollFirst(2, TimeUnit.SECONDS));
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
-        Assert.assertEquals(State.RUNNING, service.getState());
+        Assert.assertEquals(State.STARTED, service.getState());
         service.shutdown();
-        Assert.assertEquals(State.SHUT_DOWN, service.getState());
+        Assert.assertEquals(State.STOPPED, service.getState());
         Assert.assertEquals("finished", status.pollFirst(2, TimeUnit.SECONDS));
     }
     
@@ -88,13 +88,13 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertEquals(State.INITIAL, service.getState());
         service.startup();
         Assert.assertEquals("running", status.pollFirst(2, TimeUnit.SECONDS));
-        Assert.assertEquals(State.RUNNING, service.getState());
+        Assert.assertEquals(State.STARTED, service.getState());
         killSwitch.set(true);
         Assert.assertEquals("arrggghhh", status.pollFirst(2, TimeUnit.SECONDS));
         
         // (Deal with the fact that it takes time to get to the FAILED state.)
         for (int i = 0; i < 10; i++) {
-            if (service.getState() == State.RUNNING) {
+            if (service.getState() == State.STARTED) {
                 Thread.sleep(1);
             }
         }
@@ -102,7 +102,7 @@ public class MonitoredThreadServiceBaseTest {
         Assert.assertEquals(null, status.pollFirst());
         
         service.shutdown();
-        Assert.assertEquals(State.SHUT_DOWN, service.getState());
+        Assert.assertEquals(State.STOPPED, service.getState());
         Assert.assertEquals(null, status.pollFirst());
     }
 }

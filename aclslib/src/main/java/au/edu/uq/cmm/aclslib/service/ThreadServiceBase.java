@@ -33,7 +33,7 @@ public abstract class ThreadServiceBase implements Service, Runnable {
                     }
                 });
             }
-            state = State.RUNNING;
+            state = State.STARTED;
             thread.start();
             lock.notifyAll();
         }
@@ -43,17 +43,18 @@ public abstract class ThreadServiceBase implements Service, Runnable {
         Thread t;
         synchronized (lock) {
             if (thread == null) {
-                state = State.SHUT_DOWN;
+                state = State.STOPPED;
                 lock.notifyAll();
                 return;
             }
             thread.interrupt();
             t = thread;
+            state = State.STOPPING;
         }
         try {
             t.join();
             synchronized (lock) {
-                state = State.SHUT_DOWN;
+                state = State.STOPPED;
                 thread = null;
                 lock.notifyAll();
             }
@@ -75,6 +76,4 @@ public abstract class ThreadServiceBase implements Service, Runnable {
             return state;
         }
     }
-    
-    
 }

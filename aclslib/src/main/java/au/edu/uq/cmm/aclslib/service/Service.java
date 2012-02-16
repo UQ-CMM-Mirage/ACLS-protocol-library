@@ -16,10 +16,14 @@ public interface Service {
     public enum State {
         /** The service has never been started */
         INITIAL, 
+        /** The service is starting */
+        STARTING,
         /** The service is currently running (as far as we can tell) */
-        RUNNING, 
-        /** The service has been shut down. */
-        SHUT_DOWN, 
+        STARTED, 
+        /** The service is stopping */
+        STOPPING,
+        /** The service has been stopped. */
+        STOPPED, 
         /** The service has failed. */
         FAILED
     }
