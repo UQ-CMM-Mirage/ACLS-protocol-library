@@ -7,6 +7,10 @@ import org.apache.log4j.Logger;
  * to run the service in a Thread, and methods to startup and shutdown the
  * thread. The Service class merely needs to implement the {@link Runnable#run()} 
  * method.
+ * <p>
+ * Note that in the current implementation, the service goes into the STARTED
+ * state without waiting for the actual service thread to reach any particular 
+ * state.  The {@link #startStartup()} method blocks until that happens.
  * 
  * @author scrawley
  */
@@ -39,8 +43,12 @@ public abstract class ThreadServiceBase implements Service, Runnable {
         }
     }
 
-    public void shutdown() {
-        Thread t;
+    public void startStartup() throws ServiceException {
+        startup();
+    }
+
+    public void shutdown() throws InterruptedException {
+        final Thread t;
         synchronized (lock) {
             if (thread == null) {
                 state = State.STOPPED;
@@ -51,16 +59,40 @@ public abstract class ThreadServiceBase implements Service, Runnable {
             t = thread;
             state = State.STOPPING;
         }
-        try {
-            t.join();
-            synchronized (lock) {
-                state = State.STOPPED;
-                thread = null;
-                lock.notifyAll();
-            }
-        } catch (InterruptedException ex) {
-            // ignore
+        t.join();
+        synchronized (lock) {
+            state = State.STOPPED;
+            thread = null;
+            lock.notifyAll();
         }
+    }
+
+    public void startShutdown() throws ServiceException {
+        final Thread t;
+        synchronized (lock) {
+            if (thread == null) {
+                state = State.STOPPED;
+                lock.notifyAll();
+                return;
+            }
+            thread.interrupt();
+            t = thread;
+            state = State.STOPPING;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                try {
+                    t.join();
+                } catch (InterruptedException ex) {
+                    LOG.error("Shutdown interrupted", ex);
+                } finally {
+                    synchronized (lock) {
+                        state = State.STOPPED;
+                        thread = null;
+                        lock.notifyAll();
+                    }
+                }
+            }}).start();
     }
 
     public void awaitShutdown() throws InterruptedException {

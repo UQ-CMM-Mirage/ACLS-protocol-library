@@ -17,30 +17,75 @@ public abstract class CompositeServiceBase implements Service {
     private final Object lock = new Object();
 
     public void startup() {
+        LOG.info("Startup called");
         synchronized (lock) {
             if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
             }
             if (state == State.STARTED) {
+                LOG.info("Already started");
                 return;
             }
             state = State.STARTING;
         }
         LOG.info("Starting up");
-        doStartup();
-        LOG.info("Startup completed");
-        synchronized (lock) {
-            state = State.STARTED;
-            lock.notifyAll();
+        try {
+            doStartup();
+            LOG.info("Startup completed");
+            synchronized (lock) {
+                state = State.STARTED;
+                lock.notifyAll();
+            }
+        } catch (InterruptedException ex) {
+            LOG.error("Startup interrupted");
+            synchronized (lock) {
+                state = State.FAILED;
+                lock.notifyAll();
+            }
         }
     }
 
+    public void startStartup() throws ServiceException {
+        LOG.info("StartStartup called");
+        synchronized (lock) {
+            if (state == State.STARTING || state == State.STOPPING) {
+                throw new IllegalStateException("State change already in progress");
+            }
+            if (state == State.STARTED) {
+                LOG.info("Already started");
+                return;
+            }
+            state = State.STARTING;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                LOG.info("Starting up");
+                try {
+                    doStartup();
+                    LOG.info("Startup completed");
+                    synchronized (lock) {
+                        state = State.STARTED;
+                        lock.notifyAll();
+                    }
+                } catch (InterruptedException ex) {
+                    LOG.error("Startup interrupted");
+                    synchronized (lock) {
+                        state = State.FAILED;
+                        lock.notifyAll();
+                    }
+                }
+            }
+        }).start();
+    }
+
     public void shutdown() throws InterruptedException {
+        LOG.info("Shutdown called");
         synchronized (lock) {
             if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
             }
             if (state != State.STARTED) {
+                LOG.info("Already stopped");
                 return;
             }
             state = State.STOPPING;
@@ -54,6 +99,35 @@ public abstract class CompositeServiceBase implements Service {
         }
     }
     
+    public void startShutdown() throws ServiceException {
+        LOG.info("StartShutdown called");
+        synchronized (lock) {
+            if (state == State.STARTING || state == State.STOPPING) {
+                throw new IllegalStateException("State change already in progress");
+            }
+            if (state != State.STARTED) {
+                LOG.info("Already stopped");
+                return;
+            }
+            state = State.STOPPING;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                LOG.info("Shutting down");
+                try {
+                    doShutdown();
+                    LOG.info("Shutdown completed");
+                } catch (InterruptedException ex) {
+                    LOG.error("Shutdown interrupted", ex);
+                } finally {
+                    synchronized (lock) {
+                        state = State.STOPPED;
+                        lock.notifyAll();
+                    }
+                }
+            }}).start();
+    }
+
     public void awaitShutdown() throws InterruptedException {
         synchronized (lock) {
             while (state != State.STOPPED) {
@@ -70,5 +144,5 @@ public abstract class CompositeServiceBase implements Service {
 
     protected abstract void doShutdown() throws InterruptedException;
     
-    protected abstract void doStartup();
+    protected abstract void doStartup() throws ServiceException, InterruptedException;
 }

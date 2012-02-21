@@ -114,7 +114,7 @@ public class AclsProxy extends CompositeServiceBase {
     }
 
     @Override
-    protected void doStartup() throws ServiceException {
+    protected void doStartup() throws ServiceException, InterruptedException {
         LOG.info("Starting up");
         requestListener.startup();
         facilityChecker.startup();

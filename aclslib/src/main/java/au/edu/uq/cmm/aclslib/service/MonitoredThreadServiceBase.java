@@ -11,6 +11,10 @@ import org.apache.log4j.Logger;
  * <p>
  * The restart behavior can be customized by the subclass supplying a
  * {@link RestartDecider} instance in the constructor.
+ * <p>
+ * Note that in the current implementation, the service goes into the STARTED
+ * state without waiting for the actual service thread to reach any particular 
+ * state.  The {@link #startStartup()} method blocks until that happens.
  * 
  * @author scrawley
  */
@@ -98,34 +102,38 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
     }
 
     public final void startup() {
-        LOG.info("Starting up");
         synchronized (lock) {
             if (monitorThread != null && monitorThread.isAlive()) {
                 state = State.STARTED;
                 LOG.info("Already running");
                 return;
             }
+            LOG.info("Starting up");
             final Monitor monitor = new Monitor();
             monitorThread = new Thread(monitor);
             monitorThread.setDaemon(true);
-            monitorThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                public void uncaughtException(Thread t, Throwable ex) {
-                    LOG.error("Monitor thread died!", ex);
-                    synchronized (lock) {
-                        monitor.interruptServiceThread();
-                        state = State.FAILED;
-                    }
-                }
+            monitorThread.setUncaughtExceptionHandler(
+                    new Thread.UncaughtExceptionHandler() {
+                        public void uncaughtException(Thread t, Throwable ex) {
+                            LOG.error("Monitor thread died!", ex);
+                            synchronized (lock) {
+                                monitor.interruptServiceThread();
+                                state = State.FAILED;
+                            }
+                        }
             });
             state = State.STARTED;
             monitorThread.start();
         }
         LOG.info("Startup done");
     }
+    
+    public void startStartup() throws ServiceException {
+        startup();
+    }
 
     public final void shutdown() {
-        Thread m;
-        LOG.info("Shutting down");
+        final Thread m;
         synchronized (lock) {
             if (monitorThread == null) {
                 state = State.STOPPED;
@@ -133,6 +141,7 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
                 LOG.info("Already shut down");
                 return;
             }
+            LOG.info("Shutting down");
             state = State.STOPPING;
             monitorThread.interrupt();
             m = monitorThread;
@@ -149,6 +158,37 @@ public abstract class MonitoredThreadServiceBase implements Service, Runnable {
             LOG.info("Shutdown interrupted");
             Thread.currentThread().interrupt();
         }
+    }
+
+    public void startShutdown() throws ServiceException {
+        final Thread m;
+        synchronized (lock) {
+            if (monitorThread == null) {
+                state = State.STOPPED;
+                lock.notifyAll();
+                LOG.info("Already shut down");
+                return;
+            }
+            LOG.info("Shutting down");
+            state = State.STOPPING;
+            monitorThread.interrupt();
+            m = monitorThread;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                try {
+                    m.join();
+                    synchronized (lock) {
+                        state = State.STOPPED;
+                        monitorThread = null;
+                        lock.notifyAll();
+                    }
+                    LOG.info("Shutdown completed");
+                } catch (InterruptedException ex) {
+                    LOG.info("Shutdown interrupted");
+                    Thread.currentThread().interrupt();
+                }
+            }}).start();
     }
 
     public final void awaitShutdown() throws InterruptedException {
