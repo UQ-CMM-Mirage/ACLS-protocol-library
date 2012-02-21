@@ -17,8 +17,8 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
-import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
+import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
@@ -52,7 +52,6 @@ public class AclsProxy extends CompositeServiceBase {
     private Map<String, String> passwordCache = new HashMap<String, String>();
   
 
-    
     public AclsProxy(Configuration config) {
         this.config = config;
         try {
@@ -108,14 +107,18 @@ public class AclsProxy extends CompositeServiceBase {
 
     @Override
     protected void doShutdown() throws ServiceException, InterruptedException {
+        LOG.info("Shutting down");
         facilityChecker.shutdown();
         requestListener.shutdown();
+        LOG.info("Shutdown completed");
     }
 
     @Override
-    protected void doStartup() throws ServiceException {
+    protected void doStartup() throws ServiceException, InterruptedException {
+        LOG.info("Starting up");
         requestListener.startup();
         facilityChecker.startup();
+        LOG.info("Startup completed");
     }
 
     public void probeServer() throws ServiceException {

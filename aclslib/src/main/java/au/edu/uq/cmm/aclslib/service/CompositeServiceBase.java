@@ -14,52 +14,123 @@ import org.apache.log4j.Logger;
 public abstract class CompositeServiceBase implements Service {
     private static final Logger LOG = Logger.getLogger(CompositeServiceBase.class);
     private State state = State.INITIAL;
-    private boolean changingState = false;
     private final Object lock = new Object();
 
     public void startup() {
+        LOG.info("Startup called");
         synchronized (lock) {
-            if (changingState) {
+            if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
             }
-            if (state == State.RUNNING) {
+            if (state == State.STARTED) {
+                LOG.info("Already started");
                 return;
             }
-            changingState = true;
+            state = State.STARTING;
         }
         LOG.info("Starting up");
-        doStartup();
-        LOG.info("Startup completed");
-        synchronized (lock) {
-            changingState = false;
-            state = State.RUNNING;
-            lock.notifyAll();
+        try {
+            doStartup();
+            LOG.info("Startup completed");
+            synchronized (lock) {
+                state = State.STARTED;
+                lock.notifyAll();
+            }
+        } catch (InterruptedException ex) {
+            LOG.error("Startup interrupted");
+            synchronized (lock) {
+                state = State.FAILED;
+                lock.notifyAll();
+            }
         }
     }
 
-    public void shutdown() throws InterruptedException {
+    public void startStartup() throws ServiceException {
+        LOG.info("StartStartup called");
         synchronized (lock) {
-            if (changingState) {
+            if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
             }
-            if (state != State.RUNNING) {
+            if (state == State.STARTED) {
+                LOG.info("Already started");
                 return;
             }
-            changingState = true;
+            state = State.STARTING;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                LOG.info("Starting up");
+                try {
+                    doStartup();
+                    LOG.info("Startup completed");
+                    synchronized (lock) {
+                        state = State.STARTED;
+                        lock.notifyAll();
+                    }
+                } catch (InterruptedException ex) {
+                    LOG.error("Startup interrupted");
+                    synchronized (lock) {
+                        state = State.FAILED;
+                        lock.notifyAll();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    public void shutdown() throws InterruptedException {
+        LOG.info("Shutdown called");
+        synchronized (lock) {
+            if (state == State.STARTING || state == State.STOPPING) {
+                throw new IllegalStateException("State change already in progress");
+            }
+            if (state != State.STARTED) {
+                LOG.info("Already stopped");
+                return;
+            }
+            state = State.STOPPING;
         }
         LOG.info("Shutting down");
         doShutdown();
         LOG.info("Shutdown completed");
         synchronized (lock) {
-            changingState = false;
-            state = State.SHUT_DOWN;
+            state = State.STOPPED;
             lock.notifyAll();
         }
     }
     
+    public void startShutdown() throws ServiceException {
+        LOG.info("StartShutdown called");
+        synchronized (lock) {
+            if (state == State.STARTING || state == State.STOPPING) {
+                throw new IllegalStateException("State change already in progress");
+            }
+            if (state != State.STARTED) {
+                LOG.info("Already stopped");
+                return;
+            }
+            state = State.STOPPING;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                LOG.info("Shutting down");
+                try {
+                    doShutdown();
+                    LOG.info("Shutdown completed");
+                } catch (InterruptedException ex) {
+                    LOG.error("Shutdown interrupted", ex);
+                } finally {
+                    synchronized (lock) {
+                        state = State.STOPPED;
+                        lock.notifyAll();
+                    }
+                }
+            }}).start();
+    }
+
     public void awaitShutdown() throws InterruptedException {
         synchronized (lock) {
-            while (state != State.SHUT_DOWN) {
+            while (state != State.STOPPED) {
                 lock.wait();
             }
         }
@@ -73,5 +144,5 @@ public abstract class CompositeServiceBase implements Service {
 
     protected abstract void doShutdown() throws InterruptedException;
     
-    protected abstract void doStartup();
+    protected abstract void doStartup() throws ServiceException, InterruptedException;
 }
