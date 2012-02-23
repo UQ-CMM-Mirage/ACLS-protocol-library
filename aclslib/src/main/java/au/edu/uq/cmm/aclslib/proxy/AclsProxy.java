@@ -17,11 +17,13 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
@@ -211,6 +213,33 @@ public class AclsProxy extends CompositeServiceBase {
 
     public Map<String, String> getPasswordCache() {
         return passwordCache;
+    }
+
+    public void localLogin(FacilityConfig facility, String userName, String password) 
+    throws AclsLoginException {
+        AclsClient client = new AclsClient(
+                config.getServerHost(), config.getServerPort());
+        Request request = new LoginRequest(
+                RequestType.VIRTUAL_LOGIN, userName, password, facility.getFacilityName());
+        try {
+            Response response = client.serverSendReceive(request);
+            switch (response.getType()) {
+            case VIRTUAL_LOGIN_ALLOWED:
+                sendEvent(new AclsLoginEvent(facility, userName, "unspecified"));
+                return;
+            case VIRTUAL_LOGIN_REFUSED:
+                throw new AclsLoginException(
+                        "Login refused - username or password incorrect");
+            default:
+                LOG.error("Unexpected response - " + response.getType());
+                throw new AclsLoginException(
+                        "Internal error - see server logs for details");
+            }
+        } catch (AclsException ex) {
+            LOG.error(ex);
+            throw new AclsLoginException(
+                    "Internal error - see server logs for details");
+        }
     }
 
 }
