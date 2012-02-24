@@ -20,10 +20,12 @@ import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
+import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
+import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
@@ -215,21 +217,21 @@ public class AclsProxy extends CompositeServiceBase {
         return passwordCache;
     }
 
-    public void localLogin(FacilityConfig facility, String userName, String password) 
+    public List<String> login(FacilityConfig facility, String userName, String password) 
     throws AclsLoginException {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, facility.getFacilityName());
+                RequestType.VIRTUAL_LOGIN, userName, password, 
+                facility.getFacilityName());
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
             case VIRTUAL_LOGIN_ALLOWED:
-                sendEvent(new AclsLoginEvent(facility, userName, "unspecified"));
-                return;
+                return ((LoginResponse) response).getAccounts();
             case VIRTUAL_LOGIN_REFUSED:
                 throw new AclsLoginException(
-                        "Login refused - username or password incorrect");
+                        "Login refused - username or password supplied is incorrect");
             default:
                 LOG.error("Unexpected response - " + response.getType());
                 throw new AclsLoginException(
@@ -242,4 +244,31 @@ public class AclsProxy extends CompositeServiceBase {
         }
     }
 
+    public void selectAccount(FacilityConfig facility, String userName, String account) 
+    throws AclsLoginException {
+        AclsClient client = new AclsClient(
+                config.getServerHost(), config.getServerPort());
+        Request request = new AccountRequest(
+                RequestType.VIRTUAL_ACCOUNT, userName, account, 
+                facility.getFacilityName());
+        try {
+            Response response = client.serverSendReceive(request);
+            switch (response.getType()) {
+            case VIRTUAL_ACCOUNT_ALLOWED:
+                sendEvent(new AclsLoginEvent(facility, userName, account));
+                return;
+            case VIRTUAL_ACCOUNT_REFUSED:
+                LOG.error("Account selection refused");
+                throw new AclsLoginException("Account selection refused");
+            default:
+                LOG.error("Unexpected response - " + response.getType());
+                throw new AclsLoginException(
+                        "Internal error - see server logs for details");
+            }
+        } catch (AclsException ex) {
+            LOG.error(ex);
+            throw new AclsLoginException(
+                    "Internal error - see server logs for details");
+        }
+    }
 }
