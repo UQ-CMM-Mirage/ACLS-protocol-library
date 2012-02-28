@@ -10,6 +10,12 @@ import java.util.Collection;
  * @author scrawley
  */
 public interface Configuration {
+    
+    public enum DataGrabberRestartPolicy {
+        AUTO_START_NO_CATCHUP,
+        AUTO_START_CATCHUP,
+        NO_AUTO_START
+    }
 
     /**
      * Get the ACLS proxy's port number
@@ -143,4 +149,9 @@ public interface Configuration {
      * This determines if expired queue entries are archived or deleted outright. 
      */
     boolean isExpireByDeleting();
+    
+    /**
+     * This determines the DataGrabber's behavior on restart.
+     */
+    DataGrabberRestartPolicy getDataGrabberRestartPolicy();
 }
