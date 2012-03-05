@@ -44,6 +44,8 @@ public class StaticConfiguration implements Configuration {
     private long queueExpiryTime;
     private long queueExpiryInterval;
     private boolean expireByDeleting;
+    private DataGrabberRestartPolicy dataGrabberRestartPolicy = 
+            DataGrabberRestartPolicy.NO_AUTO_START;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -202,6 +204,15 @@ public class StaticConfiguration implements Configuration {
 
     public void setExpireByDeleting(boolean expireByDeleting) {
         this.expireByDeleting = expireByDeleting;
+    }
+
+    public DataGrabberRestartPolicy getDataGrabberRestartPolicy() {
+        return dataGrabberRestartPolicy;
+    }
+
+    public void setDataGrabberRestartPolicy(
+            DataGrabberRestartPolicy dataGrabberRestartPolicy) {
+        this.dataGrabberRestartPolicy = dataGrabberRestartPolicy;
     }
 
     public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {
