@@ -154,4 +154,10 @@ public interface Configuration {
      * This determines the DataGrabber's behavior on restart.
      */
     DataGrabberRestartPolicy getDataGrabberRestartPolicy();
+    
+    /**
+     * This determines if the DataGrabber will hold datasets that don't belong
+     * to a user, or queue them for ingestion as-is.
+     */
+    boolean isHoldDatasetsWithNoUser();
 }

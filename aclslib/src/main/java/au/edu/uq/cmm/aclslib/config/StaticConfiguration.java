@@ -46,6 +46,7 @@ public class StaticConfiguration implements Configuration {
     private boolean expireByDeleting;
     private DataGrabberRestartPolicy dataGrabberRestartPolicy = 
             DataGrabberRestartPolicy.NO_AUTO_START;
+    private boolean holdDatasetsWithNoUser = true;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -229,6 +230,14 @@ public class StaticConfiguration implements Configuration {
             facility = facilityMap.get(addr.getHostName());
         }
         return facility;
+    }
+
+    public boolean isHoldDatasetsWithNoUser() {
+        return holdDatasetsWithNoUser;
+    }
+
+    public void setHoldDatasetsWithNoUser(boolean holdDatasetsWithNoUser) {
+        this.holdDatasetsWithNoUser = holdDatasetsWithNoUser;
     }
 
     public FacilityConfig lookupFacilityByName(String name) {
