@@ -8,22 +8,52 @@ package au.edu.uq.cmm.aclslib.message;
  * @author scrawley
  */
 public enum RequestType {
-    LOGIN(1), LOGOUT(2), ACCOUNT(3), NOTES(4), FACILITY_NAME(5), USE_PROJECT(6), 
-    USE_TIMER(7), USE_VIRTUAL(8), FACILITY_COUNT(9), FACILITY_LIST(10),
-    VIRTUAL_LOGIN(11), VIRTUAL_LOGOUT(12), VIRTUAL_ACCOUNT(13),
-    NEW_VIRTUAL_LOGIN(14), NEW_VIRTUAL_ACCOUNT(15), 
-    SYSTEM_PASSWORD(20), STAFF_LOGIN(21), NET_DRIVE(22), USE_FULL_SCREEN(23);
+    LOGIN(1, false, true), 
+    LOGOUT(2, false, true), 
+    ACCOUNT(3, false, true), 
+    NOTES(4, false, true), 
+    FACILITY_NAME(5, false, true), 
+    USE_PROJECT(6, false),
+    USE_TIMER(7, false), 
+    USE_VIRTUAL(8, true),
+    FACILITY_COUNT(9, true),
+    FACILITY_LIST(10, true),
+    VIRTUAL_LOGIN(11, true),
+    VIRTUAL_LOGOUT(12, true),
+    VIRTUAL_ACCOUNT(13, true),
+    NEW_VIRTUAL_LOGIN(14, true), 
+    NEW_VIRTUAL_ACCOUNT(15, true), 
+    SYSTEM_PASSWORD(20, false), 
+    STAFF_LOGIN(21, false), 
+    NET_DRIVE(22, false), 
+    USE_FULL_SCREEN(23, false);
     
     private final int code;
+    private final boolean vmfl;
+    private final boolean localHostIdAllowed;
     
-    RequestType(int code) {
+    RequestType(int code, boolean vmfl, boolean localHostIdAllowed) {
         this.code = code;
+        this.vmfl = vmfl;
+        this.localHostIdAllowed = localHostIdAllowed;
+    }
+    
+    RequestType(int code, boolean vmfl) {
+        this(code, vmfl, false);
     }
     
     public int getCode() {
         return code;
     }
     
+    public boolean isVmfl() {
+        return vmfl;
+    }
+    
+    public boolean isLocalHostIdAllowed() {
+        return localHostIdAllowed;
+    }
+
     public static RequestType parse(String str) {
         try {
             int code = Integer.parseInt(str);

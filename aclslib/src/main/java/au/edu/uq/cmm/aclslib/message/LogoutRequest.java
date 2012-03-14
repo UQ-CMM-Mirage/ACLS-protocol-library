@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+
 /**
  * This class represents one of the two kinds of Logout request.
  * 
@@ -10,7 +12,6 @@ public class LogoutRequest extends AbstractRequest {
     private String userName;
     private String password;
     private String account;
-    private String facility;
 
     /**
      * Construct the message.  (Note that a password is required for the
@@ -23,20 +24,19 @@ public class LogoutRequest extends AbstractRequest {
      * @param facility the facility name / identifier or {@literal null}
      */
     public LogoutRequest(RequestType type, String userName, String password,
-            String account, String facility) {
-        super(type);
+            String account, FacilityConfig facility) {
+        super(type, facility);
         this.userName = checkName(userName);
         this.password = password == null ? null : checkPassword(password);
         this.account = checkAccount(account);
-        this.facility = checkFacility(facility);
     }
 
     public String unparse() {
         return generateHeader() + userName + DELIMITER + 
                 (password == null ? "" : (password + DELIMITER)) +
                 ACCOUNT_DELIMITER + account + DELIMITER + 
-                (getType() == RequestType.LOGOUT ? "" : 
-                    (FACILITY_DELIMITER + facility + DELIMITER));
+                (!getType().isVmfl() ? "" : 
+                    (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER));
     }
 
     /**
@@ -51,15 +51,6 @@ public class LogoutRequest extends AbstractRequest {
      */
     public String getAccount() {
         return account;
-    }
-
-    /**
-     * @return the name / id of the facility they are logging
-     * out of in the virtual case.  In the non-virtual case this
-     * property is ignored.
-     */
-    public String getFacility() {
-        return facility;
     }
 
     /**

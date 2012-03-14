@@ -128,7 +128,7 @@ public class AclsProxy extends CompositeServiceBase {
     public void probeServer() throws ServiceException {
         LOG.info("Probing ACLS server");
         AclsClient client = new AclsClient(config.getServerHost(), config.getServerPort());
-        Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
+        Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null);
         Response response;
         try {
             response = client.serverSendReceive(request);
@@ -163,7 +163,7 @@ public class AclsProxy extends CompositeServiceBase {
         sampleConfig.setProxyHost("proxyHost.example.com");
         Map<String, StaticFacilityConfig> facilityMap =
                 new TreeMap<String, StaticFacilityConfig>();
-        sampleConfig.setFacilities(facilityMap);
+        sampleConfig.setFacilityMap(facilityMap);
         StaticFacilityConfig f1 = new StaticFacilityConfig();
         f1.setAccessName("jim");
         f1.setAccessPassword("secret");
@@ -222,8 +222,7 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, 
-                facility.getFacilityName());
+                RequestType.VIRTUAL_LOGIN, userName, password, facility);
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
@@ -249,8 +248,7 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new AccountRequest(
-                RequestType.VIRTUAL_ACCOUNT, userName, account, 
-                facility.getFacilityName());
+                RequestType.VIRTUAL_ACCOUNT, userName, account, facility);
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {

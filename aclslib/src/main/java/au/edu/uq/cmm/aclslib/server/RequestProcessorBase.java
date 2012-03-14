@@ -80,7 +80,7 @@ public abstract class RequestProcessorBase  implements Runnable {
             
             // Now read the request ...
             InputStream is = socket.getInputStream();
-            RequestReader reader = new RequestReaderImpl();
+            RequestReader reader = new RequestReaderImpl(config, socket.getInetAddress());
             Request m = reader.read(is);
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)

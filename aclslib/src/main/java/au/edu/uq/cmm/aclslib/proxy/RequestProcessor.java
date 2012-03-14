@@ -181,7 +181,7 @@ public class RequestProcessor extends RequestProcessorBase {
         NoteRequest nr = (NoteRequest) m;
         String notes = nr.getNotes();
         Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), 
-                f.getFacilityDescription() + ": " + notes);
+                f.getFacilityDescription() + ": " + notes, f);
         Response r = client.serverSendReceive(vnr);
         switch (r.getType()) {
         case NOTES_ALLOWED:
@@ -202,7 +202,7 @@ public class RequestProcessor extends RequestProcessorBase {
         // map the response to the appropriate 'logout' response.
         AccountRequest a = (AccountRequest) m;
         Request vl = new AccountRequest(RequestType.VIRTUAL_ACCOUNT, 
-                a.getUserName(), a.getAccount(), f.getFacilityName());
+                a.getUserName(), a.getAccount(), f);
         Response r;
         Response vr = client.serverSendReceive(vl);
         switch (vr.getType()) {
@@ -240,7 +240,7 @@ public class RequestProcessor extends RequestProcessorBase {
             r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
         } else {
             Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
-                    l.getUserName(), password, l.getAccount(), f.getFacilityName());
+                    l.getUserName(), password, l.getAccount(), f);
             Response vr = client.serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_LOGOUT_ALLOWED:
@@ -268,7 +268,7 @@ public class RequestProcessor extends RequestProcessorBase {
         // map the response to the appropriate 'login' response.
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.VIRTUAL_LOGIN, 
-                l.getUserName(), l.getPassword(), f.getFacilityName());
+                l.getUserName(), l.getPassword(), f);
         Response r;
         Response vr = client.serverSendReceive(vl);
         switch (vr.getType()) {
