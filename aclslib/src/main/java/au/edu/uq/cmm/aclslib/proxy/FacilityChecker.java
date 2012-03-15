@@ -31,7 +31,6 @@ public class FacilityChecker extends ThreadServiceBase {
 
     public void run() {
         long sleepMinutes = config.getFacilityRecheckInterval();
-
         try {
             while (true) {
                 try {
