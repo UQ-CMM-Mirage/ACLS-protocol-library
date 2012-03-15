@@ -7,14 +7,21 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import org.junit.Test;
+
+import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
+import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 
 public class RequestReaderTest {
 
     @Test
     public void testConstructor() {
-        new RequestReaderImpl();
+        new RequestReaderImpl(config(), localHost());
     }   
     
     @Test(expected=MessageSyntaxException.class)
@@ -67,7 +74,7 @@ public class RequestReaderTest {
         LoginRequest login = (LoginRequest) req;
         assertEquals("steve", login.getUserName());
         assertEquals("secret", login.getPassword());
-        assertEquals("here", login.getFacility());
+        assertEquals("here", login.getFacility().getFacilityName());
     }
     
     @Test
@@ -78,7 +85,7 @@ public class RequestReaderTest {
         LoginRequest login = (LoginRequest) req;
         assertEquals("steve", login.getUserName());
         assertEquals("secret?", login.getPassword());
-        assertEquals("here", login.getFacility());
+        assertEquals("here", login.getFacility().getFacilityName());
     }
 
     @Test
@@ -100,7 +107,7 @@ public class RequestReaderTest {
         LogoutRequest logout = (LogoutRequest) req;
         assertEquals("steve", logout.getUserName());
         assertEquals("acc1", logout.getAccount());
-        assertEquals("here", logout.getFacility());
+        assertEquals("here", logout.getFacility().getFacilityName());
     }
 
     @Test
@@ -122,7 +129,7 @@ public class RequestReaderTest {
         AccountRequest acc = (AccountRequest) req;
         assertEquals("steve", acc.getUserName());
         assertEquals("acc1", acc.getAccount());
-        assertEquals("here", acc.getFacility());
+        assertEquals("here", acc.getFacility().getFacilityName());
     }
 
     @Test
@@ -133,7 +140,7 @@ public class RequestReaderTest {
         AccountRequest acc = (AccountRequest) req;
         assertEquals("steve", acc.getUserName());
         assertEquals("acc1", acc.getAccount());
-        assertEquals("here", acc.getFacility());
+        assertEquals("here", acc.getFacility().getFacilityName());
     }
 
     @Test
@@ -221,9 +228,29 @@ public class RequestReaderTest {
     }
     
     private RequestReader reader() {
-        return new RequestReaderImpl();
+        return new RequestReaderImpl(config(), localHost());
     }
     
+    private InetAddress localHost() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    private Configuration config() {
+        StaticConfiguration config = new StaticConfiguration();
+        HashMap<String, StaticFacilityConfig> map = 
+                new HashMap<String, StaticFacilityConfig>();
+        StaticFacilityConfig here = new StaticFacilityConfig();
+        here.setFacilityName("here");
+        here.setAddress(localHost().toString());
+        map.put(localHost().toString(), here);
+        config.setFacilityMap(map);
+        return config;
+    }
+
     private InputStream source(String text) {
         try {
             return new ByteArrayInputStream(text.getBytes("UTF-8"));

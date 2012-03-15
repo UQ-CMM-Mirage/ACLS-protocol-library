@@ -31,7 +31,6 @@ public class FacilityChecker extends ThreadServiceBase {
 
     public void run() {
         long sleepMinutes = config.getFacilityRecheckInterval();
-
         try {
             while (true) {
                 try {
@@ -77,7 +76,7 @@ public class FacilityChecker extends ThreadServiceBase {
     }
 
     private List<String> queryFacilityList() throws AclsException {
-        Request request = new SimpleRequest(RequestType.FACILITY_LIST);
+        Request request = new SimpleRequest(RequestType.FACILITY_LIST, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_LIST:
@@ -88,7 +87,7 @@ public class FacilityChecker extends ThreadServiceBase {
     }
 
     private int queryFacilityCount() throws ServiceException, AclsException {
-        Request request = new SimpleRequest(RequestType.FACILITY_COUNT);
+        Request request = new SimpleRequest(RequestType.FACILITY_COUNT, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_COUNT:

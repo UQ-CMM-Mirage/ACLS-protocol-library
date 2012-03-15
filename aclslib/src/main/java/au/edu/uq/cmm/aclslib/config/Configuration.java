@@ -53,6 +53,14 @@ public interface Configuration {
      * @return the Facility descriptor or null.
      */
     FacilityConfig lookupFacilityByName(String name);
+    
+    /**
+     * Get the Facility descriptor for the Facility with a given local host id.
+     * 
+     * @param localHostId the local host id
+     * @return the Facility descriptor or null.
+     */
+    FacilityConfig lookupFacilityByLocalHostId(String localHostId);
 
     /**
      * Get the hostname or IP address of the ACLSProxy.
@@ -154,4 +162,19 @@ public interface Configuration {
      * This determines the DataGrabber's behavior on restart.
      */
     DataGrabberRestartPolicy getDataGrabberRestartPolicy();
+    
+    /**
+     * This determines if the DataGrabber will hold datasets that don't belong
+     * to a user, or queue them for ingestion as-is.
+     */
+    boolean isHoldDatasetsWithNoUser();
+    
+    /**
+     * This determines if the proxy uses the vMFL extensions.
+     * Otherwise, it recognizes and uses the facility LocalHostID field in 
+     * requests, where available and where the protocol allows it.  (The latter
+     * is likely to be a moving target.)
+     */
+    boolean isUseVmfl();
+    
 }

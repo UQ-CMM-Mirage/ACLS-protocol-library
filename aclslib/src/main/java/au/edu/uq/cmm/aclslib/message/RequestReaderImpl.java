@@ -4,10 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import org.apache.log4j.Logger;
+
+import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 /**
  * This class is an ACLS request reader for versions 20.x and 30.x of the 
@@ -18,8 +22,13 @@ import org.apache.log4j.Logger;
 public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private static final Logger LOG = Logger.getLogger(RequestReaderImpl.class);
     
-    public RequestReaderImpl() {
+    private Configuration config;
+    private InetAddress clientAddr;
+    
+    public RequestReaderImpl(Configuration config, InetAddress clientAddr) {
         super(LOG);
+        this.config = config;
+        this.clientAddr = clientAddr;
     }
 
     public Request read(InputStream source) throws AclsProtocolException {
@@ -54,7 +63,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
             case NEW_VIRTUAL_ACCOUNT:
                 return readAccountRequest(scanner, type);
             case NOTES:
-                return readNotesRequest(scanner);
+                return readNotesRequest(scanner, type);
             case FACILITY_NAME:
             case FACILITY_COUNT:
             case FACILITY_LIST:
@@ -75,11 +84,12 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
 
     private Request readQuery(Scanner scanner, RequestType type) 
             throws MessageSyntaxException {
+        FacilityConfig facility = determineFacility(scanner, type);
         expectEnd(scanner);
-        return new SimpleRequest(type);
+        return new SimpleRequest(type, facility);
     }
 
-    private Request readNotesRequest(Scanner scanner) 
+    private Request readNotesRequest(Scanner scanner, RequestType type) 
             throws MessageSyntaxException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
@@ -88,8 +98,9 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.NOTE_DELIMITER);
         String notes = nextNotes(scanner);
+        FacilityConfig facility = determineFacility(scanner, type);
         expectEnd(scanner);
-        return new NoteRequest(userName, account, notes);
+        return new NoteRequest(userName, account, notes, facility);
     }
 
     private Request readLoginRequest(Scanner scanner, RequestType type) 
@@ -97,12 +108,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String password = nextPassword(scanner);
-        String facility = null;
-        if (type != RequestType.LOGIN && type != RequestType.STAFF_LOGIN) {
-            expect(scanner, AbstractMessage.DELIMITER);
-            expect(scanner, AbstractMessage.FACILITY_DELIMITER);
-            facility = nextSubfacility(scanner);
-        }
+        FacilityConfig facility = determineFacility(scanner, type);
         expectEnd(scanner);
         return new LoginRequest(type, userName, password, facility);
     }
@@ -115,12 +121,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
-        String facility = null;
-        if (type == RequestType.VIRTUAL_LOGOUT) {
-            expect(scanner, AbstractMessage.DELIMITER);
-            expect(scanner, AbstractMessage.FACILITY_DELIMITER);
-            facility = nextSubfacility(scanner);
-        }
+        FacilityConfig facility = determineFacility(scanner, type);
         expectEnd(scanner);
         return new LogoutRequest(type, userName, password, account, facility);
     }
@@ -131,12 +132,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
-        String facility = null;
-        if (type == RequestType.VIRTUAL_LOGOUT) {
-            expect(scanner, AbstractMessage.DELIMITER);
-            expect(scanner, AbstractMessage.FACILITY_DELIMITER);
-            facility = nextSubfacility(scanner);
-        }
+        FacilityConfig facility = determineFacility(scanner, type);
         expectEnd(scanner);
         return new LogoutRequest(type, userName, null, account, facility);
     }
@@ -147,13 +143,34 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
         String account = nextAccount(scanner);
-        String facility = null;
-        if (type != RequestType.ACCOUNT) {
-            expect(scanner, AbstractMessage.DELIMITER);
-            expect(scanner, AbstractMessage.FACILITY_DELIMITER);
-            facility = nextSubfacility(scanner);
-        }
+        FacilityConfig facility = determineFacility(scanner, type);
         expectEnd(scanner);
         return new AccountRequest(type, userName, account, facility);
+    }
+    
+    private FacilityConfig determineFacility(Scanner scanner, RequestType type) 
+            throws MessageSyntaxException {
+        FacilityConfig res = null;
+        if (type.isVmfl()) {
+            switch (type) {
+            case USE_VIRTUAL:
+            case FACILITY_LIST:
+            case FACILITY_COUNT:
+                break;
+            default:
+                expect(scanner, AbstractMessage.DELIMITER);
+                expect(scanner, AbstractMessage.FACILITY_DELIMITER);
+                String facilityName = nextSubfacility(scanner);
+                res = config.lookupFacilityByName(facilityName);
+            }
+        } else if (type.isLocalHostIdAllowed()) {
+            String token = nextCommandDelimiter(scanner);
+            if (token.equals(AbstractMessage.COMMAND_DELIMITER)) {
+                String localHostId = nextLocalHostId(scanner);
+                res = config.lookupFacilityByLocalHostId(localHostId);
+            }
+        }
+        return (res != null) ? res :
+                config.lookupFacilityByAddress(clientAddr);
     }
 }

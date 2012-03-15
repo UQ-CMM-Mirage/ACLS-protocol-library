@@ -20,11 +20,11 @@ import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestReader;
 import au.edu.uq.cmm.aclslib.message.RequestReaderImpl;
 import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.proxy.RequestProcessor;
+import au.edu.uq.cmm.aclslib.proxy.VmflRequestProcessor;
 
 public abstract class RequestProcessorBase  implements Runnable {
 
-    protected static final Logger LOG = Logger.getLogger(RequestProcessor.class);
+    protected static final Logger LOG = Logger.getLogger(VmflRequestProcessor.class);
     
     private Socket socket;
     private Configuration config;
@@ -80,7 +80,7 @@ public abstract class RequestProcessorBase  implements Runnable {
             
             // Now read the request ...
             InputStream is = socket.getInputStream();
-            RequestReader reader = new RequestReaderImpl();
+            RequestReader reader = new RequestReaderImpl(config, socket.getInetAddress());
             Request m = reader.read(is);
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)

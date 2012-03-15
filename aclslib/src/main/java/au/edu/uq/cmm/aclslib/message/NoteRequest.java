@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+
 /**
  * This class represents a Notes request.  It is not clear if this request 
  * makes any sense in the context of the virtual facility mechanism.
@@ -21,8 +23,9 @@ public class NoteRequest extends AbstractRequest {
      *     message.  By convention, embedded newlines should replaced
      *     with semicolons.
      */
-    public NoteRequest(String userName, String account, String notes) {
-        super(RequestType.NOTES);
+    public NoteRequest(String userName, String account, String notes,
+            FacilityConfig facility) {
+        super(RequestType.NOTES, facility);
         this.userName = checkName(userName);
         this.account = checkAccount(account);
         this.notes = checkNotes(notes);

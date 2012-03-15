@@ -20,6 +20,7 @@ public class StaticFacilityConfig implements FacilityConfig {
     private String accessName;
     private String folderName;
     private String facilityName;
+    private String localHostId;
     private boolean useTimer;
     private String facilityDescription;
     private boolean dummy;
@@ -147,5 +148,13 @@ public class StaticFacilityConfig implements FacilityConfig {
 
     public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
+    }
+
+    public String getLocalHostId() {
+        return localHostId;
+    }
+
+    public void setLocalHostId(String localHostId) {
+        this.localHostId = localHostId;
     }
 }

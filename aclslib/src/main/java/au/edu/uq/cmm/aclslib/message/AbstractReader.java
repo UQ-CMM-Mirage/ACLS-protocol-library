@@ -32,6 +32,8 @@ public class AbstractReader {
             Pattern.compile("(?=[?|])");
     private static final Pattern SUBFACILITY_DELIMITERS = 
             Pattern.compile("(?=[?;|])");
+    private static final Pattern HOST_DELIMITERS = 
+            Pattern.compile("(?=\\|)");
     private static final Pattern ORGANIZATION_DELIMITERS = 
             Pattern.compile("(?=[?|])");
     private static final Pattern PASSWORD_DELIMITERS = 
@@ -46,6 +48,8 @@ public class AbstractReader {
             Pattern.compile("(?=\\~)");
     private static final Pattern ACCESS_PASSWORD_DELIMITERS = 
             Pattern.compile("(?=\\|)");
+    private static final Pattern AFTER_COMMAND_DELIMITER =
+            Pattern.compile("(?<=:)");
     static final Pattern DEFAULT_DELIMITERS = 
             Pattern.compile("(?<=[/:|\\[\\];~&?])|(?=[/:|\\[\\];~&?])");
     
@@ -101,6 +105,20 @@ public class AbstractReader {
         }
     }
     
+    protected String nextCommandDelimiter(Scanner source) {
+        Pattern delimiter = source.delimiter();
+        try {
+            source.useDelimiter(AFTER_COMMAND_DELIMITER);
+            if (source.hasNext()) {
+                return source.next();
+            } else {
+                return null;
+            }
+        } finally {
+            source.useDelimiter(delimiter);
+        }
+    }
+    
     protected String nextName(Scanner source) {
         return nextWithAltDelimiter(source, NAME_DELIMITERS);
     }
@@ -111,6 +129,10 @@ public class AbstractReader {
     
     protected String nextFacility(Scanner source) {
         return nextWithAltDelimiter(source, FACILITY_DELIMITERS);
+    }
+    
+    protected String nextLocalHostId(Scanner source) {
+        return nextWithAltDelimiter(source, HOST_DELIMITERS);
     }
     
     protected String nextSubfacility(Scanner source) {
