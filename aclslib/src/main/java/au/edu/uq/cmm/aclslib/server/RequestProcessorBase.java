@@ -20,11 +20,11 @@ import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestReader;
 import au.edu.uq.cmm.aclslib.message.RequestReaderImpl;
 import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.proxy.RequestProcessor;
+import au.edu.uq.cmm.aclslib.proxy.VmflRequestProcessor;
 
 public abstract class RequestProcessorBase  implements Runnable {
 
-    protected static final Logger LOG = Logger.getLogger(RequestProcessor.class);
+    protected static final Logger LOG = Logger.getLogger(VmflRequestProcessor.class);
     
     private Socket socket;
     private Configuration config;

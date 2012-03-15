@@ -63,7 +63,11 @@ public class AclsProxy extends CompositeServiceBase {
                     config.getProxyHost(),
                     new RequestProcessorFactory() {
                 public Runnable createProcessor(Configuration config, Socket s) {
-                    return new RequestProcessor(config, s, AclsProxy.this);
+                    if (config.isUseVmfl()) {
+                        return new VmflRequestProcessor(config, s, AclsProxy.this);
+                    } else {
+                        return new NormalRequestProcessor(config, s, AclsProxy.this);
+                    }
                 }
             });
         } catch (UnknownHostException ex) {
