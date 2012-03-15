@@ -8,35 +8,46 @@ package au.edu.uq.cmm.aclslib.message;
  * @author scrawley
  */
 public enum ResponseType {
-    NO_RESPONSE(-1), COMMAND_ERROR(0), 
-    LOGIN_ALLOWED(11), LOGIN_REFUSED(12), 
-    LOGOUT_ALLOWED(21), LOGOUT_REFUSED(22),
-    ACCOUNT_ALLOWED(31), ACCOUNT_REFUSED(32),
-    NOTES_ALLOWED(41), NOTES_REFUSED(42),
-    FACILITY_ALLOWED(51), FACILITY_REFUSED(52),
-    PROJECT_YES(61), PROJECT_NO(62),
-    TIMER_YES(71), TIMER_NO(72),
-    USE_VIRTUAL(81), FACILITY_COUNT(91), FACILITY_LIST(101),
-    VIRTUAL_LOGIN_ALLOWED(111), VIRTUAL_LOGIN_REFUSED(112), 
-    VIRTUAL_LOGOUT_ALLOWED(121), VIRTUAL_LOGOUT_REFUSED(122),
-    VIRTUAL_ACCOUNT_ALLOWED(131), VIRTUAL_ACCOUNT_REFUSED(132),
-    NEW_VIRTUAL_LOGIN_ALLOWED(141), NEW_VIRTUAL_LOGIN_REFUSED(142), 
-    NEW_VIRTUAL_ACCOUNT_ALLOWED(151), NEW_VIRTUAL_ACCOUNT_REFUSED(152),
-    SYSTEM_PASSWORD_YES(201), SYSTEM_PASSWORD_NO(202),
-    STAFF_LOGIN_ALLOWED(211), STAFF_LOGIN_REFUSED(212), 
-    NET_DRIVE_YES(221), NET_DRIVE_NO(222),
-    FULL_SCREEN_YES(231), FULL_SCREEN_NO(232);
+    NO_RESPONSE(-1, false), 
+    COMMAND_ERROR(0, false), 
+    
+    LOGIN_ALLOWED(11, false), LOGIN_REFUSED(12, false), 
+    LOGOUT_ALLOWED(21, false), LOGOUT_REFUSED(22, false),
+    ACCOUNT_ALLOWED(31, false), ACCOUNT_REFUSED(32, false),
+    NOTES_ALLOWED(41, false), NOTES_REFUSED(42, false),
+    FACILITY_ALLOWED(51, false), FACILITY_REFUSED(52, false),
+    PROJECT_YES(61, false), PROJECT_NO(62, false),
+    TIMER_YES(71, false), TIMER_NO(72, false),
+    
+    USE_VIRTUAL(81, true), 
+    
+    FACILITY_COUNT(91, true), FACILITY_LIST(101, true),
+    VIRTUAL_LOGIN_ALLOWED(111, true), VIRTUAL_LOGIN_REFUSED(112, true), 
+    VIRTUAL_LOGOUT_ALLOWED(121, true), VIRTUAL_LOGOUT_REFUSED(122, true),
+    VIRTUAL_ACCOUNT_ALLOWED(131, true), VIRTUAL_ACCOUNT_REFUSED(132, true),
+    NEW_VIRTUAL_LOGIN_ALLOWED(141, true), NEW_VIRTUAL_LOGIN_REFUSED(142, true), 
+    NEW_VIRTUAL_ACCOUNT_ALLOWED(151, true), NEW_VIRTUAL_ACCOUNT_REFUSED(152, true),
+    SYSTEM_PASSWORD_YES(201, false), SYSTEM_PASSWORD_NO(202, false),
+    STAFF_LOGIN_ALLOWED(211, false), STAFF_LOGIN_REFUSED(212, false), 
+    NET_DRIVE_YES(221, false), NET_DRIVE_NO(222, false),
+    FULL_SCREEN_YES(231, false), FULL_SCREEN_NO(232, false);
     
     private final int code;
+    private final boolean vmfl;
     
-    ResponseType(int code) {
+    ResponseType(int code, boolean vmfl) {
         this.code = code;
+        this.vmfl = vmfl;
     }
     
     public int getCode() {
         return code;
     }
     
+    public boolean isVmfl() {
+        return vmfl;
+    }
+
     public static ResponseType parse(String str) {
         try {
             int code = Integer.parseInt(str);

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
+import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
@@ -24,11 +25,12 @@ import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 public class Authenticator {
     private static final Logger LOG = Logger.getLogger(Authenticator.class);
     private AclsClient client;
-    private String dummyFacility;
+    private StaticFacilityConfig dummyFacility;
 
-    public Authenticator(String serverHost, int serverPort, String dummyFacility) {
+    public Authenticator(String serverHost, int serverPort, String dummyFacilityName) {
         this.client = new AclsClient(serverHost, serverPort);
-        this.dummyFacility = dummyFacility;
+        dummyFacility = new StaticFacilityConfig();
+        dummyFacility.setFacilityName(dummyFacilityName);
     }
 
     public static void main(String args[]) {
@@ -68,17 +70,24 @@ public class Authenticator {
         }
     }
     
-    private boolean useVirtual() throws AclsException {
-        Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
-        Response response = client.serverSendReceive(request);
-        switch (response.getType()) {
-        case USE_VIRTUAL:
-            YesNoResponse uv = (YesNoResponse) response;
-            return uv.isYes();
-        default:
-            throw new AclsProtocolException(
-                    "Unexpected response to USE_VIRTUAL request - " + 
-                            response.getType());
+    private boolean useVirtual() {
+        try {
+            Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null);
+            Response response = client.serverSendReceive(request);
+            switch (response.getType()) {
+            case USE_VIRTUAL:
+                YesNoResponse uv = (YesNoResponse) response;
+                return uv.isYes();
+            default:
+                throw new AclsProtocolException(
+                        "Unexpected response to USE_VIRTUAL request - " + 
+                                response.getType());
+            }
+        } catch (AclsException ex) {
+            // We do this in case we are talking to a server that is not
+            // aware of the vMFL requests.
+            LOG.debug("useVirtual request failed - assuming 'false'", ex);
+            return false;
         }
     }
 

@@ -39,6 +39,11 @@ public interface FacilityConfig {
     String getFacilityName();
 
     /**
+     * Get the LocalHostID string to be used for the facility.
+     */
+    String getLocalHostId();
+
+    /**
      * Get the long-form description of the facility.  (ACLS calls 
      * this the name)
      */

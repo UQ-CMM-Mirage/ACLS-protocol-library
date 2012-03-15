@@ -63,13 +63,19 @@ public class AclsProxy extends CompositeServiceBase {
                     config.getProxyHost(),
                     new RequestProcessorFactory() {
                 public Runnable createProcessor(Configuration config, Socket s) {
-                    return new RequestProcessor(config, s, AclsProxy.this);
+                    if (config.isUseVmfl()) {
+                        return new VmflRequestProcessor(config, s, AclsProxy.this);
+                    } else {
+                        return new NormalRequestProcessor(config, s, AclsProxy.this);
+                    }
                 }
             });
         } catch (UnknownHostException ex) {
             throw new IllegalArgumentException("Configuration problem", ex);
         }
-        this.facilityChecker = new FacilityChecker(config);
+        if (config.isUseVmfl()) {
+            this.facilityChecker = new FacilityChecker(config);
+        }
     }
 
     public static void main(String[] args) {
@@ -112,7 +118,9 @@ public class AclsProxy extends CompositeServiceBase {
     @Override
     protected void doShutdown() throws ServiceException, InterruptedException {
         LOG.info("Shutting down");
-        facilityChecker.shutdown();
+        if (facilityChecker != null) {
+            facilityChecker.shutdown();
+        }
         requestListener.shutdown();
         LOG.info("Shutdown completed");
     }
@@ -121,17 +129,22 @@ public class AclsProxy extends CompositeServiceBase {
     protected void doStartup() throws ServiceException, InterruptedException {
         LOG.info("Starting up");
         requestListener.startup();
-        facilityChecker.startup();
+        if (facilityChecker != null) {
+            facilityChecker.startup();
+        }
         LOG.info("Startup completed");
     }
 
     public void probeServer() throws ServiceException {
         LOG.info("Probing ACLS server");
-        AclsClient client = new AclsClient(config.getServerHost(), config.getServerPort());
-        Request request = new SimpleRequest(RequestType.USE_VIRTUAL);
-        Response response;
+        AclsClient client = new AclsClient(
+                config.getServerHost(), config.getServerPort());
         try {
-            response = client.serverSendReceive(request);
+            if (config.isUseVmfl()) {
+                vmflProbe(client);
+            } else {
+                regularProbe(client);
+            }
         } catch (AclsCommsException ex) {
             throw new ServiceException(
                     "The ACLS server is not responding", ex);
@@ -142,18 +155,42 @@ public class AclsProxy extends CompositeServiceBase {
             throw new ServiceException(
                     "The ACLS server is not behaving correctly", ex);
         } 
+    }
+
+    private void regularProbe(AclsClient client) throws AclsException {
+        Request request = new SimpleRequest(RequestType.USE_PROJECT, null);
+        Response response = client.serverSendReceive(request);
+        switch (response.getType()) {
+        case PROJECT_NO:
+        case PROJECT_YES:
+            break;
+        default:
+            LOG.error("Unexpected response for USE_PROJECT request: " + 
+                    response.getType());
+            throw new ServiceException(
+                    "The ACLS server gave an unexpected response " +
+                    "to our probe (see log)");
+        }
+    }
+
+    private void vmflProbe(AclsClient client) throws AclsException {
+        Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null);
+        Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case USE_VIRTUAL:
             YesNoResponse uv = (YesNoResponse) response;
             if (!uv.isYes()) {
                 throw new ServiceException(
-                        "The ACLS server has the proxy configured as a normal Facility");
+                        "The ACLS server has the proxy configured " +
+                        "as a normal Facility");
             }
             break;
         default:
-            LOG.error("Unexpected response for USE_VIRTUAL request: " + response.getType());
+            LOG.error("Unexpected response for USE_VIRTUAL request: " + 
+                    response.getType());
             throw new ServiceException(
-                    "The ACLS server gave an unexpected response to our probe (see log)");
+                    "The ACLS server gave an unexpected response " +
+                    "to our probe (see log)");
         }
     }
 
@@ -163,7 +200,7 @@ public class AclsProxy extends CompositeServiceBase {
         sampleConfig.setProxyHost("proxyHost.example.com");
         Map<String, StaticFacilityConfig> facilityMap =
                 new TreeMap<String, StaticFacilityConfig>();
-        sampleConfig.setFacilities(facilityMap);
+        sampleConfig.setFacilityMap(facilityMap);
         StaticFacilityConfig f1 = new StaticFacilityConfig();
         f1.setAccessName("jim");
         f1.setAccessPassword("secret");
@@ -222,8 +259,7 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, 
-                facility.getFacilityName());
+                RequestType.VIRTUAL_LOGIN, userName, password, facility);
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
@@ -249,8 +285,7 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new AccountRequest(
-                RequestType.VIRTUAL_ACCOUNT, userName, account, 
-                facility.getFacilityName());
+                RequestType.VIRTUAL_ACCOUNT, userName, account, facility);
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {

@@ -46,6 +46,8 @@ public class StaticConfiguration implements Configuration {
     private boolean expireByDeleting;
     private DataGrabberRestartPolicy dataGrabberRestartPolicy = 
             DataGrabberRestartPolicy.NO_AUTO_START;
+    private boolean holdDatasetsWithNoUser = true;
+    private boolean useVmfl = true;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -215,6 +217,14 @@ public class StaticConfiguration implements Configuration {
         this.dataGrabberRestartPolicy = dataGrabberRestartPolicy;
     }
 
+    public boolean isUseVmfl() {
+        return useVmfl;
+    }
+
+    public void setUseVmfl(boolean useVmfl) {
+        this.useVmfl = useVmfl;
+    }
+
     public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {
         this.facilityMap = facilityMap;
     }
@@ -231,6 +241,14 @@ public class StaticConfiguration implements Configuration {
         return facility;
     }
 
+    public boolean isHoldDatasetsWithNoUser() {
+        return holdDatasetsWithNoUser;
+    }
+
+    public void setHoldDatasetsWithNoUser(boolean holdDatasetsWithNoUser) {
+        this.holdDatasetsWithNoUser = holdDatasetsWithNoUser;
+    }
+
     public FacilityConfig lookupFacilityByName(String name) {
         for (FacilityConfig f : facilityMap.values()) {
             if (name.equals(f.getFacilityName())) {
@@ -244,6 +262,15 @@ public class StaticConfiguration implements Configuration {
         this.facilityMap = facilityMap;
     }
     
+    public FacilityConfig lookupFacilityByLocalHostId(String localHostId) {
+        for (FacilityConfig f : facilityMap.values()) {
+            if (localHostId.equals(f.getLocalHostId())) {
+                return f;
+            }
+        }
+        return null;
+    }
+
     /**
      * Read the configuration from an input stream
      * 
