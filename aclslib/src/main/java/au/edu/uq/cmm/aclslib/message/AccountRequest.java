@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.net.InetAddress;
+
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 /**
@@ -24,8 +26,9 @@ public class AccountRequest extends AbstractRequest {
      *        or {@literal null}.
      */
     public AccountRequest(RequestType type, String userName, 
-            String account, FacilityConfig facility) {
-        super(type, facility);
+            String account, FacilityConfig facility, 
+            InetAddress clientAddress, String localHostId) {
+        super(type, facility, clientAddress, localHostId);
         this.userName = userName;
         this.account = account;
     }

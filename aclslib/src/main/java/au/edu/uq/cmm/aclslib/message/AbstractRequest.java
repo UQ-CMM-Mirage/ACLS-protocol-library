@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.net.InetAddress;
+
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 /**
@@ -13,14 +15,22 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
 
     private RequestType type;
     private FacilityConfig facility;
+    private InetAddress clientAddress;
+    private String localHostId;
     
     /** 
      * Construct the base request 
      * @param type the request type
+     * @param facility the specified or inferred facility this message comes from
+     * @param clientAddress the source IP address
+     * @param localHostId the localHostId provided in the message
      */
-    AbstractRequest(RequestType type, FacilityConfig facility) {
+    AbstractRequest(RequestType type, FacilityConfig facility, 
+            InetAddress clientAddress, String localHostId) {
         this.type = type;
         this.facility = facility;
+        this.clientAddress = clientAddress;
+        this.localHostId = localHostId;
     }
     
     public RequestType getType() {
@@ -29,6 +39,14 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
 
     public FacilityConfig getFacility() {
         return facility;
+    }
+
+    public InetAddress getClientAddress() {
+        return clientAddress;
+    }
+
+    public String getLocalHostId() {
+        return localHostId;
     }
 
     /**

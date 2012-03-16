@@ -56,6 +56,17 @@ public class RequestReaderTest {
     }
     
     @Test
+    public void testReadLoginHostId() throws AclsException {
+        RequestReader r = reader();
+        Request req = r.read(source("1:steve|secret|:ID|"));
+        assertEquals(RequestType.LOGIN, req.getType());
+        LoginRequest login = (LoginRequest) req;
+        assertEquals("steve", login.getUserName());
+        assertEquals("secret", login.getPassword());
+        assertEquals("there", login.getFacility().getFacilityName());
+    }
+    
+    @Test
     public void testReadStaffLogin() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("21:steve|secret|"));
@@ -247,6 +258,11 @@ public class RequestReaderTest {
         here.setFacilityName("here");
         here.setAddress(localHost().toString());
         map.put(localHost().toString(), here);
+        StaticFacilityConfig there = new StaticFacilityConfig();
+        there.setFacilityName("there");
+        there.setLocalHostId("ID");
+        there.setAddress("nowhere.example.com");
+        map.put("nowhere.example.com", there);
         config.setFacilityMap(map);
         return config;
     }

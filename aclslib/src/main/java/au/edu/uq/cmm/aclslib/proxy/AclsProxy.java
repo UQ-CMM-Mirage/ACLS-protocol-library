@@ -1,25 +1,17 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
-import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
@@ -79,10 +71,6 @@ public class AclsProxy extends CompositeServiceBase {
     }
 
     public static void main(String[] args) {
-        if (args.length > 0 && args[0].equals("--createSampleConfig")) {
-            createSampleConfigurationFile();
-            return;
-        }
         String configFile = null;
         if (args.length > 0) {
             configFile = args[0];
@@ -158,7 +146,7 @@ public class AclsProxy extends CompositeServiceBase {
     }
 
     private void regularProbe(AclsClient client) throws AclsException {
-        Request request = new SimpleRequest(RequestType.USE_PROJECT, null);
+        Request request = new SimpleRequest(RequestType.USE_PROJECT, null, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case PROJECT_NO:
@@ -174,7 +162,7 @@ public class AclsProxy extends CompositeServiceBase {
     }
 
     private void vmflProbe(AclsClient client) throws AclsException {
-        Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null);
+        Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case USE_VIRTUAL:
@@ -191,42 +179,6 @@ public class AclsProxy extends CompositeServiceBase {
             throw new ServiceException(
                     "The ACLS server gave an unexpected response " +
                     "to our probe (see log)");
-        }
-    }
-
-    public static void createSampleConfigurationFile() {
-        StaticConfiguration sampleConfig = new StaticConfiguration();
-        sampleConfig.setServerHost("aclsHost.example.com");
-        sampleConfig.setProxyHost("proxyHost.example.com");
-        Map<String, StaticFacilityConfig> facilityMap =
-                new TreeMap<String, StaticFacilityConfig>();
-        sampleConfig.setFacilityMap(facilityMap);
-        StaticFacilityConfig f1 = new StaticFacilityConfig();
-        f1.setAccessName("jim");
-        f1.setAccessPassword("secret");
-        f1.setFolderName("/trollscope");
-        f1.setDriveName("T");
-        f1.setFacilityName("F001");
-        f1.setFacilityDescription("Trollscope 2000T");
-        f1.setUseFullScreen(true);
-        facilityMap.put("192.168.1.1", f1);
-        StaticFacilityConfig f2 = new StaticFacilityConfig();
-        f2.setFacilityName("F002");
-        f2.setFacilityDescription("The hatstand in the corner");
-        f2.setUseFullScreen(false);
-        facilityMap.put("hatstand.example.com", f2);
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonFactory jf = new JsonFactory();
-            JsonGenerator jg = jf.createJsonGenerator(System.out);
-            jg.useDefaultPrettyPrinter();
-            mapper.writeValue(jg, sampleConfig);
-        } catch (JsonParseException e) {
-            LOG.error(e);
-        } catch (JsonMappingException e) {
-            LOG.error(e);
-        } catch (IOException e) {
-            LOG.error(e);
         }
     }
 
@@ -259,12 +211,15 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, facility);
+                config.isUseVmfl() ? RequestType.VIRTUAL_LOGIN : RequestType.LOGIN, 
+                userName, password, facility, null, null);
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
+            case LOGIN_ALLOWED:
             case VIRTUAL_LOGIN_ALLOWED:
                 return ((LoginResponse) response).getAccounts();
+            case LOGIN_REFUSED:
             case VIRTUAL_LOGIN_REFUSED:
                 throw new AclsLoginException(
                         "Login refused - username or password supplied is incorrect");
@@ -285,13 +240,16 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new AccountRequest(
-                RequestType.VIRTUAL_ACCOUNT, userName, account, facility);
+                config.isUseVmfl() ? RequestType.VIRTUAL_ACCOUNT : RequestType.ACCOUNT,
+                userName, account, facility, null, null);
         try {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
+            case ACCOUNT_ALLOWED:
             case VIRTUAL_ACCOUNT_ALLOWED:
                 sendEvent(new AclsLoginEvent(facility, userName, account));
                 return;
+            case ACCOUNT_REFUSED:
             case VIRTUAL_ACCOUNT_REFUSED:
                 LOG.error("Account selection refused");
                 throw new AclsLoginException("Account selection refused");

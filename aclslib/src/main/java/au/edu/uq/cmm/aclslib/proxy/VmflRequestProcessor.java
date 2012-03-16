@@ -133,7 +133,7 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         NoteRequest nr = (NoteRequest) m;
         String notes = nr.getNotes();
         Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), 
-                f.getFacilityDescription() + ": " + notes, f);
+                f.getFacilityDescription() + ": " + notes, f, null, null);
         Response r = getClient().serverSendReceive(vnr);
         switch (r.getType()) {
         case NOTES_ALLOWED:
@@ -155,7 +155,7 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         // map the response to the appropriate 'logout' response.
         AccountRequest a = (AccountRequest) m;
         Request vl = new AccountRequest(RequestType.VIRTUAL_ACCOUNT, 
-                a.getUserName(), a.getAccount(), f);
+                a.getUserName(), a.getAccount(), f, null, null);
         Response r;
         Response vr = getClient().serverSendReceive(vl);
         switch (vr.getType()) {
@@ -193,7 +193,7 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
         } else {
             Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
-                    l.getUserName(), password, l.getAccount(), f);
+                    l.getUserName(), password, l.getAccount(), f, null, null);
             Response vr = getClient().serverSendReceive(vl);
             switch (vr.getType()) {
             case VIRTUAL_LOGOUT_ALLOWED:
@@ -224,7 +224,7 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         // map the response to the appropriate 'login' response.
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.VIRTUAL_LOGIN, 
-                l.getUserName(), l.getPassword(), f);
+                l.getUserName(), l.getPassword(), f, null, null);
         Response r;
         Response vr = getClient().serverSendReceive(vl);
         switch (vr.getType()) {

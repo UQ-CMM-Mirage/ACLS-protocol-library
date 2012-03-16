@@ -72,7 +72,7 @@ public class Authenticator {
     
     private boolean useVirtual() {
         try {
-            Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null);
+            Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null, null, null);
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
             case USE_VIRTUAL:
@@ -93,7 +93,7 @@ public class Authenticator {
 
     private boolean virtualFacilityLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility);
+                RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:
@@ -109,7 +109,7 @@ public class Authenticator {
     
     private boolean realFacilityLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
-                RequestType.LOGIN, userName, password, null);
+                RequestType.LOGIN, userName, password, null, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case LOGIN_ALLOWED:

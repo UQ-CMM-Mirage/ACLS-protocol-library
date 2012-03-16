@@ -48,8 +48,8 @@ public class AbstractReader {
             Pattern.compile("(?=\\~)");
     private static final Pattern ACCESS_PASSWORD_DELIMITERS = 
             Pattern.compile("(?=\\|)");
-    private static final Pattern AFTER_COMMAND_DELIMITER =
-            Pattern.compile("(?<=:)");
+    private static final Pattern AFTER_DELIMITER =
+            Pattern.compile("(?<=[/:|\\[\\];~&?])");
     static final Pattern DEFAULT_DELIMITERS = 
             Pattern.compile("(?<=[/:|\\[\\];~&?])|(?=[/:|\\[\\];~&?])");
     
@@ -100,15 +100,15 @@ public class AbstractReader {
                 !token.equalsIgnoreCase(AbstractMessage.ACCEPTED_IP_TAG) &&
                 !token.equalsIgnoreCase(AbstractMessage.FAILED_TAG)) {
                 throw new MessageSyntaxException(
-                        "Unexpected token at end of message: '" + token);
+                        "Unexpected token at end of message: '" + token + "'");
             }
         }
     }
     
-    protected String nextCommandDelimiter(Scanner source) {
+    protected String nextDelimiter(Scanner source) {
         Pattern delimiter = source.delimiter();
         try {
-            source.useDelimiter(AFTER_COMMAND_DELIMITER);
+            source.useDelimiter(AFTER_DELIMITER);
             if (source.hasNext()) {
                 return source.next();
             } else {

@@ -127,7 +127,8 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             throws AclsException {
         NoteRequest nr = (NoteRequest) m;
         String notes = nr.getNotes();
-        Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), notes, f);
+        Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), notes, 
+                f, null, nr.getLocalHostId());
         Response r = getClient().serverSendReceive(vnr);
         switch (r.getType()) {
         case NOTES_ALLOWED:
@@ -147,7 +148,8 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             throws AclsException {
         AccountRequest a = (AccountRequest) m;
         Request vl = new AccountRequest(
-                RequestType.ACCOUNT, a.getUserName(), a.getAccount(), f);
+                RequestType.ACCOUNT, a.getUserName(), a.getAccount(), 
+                f, null, a.getLocalHostId());
         Response r = getClient().serverSendReceive(vl);
         switch (r.getType()) {
         case ACCOUNT_ALLOWED:
@@ -169,7 +171,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
                     throws AclsException {
         LogoutRequest l = (LogoutRequest) m;
         Request vl = new LogoutRequest(RequestType.LOGOUT, 
-                l.getUserName(), null, l.getAccount(), f);
+                l.getUserName(), null, l.getAccount(), f, null, l.getLocalHostId());
         Response r = getClient().serverSendReceive(vl);
         switch (r.getType()) {
         case LOGOUT_ALLOWED:
@@ -191,7 +193,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             throws AclsException {
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.LOGIN, 
-                l.getUserName(), l.getPassword(), f);
+                l.getUserName(), l.getPassword(), f, null, l.getLocalHostId());
         Response r = getClient().serverSendReceive(vl);
         switch (r.getType()) {
         case LOGIN_ALLOWED:
