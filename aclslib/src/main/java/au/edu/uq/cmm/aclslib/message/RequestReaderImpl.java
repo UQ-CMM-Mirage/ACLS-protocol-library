@@ -173,14 +173,18 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
                 facilityName = nextSubfacility(scanner);
                 facility = config.lookupFacilityByName(facilityName);
             }
-        } else if (type.isLocalHostIdAllowed()) {
-            String token = nextDelimiter(scanner);
+        } else {
+            // The current version of the protocol only sends a LocalHostId
+            // for a subset of requests.  However, I believe that this will
+            // need to change, so we accept a LocalHostId for any non-vMFL
+            // request type.
+            String token = scanner.next();
             if (token.equals(AbstractMessage.DELIMITER)) {
-                token = nextDelimiter(scanner);
-                if (token.equals(AbstractMessage.COMMAND_DELIMITER)) {
-                    localHostId = nextLocalHostId(scanner);
-                    facility = config.lookupFacilityByLocalHostId(localHostId);
-                }
+                token = scanner.next();
+            }
+            if (token.equals(AbstractMessage.COMMAND_DELIMITER)) {
+                localHostId = nextLocalHostId(scanner);
+                facility = config.lookupFacilityByLocalHostId(localHostId);
             }
         }
         if (facility == null) {

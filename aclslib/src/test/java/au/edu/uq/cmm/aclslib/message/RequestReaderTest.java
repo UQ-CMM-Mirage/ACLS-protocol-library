@@ -53,6 +53,7 @@ public class RequestReaderTest {
         assertEquals("steve", login.getUserName());
         assertEquals("secret", login.getPassword());
         assertNull(login.getFacility());
+        assertNull(login.getLocalHostId());
     }
     
     @Test
@@ -64,6 +65,7 @@ public class RequestReaderTest {
         assertEquals("steve", login.getUserName());
         assertEquals("secret", login.getPassword());
         assertEquals("there", login.getFacility().getFacilityName());
+        assertEquals("ID", login.getLocalHostId());
     }
     
     @Test
@@ -75,6 +77,19 @@ public class RequestReaderTest {
         assertEquals("steve", login.getUserName());
         assertEquals("secret", login.getPassword());
         assertNull(login.getFacility());
+        assertNull(login.getLocalHostId());
+    }
+    
+    @Test
+    public void testReadStaffLoginHostId() throws AclsException {
+        RequestReader r = reader();
+        Request req = r.read(source("21:steve|secret|:ID|"));
+        assertEquals(RequestType.STAFF_LOGIN, req.getType());
+        LoginRequest login = (LoginRequest) req;
+        assertEquals("steve", login.getUserName());
+        assertEquals("secret", login.getPassword());
+        assertEquals("there", login.getFacility().getFacilityName());
+        assertEquals("ID", login.getLocalHostId());
     }
     
     @Test
@@ -86,6 +101,7 @@ public class RequestReaderTest {
         assertEquals("steve", login.getUserName());
         assertEquals("secret", login.getPassword());
         assertEquals("here", login.getFacility().getFacilityName());
+        assertNull(login.getLocalHostId());
     }
     
     @Test
@@ -97,6 +113,7 @@ public class RequestReaderTest {
         assertEquals("steve", login.getUserName());
         assertEquals("secret?", login.getPassword());
         assertEquals("here", login.getFacility().getFacilityName());
+        assertNull(login.getLocalHostId());
     }
 
     @Test
@@ -141,6 +158,7 @@ public class RequestReaderTest {
         assertEquals("steve", acc.getUserName());
         assertEquals("acc1", acc.getAccount());
         assertEquals("here", acc.getFacility().getFacilityName());
+        assertNull(req.getLocalHostId());
     }
 
     @Test
@@ -152,6 +170,7 @@ public class RequestReaderTest {
         assertEquals("steve", acc.getUserName());
         assertEquals("acc1", acc.getAccount());
         assertEquals("here", acc.getFacility().getFacilityName());
+        assertNull(req.getLocalHostId());
     }
 
     @Test
@@ -204,6 +223,7 @@ public class RequestReaderTest {
         Request req = r.read(source("8:"));
         assertEquals(RequestType.USE_VIRTUAL, req.getType());
         assertTrue(req instanceof SimpleRequest);
+        assertNull(req.getLocalHostId());
     }
     
     @Test
@@ -212,6 +232,7 @@ public class RequestReaderTest {
         Request req = r.read(source("9:"));
         assertEquals(RequestType.FACILITY_COUNT, req.getType());
         assertTrue(req instanceof SimpleRequest);
+        assertNull(req.getLocalHostId());
     }
     
     @Test
@@ -220,6 +241,7 @@ public class RequestReaderTest {
         Request req = r.read(source("10:"));
         assertEquals(RequestType.FACILITY_LIST, req.getType());
         assertTrue(req instanceof SimpleRequest);
+        assertNull(req.getLocalHostId());
     }
     
     @Test

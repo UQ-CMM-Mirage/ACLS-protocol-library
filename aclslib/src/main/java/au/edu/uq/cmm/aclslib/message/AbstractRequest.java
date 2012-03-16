@@ -33,19 +33,19 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
         this.localHostId = localHostId;
     }
     
-    public RequestType getType() {
+    public final RequestType getType() {
         return type;
     }
 
-    public FacilityConfig getFacility() {
+    public final FacilityConfig getFacility() {
         return facility;
     }
 
-    public InetAddress getClientAddress() {
+    public final InetAddress getClientAddr() {
         return clientAddress;
     }
 
-    public String getLocalHostId() {
+    public final String getLocalHostId() {
         return localHostId;
     }
 
