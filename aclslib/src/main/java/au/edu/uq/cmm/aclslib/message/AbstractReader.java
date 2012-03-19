@@ -62,10 +62,10 @@ public class AbstractReader {
     protected final Scanner createLineScanner(BufferedReader source) 
             throws IOException {
         String line = source.readLine();
+        log.debug("Raw request/response line is (" + line + ")");
         if (line == null) {
             return new Scanner("");
         }
-        log.debug("Raw request/response line is (" + line + ")");
         line += "\r\n";
         Scanner scanner = new Scanner(line);
         scanner.useDelimiter(DEFAULT_DELIMITERS);
