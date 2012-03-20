@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
-import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
@@ -23,7 +22,6 @@ import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
-import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
 import au.edu.uq.cmm.aclslib.service.CompositeServiceBase;
@@ -46,16 +44,19 @@ public class AclsProxy extends CompositeServiceBase {
     // FIXME - this will need to be persisted if sessions are to survive 
     // beyond a restart.
     private Map<String, String> passwordCache = new HashMap<String, String>();
+    private boolean useVmfl;
   
 
     public AclsProxy(Configuration config) {
         this.config = config;
         try {
+            this.useVmfl = new AclsClient(config.getServerHost(),
+                    config.getServerPort()).checkForVmflSupport();
             this.requestListener = new RequestListener(config, config.getProxyPort(),
                     config.getProxyHost(),
                     new RequestProcessorFactory() {
                 public Runnable createProcessor(Configuration config, Socket s) {
-                    if (config.isUseVmfl()) {
+                    if (useVmfl) {
                         return new VmflRequestProcessor(config, s, AclsProxy.this);
                     } else {
                         return new NormalRequestProcessor(config, s, AclsProxy.this);
@@ -65,41 +66,8 @@ public class AclsProxy extends CompositeServiceBase {
         } catch (UnknownHostException ex) {
             throw new IllegalArgumentException("Configuration problem", ex);
         }
-        if (config.isUseVmfl()) {
+        if (useVmfl) {
             this.facilityChecker = new FacilityChecker(config);
-        }
-    }
-
-    public static void main(String[] args) {
-        String configFile = null;
-        if (args.length > 0) {
-            configFile = args[0];
-        }
-        try {
-            Configuration config = StaticConfiguration.loadConfiguration(configFile);
-            if (config == null) {
-                LOG.info("Can't read/load proxy configuration file");
-                System.exit(2);
-            }
-            AclsProxy proxy = new AclsProxy(config);
-            try {
-                proxy.probeServer();
-            } catch (ServiceException ex) {
-                LOG.error("Cannot contact ACLS server", ex);
-                System.exit(3);
-            }
-            proxy.addListener(new AclsFacilityEventListener() {
-                public void eventOccurred(AclsFacilityEvent event) {
-                    LOG.info("Facility event: " + event);
-                }
-            });
-            proxy.startup();
-            proxy.awaitShutdown();
-            LOG.info("Exitting normally");
-            System.exit(0);
-        } catch (Throwable ex) {
-            LOG.error("Unhandled exception", ex);
-            System.exit(1);
         }
     }
 
@@ -128,10 +96,18 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         try {
-            if (config.isUseVmfl()) {
-                vmflProbe(client);
-            } else {
-                regularProbe(client);
+            Request request = new SimpleRequest(RequestType.USE_PROJECT, null, null, null);
+            Response response = client.serverSendReceive(request);
+            switch (response.getType()) {
+            case PROJECT_NO:
+            case PROJECT_YES:
+                break;
+            default:
+                LOG.error("Unexpected response for USE_PROJECT request: " + 
+                        response.getType());
+                throw new ServiceException(
+                        "The ACLS server gave an unexpected response " +
+                        "to our probe (see log)");
             }
         } catch (AclsCommsException ex) {
             throw new ServiceException(
@@ -143,43 +119,6 @@ public class AclsProxy extends CompositeServiceBase {
             throw new ServiceException(
                     "The ACLS server is not behaving correctly", ex);
         } 
-    }
-
-    private void regularProbe(AclsClient client) throws AclsException {
-        Request request = new SimpleRequest(RequestType.USE_PROJECT, null, null, null);
-        Response response = client.serverSendReceive(request);
-        switch (response.getType()) {
-        case PROJECT_NO:
-        case PROJECT_YES:
-            break;
-        default:
-            LOG.error("Unexpected response for USE_PROJECT request: " + 
-                    response.getType());
-            throw new ServiceException(
-                    "The ACLS server gave an unexpected response " +
-                    "to our probe (see log)");
-        }
-    }
-
-    private void vmflProbe(AclsClient client) throws AclsException {
-        Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null, null, null);
-        Response response = client.serverSendReceive(request);
-        switch (response.getType()) {
-        case USE_VIRTUAL:
-            YesNoResponse uv = (YesNoResponse) response;
-            if (!uv.isYes()) {
-                throw new ServiceException(
-                        "The ACLS server has the proxy configured " +
-                        "as a normal Facility");
-            }
-            break;
-        default:
-            LOG.error("Unexpected response for USE_VIRTUAL request: " + 
-                    response.getType());
-            throw new ServiceException(
-                    "The ACLS server gave an unexpected response " +
-                    "to our probe (see log)");
-        }
     }
 
     public void sendEvent(AclsFacilityEvent event) {
@@ -211,7 +150,7 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new LoginRequest(
-                config.isUseVmfl() ? RequestType.VIRTUAL_LOGIN : RequestType.LOGIN, 
+                useVmfl ? RequestType.VIRTUAL_LOGIN : RequestType.LOGIN, 
                 userName, password, facility, null, null);
         try {
             Response response = client.serverSendReceive(request);
@@ -240,7 +179,7 @@ public class AclsProxy extends CompositeServiceBase {
         AclsClient client = new AclsClient(
                 config.getServerHost(), config.getServerPort());
         Request request = new AccountRequest(
-                config.isUseVmfl() ? RequestType.VIRTUAL_ACCOUNT : RequestType.ACCOUNT,
+                useVmfl ? RequestType.VIRTUAL_ACCOUNT : RequestType.ACCOUNT,
                 userName, account, facility, null, null);
         try {
             Response response = client.serverSendReceive(request);

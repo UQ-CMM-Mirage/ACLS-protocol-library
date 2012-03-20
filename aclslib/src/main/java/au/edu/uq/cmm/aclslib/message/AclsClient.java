@@ -52,4 +52,27 @@ public class AclsClient {
             return new ProxyErrorResponse("Proxy cannot talk to ACLS server");
         }
     }
+
+    public boolean checkForVmflSupport() {
+        LOG.debug("Checking for vMFL capability");
+        try {
+            Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null, null, null);
+            Response response = serverSendReceive(request);
+            switch (response.getType()) {
+            case USE_VIRTUAL:
+                YesNoResponse uv = (YesNoResponse) response;
+                LOG.info("The 'useVirtual' request returned " + uv.isYes());
+                return uv.isYes();
+            default:
+                throw new AclsProtocolException(
+                        "Unexpected response to USE_VIRTUAL request - " + 
+                                response.getType());
+            }
+        } catch (AclsException ex) {
+            // We do this in case we are talking to a server that is not
+            // aware of the vMFL requests.
+            LOG.info("The 'useVirtual' request failed - assuming no vMFL", ex);
+            return false;
+        }
+    }
 }
