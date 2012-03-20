@@ -16,8 +16,10 @@ import org.apache.log4j.Logger;
  */
 public class AclsClient {
     private static final Logger LOG = Logger.getLogger(AclsClient.class);
+    private static final int ACLS_REQUEST_TIMEOUT = 5000;
     private final String serverHost;
     private final int serverPort;
+    
     
     public AclsClient(String serverHost, int serverPort) {
         this.serverHost = serverHost;
@@ -27,6 +29,7 @@ public class AclsClient {
     public Response serverSendReceive(Request r) throws AclsException {
         try {
             Socket aclsSocket = new Socket(serverHost, serverPort);
+            aclsSocket.setSoTimeout(ACLS_REQUEST_TIMEOUT);
             try {
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
