@@ -171,20 +171,42 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
                 expect(scanner, AbstractMessage.DELIMITER);
                 expect(scanner, AbstractMessage.FACILITY_DELIMITER);
                 facilityName = nextSubfacility(scanner);
-                facility = config.lookupFacilityByName(facilityName);
             }
         } else {
-            // The current version of the protocol only sends a LocalHostId
-            // for a subset of requests.  However, I believe that this will
-            // need to change, so we accept a LocalHostId for any non-vMFL
-            // request type.
-            String token = scanner.next();
-            if (token.equals(AbstractMessage.DELIMITER)) {
-                token = scanner.next();
+            switch (type) {
+            case FACILITY_NAME:
+            case USE_PROJECT:
+            case USE_TIMER:
+            case USE_FULL_SCREEN:
+            case SYSTEM_PASSWORD:
+            case NET_DRIVE:
+                if (scanner.hasNext()) {
+                    localHostId = scanner.next().trim();
+                }
+                break;
+            default:
+                String token = scanner.next();
+                if (token.equals(AbstractMessage.DELIMITER)) {
+                    token = scanner.next();
+                }
+                if (token.equals(AbstractMessage.COMMAND_DELIMITER)) {
+                    localHostId = nextLocalHostId(scanner);
+                }
             }
-            if (token.equals(AbstractMessage.COMMAND_DELIMITER)) {
-                localHostId = nextLocalHostId(scanner);
+        }
+        if (localHostId != null) {
+            localHostId = localHostId.trim();
+            if (localHostId.isEmpty()) {
+                localHostId = null;
+            } else {
                 facility = config.lookupFacilityByLocalHostId(localHostId);
+            }
+        } else if (facilityName != null) {
+            facilityName = facilityName.trim();
+            if (facilityName.isEmpty()) {
+                facilityName = null;
+            } else {
+                facility = config.lookupFacilityByName(facilityName);
             }
         }
         if (facility == null) {

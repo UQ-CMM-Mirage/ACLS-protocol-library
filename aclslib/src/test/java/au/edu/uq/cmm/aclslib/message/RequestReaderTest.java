@@ -238,7 +238,7 @@ public class RequestReaderTest {
     @Test
     public void testFacilityHostId() throws AclsException {
         RequestReader r = reader();
-        Request req = r.read(source("5:|:ID|"));
+        Request req = r.read(source("5:ID|"));
         assertEquals(RequestType.FACILITY_NAME, req.getType());
         assertTrue(req instanceof SimpleRequest);
         assertEquals("there", req.getFacility().getFacilityName());
@@ -255,32 +255,12 @@ public class RequestReaderTest {
     }
     
     @Test
-    public void testProjectHostId() throws AclsException {
-        RequestReader r = reader();
-        Request req = r.read(source("6:|:ID|"));
-        assertEquals(RequestType.USE_PROJECT, req.getType());
-        assertTrue(req instanceof SimpleRequest);
-        assertEquals("there", req.getFacility().getFacilityName());
-        assertEquals("ID", req.getLocalHostId());
-    }
-    
-    @Test
     public void testTimer() throws AclsException {
         RequestReader r = reader();
         Request req = r.read(source("7:"));
         assertEquals(RequestType.USE_TIMER, req.getType());
         assertTrue(req instanceof SimpleRequest);
         assertEquals("here", req.getFacility().getFacilityName());
-    }
-    
-    @Test
-    public void testTimerHostId() throws AclsException {
-        RequestReader r = reader();
-        Request req = r.read(source("7:|:ID|"));
-        assertEquals(RequestType.USE_TIMER, req.getType());
-        assertTrue(req instanceof SimpleRequest);
-        assertEquals("there", req.getFacility().getFacilityName());
-        assertEquals("ID", req.getLocalHostId());
     }
     
     @Test
