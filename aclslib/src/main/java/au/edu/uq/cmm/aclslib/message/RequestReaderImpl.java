@@ -29,7 +29,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private String localHostId;
     
     public RequestReaderImpl(Configuration config, InetAddress clientAddr) {
-        super(LOG);
+        super(LOG, true);
         this.config = config;
         this.clientAddr = clientAddr;
     }
