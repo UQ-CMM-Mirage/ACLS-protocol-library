@@ -15,7 +15,7 @@ public class CommandErrorResponse extends AbstractResponse {
         super(ResponseType.COMMAND_ERROR);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader();
     }
 }

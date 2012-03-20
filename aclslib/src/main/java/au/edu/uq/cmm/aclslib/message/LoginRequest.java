@@ -31,8 +31,9 @@ public class LoginRequest extends AbstractRequest {
         this.password = checkPassword(password);
     }
 
-    public String unparse() {
-        return generateHeader() + userName + DELIMITER + password + DELIMITER + 
+    public String unparse(boolean obscurePasswords) {
+        return generateHeader() + userName + DELIMITER + 
+                (obscurePasswords ? "XXXXXX" : password) + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
                     (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER));
     }

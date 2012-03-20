@@ -33,7 +33,7 @@ public class NoteRequest extends AbstractRequest {
         this.notes = checkNotes(notes);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 NOTE_DELIMITER + notes + DELIMITER;

@@ -35,8 +35,8 @@ public class AclsClient {
                         aclsSocket.getOutputStream()));
                 InputStream is = aclsSocket.getInputStream();
                 LOG.debug("Sending ACLS server request " + r.getType().name() +
-                        "(" + r.unparse() + ")");
-                w.append(r.unparse() + "\r\n").flush();
+                        "(" + r.unparse(true) + ")");
+                w.append(r.unparse(false) + "\r\n").flush();
                 return new ResponseReaderImpl().readWithStatusLine(is);
             } catch (ServerStatusException ex) {
                 LOG.error("ACLS server (" + serverHost + ":" + serverPort +

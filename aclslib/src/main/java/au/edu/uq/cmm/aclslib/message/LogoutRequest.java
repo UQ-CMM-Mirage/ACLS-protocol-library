@@ -34,9 +34,10 @@ public class LogoutRequest extends AbstractRequest {
         this.account = checkAccount(account);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + userName + DELIMITER + 
-                (password == null ? "" : (password + DELIMITER)) +
+                (password == null ? "" : (
+                        (obscurePasswords ? "XXXXXX" : password) + DELIMITER)) +
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
                     (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER));

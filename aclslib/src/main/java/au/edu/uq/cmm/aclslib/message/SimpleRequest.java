@@ -21,7 +21,7 @@ public class SimpleRequest extends AbstractRequest {
         super(type, facility, clientAddress, localHostId);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader();
     }
 }

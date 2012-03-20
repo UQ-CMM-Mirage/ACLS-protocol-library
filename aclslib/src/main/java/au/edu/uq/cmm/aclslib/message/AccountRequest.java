@@ -33,7 +33,7 @@ public class AccountRequest extends AbstractRequest {
         this.account = account;
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
