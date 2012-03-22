@@ -64,7 +64,7 @@ public class YesNoResponse extends AbstractResponse {
         }
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         switch (getType()) {
         case PROJECT_NO:
         case PROJECT_YES:

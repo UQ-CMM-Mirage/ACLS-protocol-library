@@ -169,12 +169,4 @@ public interface Configuration {
      */
     boolean isHoldDatasetsWithNoUser();
     
-    /**
-     * This determines if the proxy uses the vMFL extensions.
-     * Otherwise, it recognizes and uses the facility LocalHostID field in 
-     * requests, where available and where the protocol allows it.  (The latter
-     * is likely to be a moving target.)
-     */
-    boolean isUseVmfl();
-    
 }

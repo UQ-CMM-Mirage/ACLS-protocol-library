@@ -22,10 +22,13 @@ public class SystemPasswordResponse extends AbstractResponse {
         this.password = password == null ? null : checkSystemPassword(password);
     }
 
-    public String unparse() {
-        return password == null ?
-                generateHeader() :
-                (generateHeader() + SYSTEM_PASSWORD_DELIMITER + password + DELIMITER);
+    public String unparse(boolean obscurePasswords) {
+        if (password == null) {
+            return generateHeader();
+        } else {
+            return generateHeader() + SYSTEM_PASSWORD_DELIMITER + 
+                    (obscurePasswords ? "XXXXXX" : password) + DELIMITER;
+        }
     }
 
     /**

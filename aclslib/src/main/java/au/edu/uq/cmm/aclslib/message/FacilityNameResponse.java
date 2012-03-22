@@ -20,7 +20,7 @@ public class FacilityNameResponse extends AbstractResponse {
         this.facility = checkFacility(facility);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + FACILITY_DELIMITER + facility + DELIMITER;
     }
 

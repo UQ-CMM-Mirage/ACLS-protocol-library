@@ -9,7 +9,7 @@ public class ProxyErrorResponse extends AbstractResponse {
         this.message = message;
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         throw new UnsupportedOperationException("Don't unparse me!");
     }
 

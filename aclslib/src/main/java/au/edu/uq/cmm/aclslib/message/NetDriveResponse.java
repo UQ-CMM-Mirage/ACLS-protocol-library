@@ -37,13 +37,14 @@ public class NetDriveResponse extends AbstractResponse {
         super(ResponseType.NET_DRIVE_NO);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         if (getType() == ResponseType.NET_DRIVE_NO) {
             return generateHeader();
         } else {
             return generateHeader() + driveName + ACCOUNT_DELIMITER + 
                     folderName + TIME_DELIMITER + accessName + 
-                    ONSITE_ASSIST_DELIMITER + accessPassword + DELIMITER;
+                    ONSITE_ASSIST_DELIMITER + 
+                    (obscurePasswords ? "XXXXXX" : accessPassword) + DELIMITER;
         }
     }
 

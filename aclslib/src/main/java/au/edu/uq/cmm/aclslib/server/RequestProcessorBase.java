@@ -44,10 +44,10 @@ public abstract class RequestProcessorBase  implements Runnable {
         try {
         if (r instanceof ProxyErrorResponse) {
             LOG.error("Proxy error - " + ((ProxyErrorResponse) r).getMessage());
-            w.append(new CommandErrorResponse().unparse() + "\r\n").flush();
+            w.append(new CommandErrorResponse().unparse(false) + "\r\n").flush();
         } else {
-            LOG.debug("Sending response " + r.getType().name() + "(" + r.unparse() + ")");
-            w.append(r.unparse() + "\r\n").flush();
+            LOG.debug("Sending response " + r.getType().name() + "(" + r.unparse(true) + ")");
+            w.append(r.unparse(false) + "\r\n").flush();
         }
         } catch (IOException ex) {
             throw new AclsCommsException("Couldn't write message", ex);
@@ -56,8 +56,8 @@ public abstract class RequestProcessorBase  implements Runnable {
 
     protected static void sendRequest(BufferedWriter w, Request r) 
             throws IOException {
-        LOG.debug("Sending request " + r.getType().name() + "(" + r.unparse() + ")");
-        w.append(r.unparse() + "\r\n").flush();
+        LOG.debug("Sending request " + r.getType().name() + "(" + r.unparse(true) + ")");
+        w.append(r.unparse(false) + "\r\n").flush();
     }
 
     public void run() {
@@ -85,7 +85,7 @@ public abstract class RequestProcessorBase  implements Runnable {
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)
             // and create and return the relevant response.
-            LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
+            LOG.debug("Request is " + m.getType().name() + "(" + m.unparse(true) + ")");
             doProcess(f, m, w);
         } catch (IOException ex) {
             LOG.error(ex);

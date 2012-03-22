@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.net.InetAddress;
+
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 /**
@@ -14,11 +16,12 @@ public class SimpleRequest extends AbstractRequest {
      * 
      * @param type
      */
-    public SimpleRequest(RequestType type, FacilityConfig facility) {
-        super(type, facility);
+    public SimpleRequest(RequestType type, FacilityConfig facility, 
+            InetAddress clientAddress, String localHostId) {
+        super(type, facility, clientAddress, localHostId);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader();
     }
 }

@@ -22,7 +22,7 @@ public class AccountResponse extends AbstractResponse {
         this.loginTimestamp = loginTimestamp;
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + TIME_DELIMITER + loginTimestamp + DELIMITER;
     }
 

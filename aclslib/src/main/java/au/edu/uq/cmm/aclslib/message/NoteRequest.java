@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.net.InetAddress;
+
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 /**
@@ -24,14 +26,14 @@ public class NoteRequest extends AbstractRequest {
      *     with semicolons.
      */
     public NoteRequest(String userName, String account, String notes,
-            FacilityConfig facility) {
-        super(RequestType.NOTES, facility);
+            FacilityConfig facility, InetAddress clientAddress, String localHostId) {
+        super(RequestType.NOTES, facility, clientAddress, localHostId);
         this.userName = checkName(userName);
         this.account = checkAccount(account);
         this.notes = checkNotes(notes);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 NOTE_DELIMITER + notes + DELIMITER;
