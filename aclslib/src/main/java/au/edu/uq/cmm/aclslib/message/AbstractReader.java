@@ -6,6 +6,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import static au.edu.uq.cmm.aclslib.message.AbstractMessage.*;
 
 /**
  * This the base class for the ACLS request and response reader classes.
@@ -48,28 +49,51 @@ public class AbstractReader {
             Pattern.compile("(?=\\~)");
     private static final Pattern ACCESS_PASSWORD_DELIMITERS = 
             Pattern.compile("(?=\\|)");
-    private static final Pattern AFTER_COMMAND_DELIMITER =
-            Pattern.compile("(?<=:)");
+    private static final Pattern AFTER_DELIMITER =
+            Pattern.compile("(?<=[/:|\\[\\];~&?])");
     static final Pattern DEFAULT_DELIMITERS = 
             Pattern.compile("(?<=[/:|\\[\\];~&?])|(?=[/:|\\[\\];~&?])");
     
-    private Logger log;
+    private final Logger log;
+    private final boolean isRequestReader;
     
-    public AbstractReader(Logger log) {
+    public AbstractReader(Logger log, boolean isRequestReader) {
         this.log = log;
+        this.isRequestReader = isRequestReader;
     }
 
     protected final Scanner createLineScanner(BufferedReader source) 
             throws IOException {
         String line = source.readLine();
+        if (log.isDebugEnabled()) {
+            log.debug("Raw request/response line is (" + passwordFilter(line) + ")");
+        }
         if (line == null) {
             return new Scanner("");
         }
-        log.debug("Raw request/response line is (" + line + ")");
         line += "\r\n";
         Scanner scanner = new Scanner(line);
         scanner.useDelimiter(DEFAULT_DELIMITERS);
         return scanner;
+    }
+
+    private String passwordFilter(String line) {
+        if (line == null) {
+            return "null";
+        } else if (isRequestReader) {
+            if (line.startsWith(RequestType.LOGIN + COMMAND_DELIMITER) ||
+                    line.startsWith(RequestType.VIRTUAL_LOGIN + COMMAND_DELIMITER) ||
+                    line.startsWith(RequestType.NEW_VIRTUAL_LOGIN + COMMAND_DELIMITER)) {
+                line = line.replaceFirst("\\|[^|]+\\|", "|XXXXXX|");
+            }
+        } else {
+            if (line.startsWith(ResponseType.SYSTEM_PASSWORD_YES + COMMAND_DELIMITER)) {
+                line = line.replaceFirst("/[^|]+\\|", "/XXXXXX|");
+            } else if (line.startsWith(ResponseType.NET_DRIVE_YES + COMMAND_DELIMITER)) {
+                line = line.replaceFirst("~[^|]+\\|", "~XXXXXX|");
+            }
+        }
+        return line;
     }
 
     protected void expect(Scanner source, String expected) throws MessageSyntaxException {
@@ -90,25 +114,25 @@ public class AbstractReader {
     protected void expectEnd(Scanner source) throws MessageSyntaxException {
         if (source.hasNext()) {
             String token = source.next().trim();
-            if (token.equals(AbstractMessage.DELIMITER)) {
+            if (token.equals(DELIMITER)) {
                 token = source.next().trim();
             }
             // I don't understand why, but in some cases the "status" message seems to
             // be repeated at the end of a response.  The standard clients don't make 
             // any use of this (as far as I can tell) so I'm treating it as noise. 
             if (!token.isEmpty() &&
-                !token.equalsIgnoreCase(AbstractMessage.ACCEPTED_IP_TAG) &&
-                !token.equalsIgnoreCase(AbstractMessage.FAILED_TAG)) {
+                !token.equalsIgnoreCase(ACCEPTED_IP_TAG) &&
+                !token.equalsIgnoreCase(FAILED_TAG)) {
                 throw new MessageSyntaxException(
-                        "Unexpected token at end of message: '" + token);
+                        "Unexpected token at end of message: '" + token + "'");
             }
         }
     }
     
-    protected String nextCommandDelimiter(Scanner source) {
+    protected String nextDelimiter(Scanner source) {
         Pattern delimiter = source.delimiter();
         try {
-            source.useDelimiter(AFTER_COMMAND_DELIMITER);
+            source.useDelimiter(AFTER_DELIMITER);
             if (source.hasNext()) {
                 return source.next();
             } else {

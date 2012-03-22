@@ -16,7 +16,8 @@ public interface Message {
     /**
      * Turn this Message into a textual ACLS message.
      * 
+     * @param obscurePasswords if true, replace any password field with some XXX's.
      * @return the message in text form.
      */
-    String unparse();
+    String unparse(boolean obscurePasswords);
 }

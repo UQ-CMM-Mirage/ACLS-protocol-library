@@ -45,7 +45,7 @@ public class LoginResponse extends AbstractResponse {
         this.onsiteAssist = onsiteAssist;
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + userName + DELIMITER + orgName + DELIMITER + 
                 (loginTimestamp == null ? "" : (TIME_DELIMITER + loginTimestamp) + DELIMITER) +
                 ACCOUNT_DELIMITER + generateList(accounts, ACCOUNT_SEPARATOR) + 

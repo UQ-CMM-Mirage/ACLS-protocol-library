@@ -76,7 +76,8 @@ public class FacilityChecker extends ThreadServiceBase {
     }
 
     private List<String> queryFacilityList() throws AclsException {
-        Request request = new SimpleRequest(RequestType.FACILITY_LIST, null);
+        Request request = new SimpleRequest(
+                RequestType.FACILITY_LIST, null, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_LIST:
@@ -87,7 +88,8 @@ public class FacilityChecker extends ThreadServiceBase {
     }
 
     private int queryFacilityCount() throws ServiceException, AclsException {
-        Request request = new SimpleRequest(RequestType.FACILITY_COUNT, null);
+        Request request = new SimpleRequest(
+                RequestType.FACILITY_COUNT, null, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case FACILITY_COUNT:

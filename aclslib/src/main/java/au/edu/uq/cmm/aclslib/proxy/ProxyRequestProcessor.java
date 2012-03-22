@@ -26,7 +26,7 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
             throws AclsException {
         // These methods will deal with the server interaction (if required)
         // and create and return the relevant response.
-        LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
+        LOG.debug("Request is " + m.getType().name() + "(" + m.unparse(true) + ")");
         switch (m.getType()) {
         case LOGIN:
             processLoginRequest(f, m, w);

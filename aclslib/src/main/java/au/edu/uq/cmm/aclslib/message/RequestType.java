@@ -30,12 +30,12 @@ public enum RequestType {
     
     private final int code;
     private final boolean vmfl;
-    private final boolean localHostIdAllowed;
+    private final boolean sendLocalHostId;
     
-    RequestType(int code, boolean vmfl, boolean localHostIdAllowed) {
+    RequestType(int code, boolean vmfl, boolean sendLocalHostId) {
         this.code = code;
         this.vmfl = vmfl;
-        this.localHostIdAllowed = localHostIdAllowed;
+        this.sendLocalHostId = sendLocalHostId;
     }
     
     RequestType(int code, boolean vmfl) {
@@ -51,7 +51,7 @@ public enum RequestType {
     }
     
     public boolean isLocalHostIdAllowed() {
-        return localHostIdAllowed;
+        return sendLocalHostId;
     }
 
     public static RequestType parse(String str) {

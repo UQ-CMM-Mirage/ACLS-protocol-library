@@ -47,7 +47,6 @@ public class StaticConfiguration implements Configuration {
     private DataGrabberRestartPolicy dataGrabberRestartPolicy = 
             DataGrabberRestartPolicy.NO_AUTO_START;
     private boolean holdDatasetsWithNoUser = true;
-    private boolean useVmfl = true;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -215,14 +214,6 @@ public class StaticConfiguration implements Configuration {
     public void setDataGrabberRestartPolicy(
             DataGrabberRestartPolicy dataGrabberRestartPolicy) {
         this.dataGrabberRestartPolicy = dataGrabberRestartPolicy;
-    }
-
-    public boolean isUseVmfl() {
-        return useVmfl;
-    }
-
-    public void setUseVmfl(boolean useVmfl) {
-        this.useVmfl = useVmfl;
     }
 
     public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {

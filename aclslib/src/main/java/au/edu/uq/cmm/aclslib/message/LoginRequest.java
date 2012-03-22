@@ -1,5 +1,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import java.net.InetAddress;
+
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 
 /**
@@ -22,14 +24,16 @@ public class LoginRequest extends AbstractRequest {
      * @param facility the facility name / identifier or {@literal null}
      */
     public LoginRequest(RequestType type, String userName, 
-            String password, FacilityConfig facility) {
-        super(type, facility);
+            String password, FacilityConfig facility, 
+            InetAddress clientAddress, String localHostId) {
+        super(type, facility, clientAddress, localHostId);
         this.userName = checkName(userName);
         this.password = checkPassword(password);
     }
 
-    public String unparse() {
-        return generateHeader() + userName + DELIMITER + password + DELIMITER + 
+    public String unparse(boolean obscurePasswords) {
+        return generateHeader() + userName + DELIMITER + 
+                (obscurePasswords ? "XXXXXX" : password) + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
                     (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER));
     }

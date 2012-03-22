@@ -22,7 +22,7 @@ public class FacilityListResponse extends AbstractResponse {
         this.list = list;
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + FACILITY_DELIMITER + 
                generateList(list, ACCOUNT_SEPARATOR) + DELIMITER;
     }

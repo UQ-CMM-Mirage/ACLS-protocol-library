@@ -21,7 +21,7 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
     private static final Logger LOG = Logger.getLogger(ResponseReaderImpl.class);
     
     public ResponseReaderImpl() {
-        super(LOG);
+        super(LOG, false);
     }
 
     public Response read(InputStream source) throws AclsException {

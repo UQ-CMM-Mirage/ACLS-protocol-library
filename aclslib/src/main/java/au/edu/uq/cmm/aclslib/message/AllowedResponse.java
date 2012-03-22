@@ -15,7 +15,7 @@ public class AllowedResponse extends AbstractResponse {
         super(type);
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader();
     }
 }

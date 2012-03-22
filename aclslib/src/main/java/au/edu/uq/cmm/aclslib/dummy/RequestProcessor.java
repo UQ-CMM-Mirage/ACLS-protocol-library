@@ -44,7 +44,7 @@ public class RequestProcessor extends RequestProcessorBase implements Runnable {
 
     protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) 
             throws AclsException {
-        LOG.debug("Request is " + m.getType().name() + "(" + m.unparse() + ")");
+        LOG.debug("Request is " + m.getType().name() + "(" + m.unparse(true) + ")");
         switch (m.getType()) {
         case VIRTUAL_LOGIN:
             processLoginRequest(m, w);

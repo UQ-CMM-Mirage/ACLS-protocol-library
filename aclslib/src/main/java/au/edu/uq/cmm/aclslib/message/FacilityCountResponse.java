@@ -20,7 +20,7 @@ public class FacilityCountResponse extends AbstractResponse {
         this.count = count;
     }
 
-    public String unparse() {
+    public String unparse(boolean obscurePasswords) {
         return generateHeader() + FACILITY_DELIMITER + count + DELIMITER;
     }
 

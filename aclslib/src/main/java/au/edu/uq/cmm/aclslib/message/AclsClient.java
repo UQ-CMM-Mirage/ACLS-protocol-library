@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.log4j.Logger;
@@ -16,8 +17,10 @@ import org.apache.log4j.Logger;
  */
 public class AclsClient {
     private static final Logger LOG = Logger.getLogger(AclsClient.class);
+    private static final int ACLS_REQUEST_TIMEOUT = 5000;
     private final String serverHost;
     private final int serverPort;
+    
     
     public AclsClient(String serverHost, int serverPort) {
         this.serverHost = serverHost;
@@ -26,14 +29,18 @@ public class AclsClient {
     
     public Response serverSendReceive(Request r) throws AclsException {
         try {
-            Socket aclsSocket = new Socket(serverHost, serverPort);
+            Socket aclsSocket = new Socket();
             try {
+                aclsSocket.setSoTimeout(ACLS_REQUEST_TIMEOUT);
+                aclsSocket.connect(
+                        new InetSocketAddress(serverHost, serverPort),
+                        ACLS_REQUEST_TIMEOUT);
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
                 InputStream is = aclsSocket.getInputStream();
                 LOG.debug("Sending ACLS server request " + r.getType().name() +
-                        "(" + r.unparse() + ")");
-                w.append(r.unparse() + "\r\n").flush();
+                        "(" + r.unparse(true) + ")");
+                w.append(r.unparse(false) + "\r\n").flush();
                 return new ResponseReaderImpl().readWithStatusLine(is);
             } catch (ServerStatusException ex) {
                 LOG.error("ACLS server (" + serverHost + ":" + serverPort +
@@ -47,6 +54,29 @@ public class AclsClient {
             LOG.warn("IO error while trying to talk to ACLS server (" +
                     serverHost + ":" + serverPort + ")", ex);
             return new ProxyErrorResponse("Proxy cannot talk to ACLS server");
+        }
+    }
+
+    public boolean checkForVmflSupport() {
+        LOG.debug("Checking for vMFL capability");
+        try {
+            Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null, null, null);
+            Response response = serverSendReceive(request);
+            switch (response.getType()) {
+            case USE_VIRTUAL:
+                YesNoResponse uv = (YesNoResponse) response;
+                LOG.info("The 'useVirtual' request returned " + uv.isYes());
+                return uv.isYes();
+            default:
+                throw new AclsProtocolException(
+                        "Unexpected response to USE_VIRTUAL request - " + 
+                                response.getType());
+            }
+        } catch (AclsException ex) {
+            // We do this in case we are talking to a server that is not
+            // aware of the vMFL requests.
+            LOG.info("The 'useVirtual' request failed - assuming no vMFL", ex);
+            return false;
         }
     }
 }

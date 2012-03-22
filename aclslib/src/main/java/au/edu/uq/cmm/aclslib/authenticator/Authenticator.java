@@ -1,9 +1,6 @@
 package au.edu.uq.cmm.aclslib.authenticator;
 
-import org.apache.log4j.Logger;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
-import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsException;
@@ -12,8 +9,6 @@ import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
-import au.edu.uq.cmm.aclslib.message.SimpleRequest;
-import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 
 /**
  * The Authenticator class uses an ACLS server as a means of checking a
@@ -23,77 +18,28 @@ import au.edu.uq.cmm.aclslib.message.YesNoResponse;
  * @author scrawley
  */
 public class Authenticator {
-    private static final Logger LOG = Logger.getLogger(Authenticator.class);
     private AclsClient client;
     private StaticFacilityConfig dummyFacility;
+    private boolean useVirtual;
 
     public Authenticator(String serverHost, int serverPort, String dummyFacilityName) {
-        this.client = new AclsClient(serverHost, serverPort);
+        client = new AclsClient(serverHost, serverPort);
         dummyFacility = new StaticFacilityConfig();
         dummyFacility.setFacilityName(dummyFacilityName);
-    }
-
-    public static void main(String args[]) {
-        if (args.length == 0) {
-            System.err.println("usage: <config-file> <user> <password>");
-            System.exit(1);
-        }
-        String configFile = args[0];
-        String user = args[1];
-        String password = args[2];
-        try {
-            Configuration config = StaticConfiguration.loadConfiguration(configFile);
-            if (config == null) {
-                LOG.info("Can't read/load proxy configuration file");
-                System.exit(2);
-            }
-            Authenticator authenticator = new Authenticator(
-                    config.getServerHost(), config.getServerPort(), 
-                    config.getDummyFacility());
-            boolean ok = authenticator.authenticate(user, password);
-            if (ok) {
-                System.out.println("Credentials accepted");
-            } else {
-                System.out.println("Credentials rejected");
-            }
-        } catch (Throwable ex) {
-            LOG.error("Unhandled exception", ex);
-            System.exit(1);
-        }
+        useVirtual = client.checkForVmflSupport();
     }
 
     public boolean authenticate(String userName, String password) throws AclsException {
-        if (useVirtual()) {
-            return virtualFacilityLogin(userName, password);
+        if (useVirtual) {
+            return vmflLogin(userName, password);
         } else {
-            return realFacilityLogin(userName, password);
-        }
-    }
-    
-    private boolean useVirtual() {
-        try {
-            Request request = new SimpleRequest(RequestType.USE_VIRTUAL, null);
-            Response response = client.serverSendReceive(request);
-            switch (response.getType()) {
-            case USE_VIRTUAL:
-                YesNoResponse uv = (YesNoResponse) response;
-                return uv.isYes();
-            default:
-                throw new AclsProtocolException(
-                        "Unexpected response to USE_VIRTUAL request - " + 
-                                response.getType());
-            }
-        } catch (AclsException ex) {
-            // We do this in case we are talking to a server that is not
-            // aware of the vMFL requests.
-            LOG.debug("useVirtual request failed - assuming 'false'", ex);
-            return false;
+            return login(userName, password);
         }
     }
 
-    private boolean virtualFacilityLogin(String userName, String password) throws AclsException {
+    private boolean vmflLogin(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
-                RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility);
+                RequestType.VIRTUAL_LOGIN, userName, password, dummyFacility, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:
@@ -107,9 +53,9 @@ public class Authenticator {
         }
     }
     
-    private boolean realFacilityLogin(String userName, String password) throws AclsException {
+    private boolean login(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
-                RequestType.LOGIN, userName, password, null);
+                RequestType.LOGIN, userName, password, null, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case LOGIN_ALLOWED:
