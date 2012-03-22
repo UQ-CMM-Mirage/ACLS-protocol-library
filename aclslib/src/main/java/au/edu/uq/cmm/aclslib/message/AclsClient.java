@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.log4j.Logger;
@@ -28,9 +29,12 @@ public class AclsClient {
     
     public Response serverSendReceive(Request r) throws AclsException {
         try {
-            Socket aclsSocket = new Socket(serverHost, serverPort);
-            aclsSocket.setSoTimeout(ACLS_REQUEST_TIMEOUT);
+            Socket aclsSocket = new Socket();
             try {
+                aclsSocket.setSoTimeout(ACLS_REQUEST_TIMEOUT);
+                aclsSocket.connect(
+                        new InetSocketAddress(serverHost, serverPort),
+                        ACLS_REQUEST_TIMEOUT);
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
                 InputStream is = aclsSocket.getInputStream();
