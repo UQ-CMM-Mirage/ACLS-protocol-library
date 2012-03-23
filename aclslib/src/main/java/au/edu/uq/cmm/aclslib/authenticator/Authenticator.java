@@ -18,9 +18,9 @@ import au.edu.uq.cmm.aclslib.message.Response;
  * @author scrawley
  */
 public class Authenticator {
-    private AclsClient client;
-    private StaticFacilityConfig dummyFacility;
-    private boolean useVirtual;
+    private final AclsClient client;
+    private final StaticFacilityConfig dummyFacility;
+    private final boolean useVirtual;
 
     public Authenticator(String serverHost, int serverPort, String dummyFacilityName) {
         client = new AclsClient(serverHost, serverPort);
