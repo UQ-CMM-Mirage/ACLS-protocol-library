@@ -7,14 +7,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.service.MonitoredThreadServiceBase;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 
 public class RequestListener extends MonitoredThreadServiceBase {
-    private static final Logger LOG = Logger.getLogger(RequestListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RequestListener.class);
     private Configuration config;
     private RequestProcessorFactory factory;
     private InetAddress bindAddr;
@@ -55,7 +55,7 @@ public class RequestListener extends MonitoredThreadServiceBase {
                     LOG.info("Interrupted - we're done (2)");
                     break;
                 }
-                LOG.debug(ex);
+                LOG.debug("IO error", ex);
             }
         }
     }
@@ -65,7 +65,7 @@ public class RequestListener extends MonitoredThreadServiceBase {
             LOG.info("Unblocking proxy listener");
             ss.close();
         } catch (IOException ex) {
-            LOG.debug(ex);
+            LOG.debug("IO error", ex);
         }
     }
 

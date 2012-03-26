@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
@@ -33,7 +33,7 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
  * 
  */
 public class AclsProxy extends CompositeServiceBase {
-    private static final Logger LOG = Logger.getLogger(AclsProxy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
     private Configuration config;
     private Service requestListener;
     private Service facilityChecker;
@@ -168,7 +168,7 @@ public class AclsProxy extends CompositeServiceBase {
                         "Internal error - see server logs for details");
             }
         } catch (AclsException ex) {
-            LOG.error(ex);
+            LOG.error("Internal error", ex);
             throw new AclsLoginException(
                     "Internal error - see server logs for details");
         }
@@ -198,7 +198,7 @@ public class AclsProxy extends CompositeServiceBase {
                         "Internal error - see server logs for details");
             }
         } catch (AclsException ex) {
-            LOG.error(ex);
+            LOG.error("Internal error", ex);
             throw new AclsLoginException(
                     "Internal error - see server logs for details");
         }
