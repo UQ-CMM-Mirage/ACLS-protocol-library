@@ -48,6 +48,7 @@ public class StaticConfiguration implements Configuration {
     private DataGrabberRestartPolicy dataGrabberRestartPolicy = 
             DataGrabberRestartPolicy.NO_AUTO_START;
     private boolean holdDatasetsWithNoUser = true;
+    private String primaryRepositoryUrl;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -219,6 +220,14 @@ public class StaticConfiguration implements Configuration {
 
     public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {
         this.facilityMap = facilityMap;
+    }
+
+    public String getPrimaryRepositoryUrl() {
+        return primaryRepositoryUrl;
+    }
+
+    public void setPrimaryRepositoryUrl(String primaryRepositoryUrl) {
+        this.primaryRepositoryUrl = primaryRepositoryUrl;
     }
 
     public Collection<FacilityConfig> getFacilityConfigs() {
