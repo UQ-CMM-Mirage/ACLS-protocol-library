@@ -59,14 +59,22 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
     }
     
     /**
-     * Unparse the message trailer for this request.
+     * Unparse the message trailer for this request.  For request types that
+     * allow it, we include a localHostId if we have one.  We use the localHostId
+     * from the request if it was provided, and fall back to the localHostId
+     * from the facility descriptor. 
      * 
      * @return the message trailer.
      */
     String generateTrailer() {
         if (type.isVmfl() || !type.isLocalHostIdAllowed()) {
             return "";
-        } else if (facility == null || facility.getLocalHostId().isEmpty()) {
+        }
+        String id = localHostId;
+        if ((id == null || id.isEmpty()) && facility != null) {
+            id = facility.getLocalHostId();
+        } 
+        if (id == null || id.isEmpty()) {
             return "";
         } else {
             return COMMAND_DELIMITER + facility.getLocalHostId() + DELIMITER;
