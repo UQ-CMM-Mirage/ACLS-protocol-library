@@ -2,7 +2,7 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
@@ -18,7 +18,7 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
 import au.edu.uq.cmm.aclslib.service.ThreadServiceBase;
 
 public class FacilityChecker extends ThreadServiceBase {
-    private static final Logger LOG = Logger.getLogger(FacilityChecker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FacilityChecker.class);
 
     private Configuration config;
     private AclsClient client;

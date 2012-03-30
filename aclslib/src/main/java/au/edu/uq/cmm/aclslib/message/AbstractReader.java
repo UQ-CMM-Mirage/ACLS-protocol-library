@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 import static au.edu.uq.cmm.aclslib.message.AbstractMessage.*;
 
 /**

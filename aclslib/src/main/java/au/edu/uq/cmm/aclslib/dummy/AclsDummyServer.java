@@ -3,7 +3,7 @@ package au.edu.uq.cmm.aclslib.dummy;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
@@ -17,7 +17,8 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
  * @author scrawley
  */
 public class AclsDummyServer {
-    private static final Logger LOG = Logger.getLogger(AclsDummyServer.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(AclsDummyServer.class);
     private static StaticConfiguration config;   
 
     public static void main(String[] args) {
@@ -40,14 +41,14 @@ public class AclsDummyServer {
                     Thread.sleep(5000);
                 }
             } catch (InterruptedException ex) {
-                LOG.debug(ex);
+                LOG.debug("interrupted", ex);
             }
             LOG.info("Shutting down");
             try {
                 requestListener.interrupt();
                 requestListener.join(5000);
             } catch (InterruptedException ex) {
-                LOG.debug(ex);
+                LOG.debug("interrupted", ex);
             }
             LOG.info("Exitting normally");
             System.exit(0);
@@ -77,7 +78,7 @@ public class AclsDummyServer {
         thread.setDaemon(true);
         thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable ex) {
-                LOG.debug(ex);
+                LOG.debug("uncaught", ex);
             }
         });
         thread.start();

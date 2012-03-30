@@ -18,14 +18,16 @@ import au.edu.uq.cmm.aclslib.message.Response;
  * @author scrawley
  */
 public class Authenticator {
-    private AclsClient client;
-    private StaticFacilityConfig dummyFacility;
-    private boolean useVirtual;
+    private final AclsClient client;
+    private final StaticFacilityConfig dummyFacility;
+    private final boolean useVirtual;
 
-    public Authenticator(String serverHost, int serverPort, String dummyFacilityName) {
+    public Authenticator(String serverHost, int serverPort, 
+            String dummyFacilityName, String localHostId) {
         client = new AclsClient(serverHost, serverPort);
         dummyFacility = new StaticFacilityConfig();
         dummyFacility.setFacilityName(dummyFacilityName);
+        dummyFacility.setLocalHostId(localHostId);
         useVirtual = client.checkForVmflSupport();
     }
 
@@ -55,7 +57,7 @@ public class Authenticator {
     
     private boolean login(String userName, String password) throws AclsException {
         Request request = new LoginRequest(
-                RequestType.LOGIN, userName, password, null, null, null);
+                RequestType.LOGIN, userName, password, dummyFacility, null, null);
         Response response = client.serverSendReceive(request);
         switch (response.getType()) {
         case LOGIN_ALLOWED:

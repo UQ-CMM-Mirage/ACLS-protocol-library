@@ -7,7 +7,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
@@ -24,7 +24,8 @@ import au.edu.uq.cmm.aclslib.proxy.VmflRequestProcessor;
 
 public abstract class RequestProcessorBase  implements Runnable {
 
-    protected static final Logger LOG = Logger.getLogger(VmflRequestProcessor.class);
+    protected static final Logger LOG = 
+            LoggerFactory.getLogger(VmflRequestProcessor.class);
     
     private Socket socket;
     private Configuration config;
@@ -88,9 +89,9 @@ public abstract class RequestProcessorBase  implements Runnable {
             LOG.debug("Request is " + m.getType().name() + "(" + m.unparse(true) + ")");
             doProcess(f, m, w);
         } catch (IOException ex) {
-            LOG.error(ex);
+            LOG.error("IO error", ex);
         } catch (AclsException ex) {
-            LOG.error(ex);
+            LOG.error("ACLS error", ex);
         } finally {
             try {
                 socket.close();

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
@@ -36,7 +36,7 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
  * @author scrawley
  */
 public class RequestProcessor extends RequestProcessorBase implements Runnable {
-    private static final Logger LOG = Logger.getLogger(AclsProxy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
     
     public RequestProcessor(Configuration config, Socket socket) {
         super(config, socket);

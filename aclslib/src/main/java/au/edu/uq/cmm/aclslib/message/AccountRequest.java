@@ -37,7 +37,8 @@ public class AccountRequest extends AbstractRequest {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
-                    (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER));
+                    (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER)) +
+                    generateTrailer();
     }
 
     /**

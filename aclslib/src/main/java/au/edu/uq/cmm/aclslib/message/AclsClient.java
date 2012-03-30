@@ -7,7 +7,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 /**
  * A simple low-level ACLS client class that handles a request / response
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * @author scrawley
  */
 public class AclsClient {
-    private static final Logger LOG = Logger.getLogger(AclsClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AclsClient.class);
     private static final int ACLS_REQUEST_TIMEOUT = 5000;
     private final String serverHost;
     private final int serverPort;

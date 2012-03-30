@@ -36,7 +36,8 @@ public class NoteRequest extends AbstractRequest {
     public String unparse(boolean obscurePasswords) {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
-                NOTE_DELIMITER + notes + DELIMITER;
+                NOTE_DELIMITER + notes + DELIMITER +
+                generateTrailer();
     }
 
     /**

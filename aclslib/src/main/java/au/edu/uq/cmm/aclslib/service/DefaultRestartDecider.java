@@ -1,6 +1,6 @@
 package au.edu.uq.cmm.aclslib.service;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 /**
  * The DefaultRestartDecider implements a simple policy where a service must
@@ -11,7 +11,8 @@ import org.apache.log4j.Logger;
  * @author scrawley
  */
 public class DefaultRestartDecider implements RestartDecider {
-    private static final Logger LOG = Logger.getLogger(DefaultRestartDecider.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(DefaultRestartDecider.class);
     
     /** Default number of milliseconds to wait before restarting */
     public static final int DEFAULT_THROTTLE = 1000;
