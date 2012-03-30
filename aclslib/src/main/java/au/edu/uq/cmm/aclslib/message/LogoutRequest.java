@@ -40,7 +40,8 @@ public class LogoutRequest extends AbstractRequest {
                         (obscurePasswords ? "XXXXXX" : password) + DELIMITER)) +
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
-                    (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER));
+                    (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER)) +
+                    generateTrailer();
     }
 
     /**

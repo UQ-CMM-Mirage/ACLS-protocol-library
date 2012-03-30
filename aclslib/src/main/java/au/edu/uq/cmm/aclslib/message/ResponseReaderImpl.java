@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 /**
  * This class is an ACLS response reader for versions 20.x and 30.x of the 
@@ -18,7 +18,8 @@ import org.apache.log4j.Logger;
  * @author scrawley
  */
 public class ResponseReaderImpl extends AbstractReader implements ResponseReader {
-    private static final Logger LOG = Logger.getLogger(ResponseReaderImpl.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(ResponseReaderImpl.class);
     
     public ResponseReaderImpl() {
         super(LOG, false);

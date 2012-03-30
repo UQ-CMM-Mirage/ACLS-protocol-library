@@ -1,6 +1,6 @@
 package au.edu.uq.cmm.aclslib.service;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 /**
  * A Service class that extends this base class will inherit infrastructure 
@@ -15,7 +15,8 @@ import org.apache.log4j.Logger;
  * @author scrawley
  */
 public abstract class ThreadServiceBase implements Service, Runnable {
-    private static final Logger LOG = Logger.getLogger(ThreadServiceBase.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(ThreadServiceBase.class);
 
     private State state = State.INITIAL;
     private Thread thread;

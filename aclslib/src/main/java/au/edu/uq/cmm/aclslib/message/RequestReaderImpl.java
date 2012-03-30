@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
@@ -20,7 +20,7 @@ import au.edu.uq.cmm.aclslib.config.FacilityConfig;
  * @author scrawley
  */
 public class RequestReaderImpl extends AbstractReader implements RequestReader {
-    private static final Logger LOG = Logger.getLogger(RequestReaderImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RequestReaderImpl.class);
     
     private Configuration config;
     private InetAddress clientAddr;

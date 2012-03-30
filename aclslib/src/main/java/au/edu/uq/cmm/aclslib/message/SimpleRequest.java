@@ -22,6 +22,6 @@ public class SimpleRequest extends AbstractRequest {
     }
 
     public String unparse(boolean obscurePasswords) {
-        return generateHeader();
+        return generateHeader() + generateTrailer();
     }
 }

@@ -1,6 +1,6 @@
 package au.edu.uq.cmm.aclslib.service;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 
 /**
  * A Service class that extends this class gets infrastructure for starting up and
@@ -12,7 +12,8 @@ import org.apache.log4j.Logger;
  * @author scrawley
  */
 public abstract class CompositeServiceBase implements Service {
-    private static final Logger LOG = Logger.getLogger(CompositeServiceBase.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(CompositeServiceBase.class);
     private State state = State.INITIAL;
     private final Object lock = new Object();
 

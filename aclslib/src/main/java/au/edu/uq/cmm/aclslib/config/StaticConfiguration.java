@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.*;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -24,7 +24,8 @@ import org.codehaus.jackson.map.ObjectMapper;
  * @author scrawley
  */
 public class StaticConfiguration implements Configuration {
-    private static final Logger LOG = Logger.getLogger(StaticConfiguration.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(StaticConfiguration.class);
 
     private int proxyPort = 1024;
     private int serverPort = 1024;
@@ -47,6 +48,7 @@ public class StaticConfiguration implements Configuration {
     private DataGrabberRestartPolicy dataGrabberRestartPolicy = 
             DataGrabberRestartPolicy.NO_AUTO_START;
     private boolean holdDatasetsWithNoUser = true;
+    private String primaryRepositoryUrl;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -218,6 +220,14 @@ public class StaticConfiguration implements Configuration {
 
     public void setFacilityMap(Map<String, StaticFacilityConfig> facilityMap) {
         this.facilityMap = facilityMap;
+    }
+
+    public String getPrimaryRepositoryUrl() {
+        return primaryRepositoryUrl;
+    }
+
+    public void setPrimaryRepositoryUrl(String primaryRepositoryUrl) {
+        this.primaryRepositoryUrl = primaryRepositoryUrl;
     }
 
     public Collection<FacilityConfig> getFacilityConfigs() {
