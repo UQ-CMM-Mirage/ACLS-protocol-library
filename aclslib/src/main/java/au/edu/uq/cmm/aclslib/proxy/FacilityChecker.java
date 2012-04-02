@@ -2,7 +2,8 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.util.List;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;

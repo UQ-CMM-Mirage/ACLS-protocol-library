@@ -8,7 +8,8 @@ import java.net.InetAddress;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;

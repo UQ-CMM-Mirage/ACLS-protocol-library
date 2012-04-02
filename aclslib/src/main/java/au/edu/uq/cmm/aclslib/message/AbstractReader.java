@@ -1,12 +1,16 @@
 package au.edu.uq.cmm.aclslib.message;
 
+import static au.edu.uq.cmm.aclslib.message.AbstractMessage.ACCEPTED_IP_TAG;
+import static au.edu.uq.cmm.aclslib.message.AbstractMessage.COMMAND_DELIMITER;
+import static au.edu.uq.cmm.aclslib.message.AbstractMessage.DELIMITER;
+import static au.edu.uq.cmm.aclslib.message.AbstractMessage.FAILED_TAG;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.slf4j.*;
-import static au.edu.uq.cmm.aclslib.message.AbstractMessage.*;
+import org.slf4j.Logger;
 
 /**
  * This the base class for the ACLS request and response reader classes.

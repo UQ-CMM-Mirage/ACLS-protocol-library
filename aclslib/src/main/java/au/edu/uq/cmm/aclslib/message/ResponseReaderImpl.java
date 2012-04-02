@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is an ACLS response reader for versions 20.x and 30.x of the 
