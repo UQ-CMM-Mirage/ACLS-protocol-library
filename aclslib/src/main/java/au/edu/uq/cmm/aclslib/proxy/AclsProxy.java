@@ -32,7 +32,7 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
 
 
 /**
- * 
+ * @author scrawley
  */
 public class AclsProxy extends CompositeServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
