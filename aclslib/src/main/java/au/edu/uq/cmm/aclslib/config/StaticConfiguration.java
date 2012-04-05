@@ -50,6 +50,7 @@ public class StaticConfiguration implements Configuration {
             DataGrabberRestartPolicy.NO_AUTO_START;
     private boolean holdDatasetsWithNoUser = true;
     private String primaryRepositoryUrl;
+    private String aclsUrl;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -229,6 +230,14 @@ public class StaticConfiguration implements Configuration {
 
     public void setPrimaryRepositoryUrl(String primaryRepositoryUrl) {
         this.primaryRepositoryUrl = primaryRepositoryUrl;
+    }
+
+    public String getAclsUrl() {
+        return aclsUrl;
+    }
+
+    public void setAclsUrl(String aclsUrl) {
+        this.aclsUrl = aclsUrl;
     }
 
     public Collection<FacilityConfig> getFacilityConfigs() {
