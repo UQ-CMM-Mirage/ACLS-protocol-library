@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.service;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Service class that extends this base class will inherit infrastructure to

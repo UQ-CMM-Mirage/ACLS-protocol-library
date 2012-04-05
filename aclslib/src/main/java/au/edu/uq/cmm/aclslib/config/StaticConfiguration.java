@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import org.slf4j.*;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents the configuration details of an ACLS proxy backed by a
@@ -49,6 +50,7 @@ public class StaticConfiguration implements Configuration {
             DataGrabberRestartPolicy.NO_AUTO_START;
     private boolean holdDatasetsWithNoUser = true;
     private String primaryRepositoryUrl;
+    private String aclsUrl;
     
     private Map<String, StaticFacilityConfig> facilityMap;
 
@@ -228,6 +230,14 @@ public class StaticConfiguration implements Configuration {
 
     public void setPrimaryRepositoryUrl(String primaryRepositoryUrl) {
         this.primaryRepositoryUrl = primaryRepositoryUrl;
+    }
+
+    public String getAclsUrl() {
+        return aclsUrl;
+    }
+
+    public void setAclsUrl(String aclsUrl) {
+        this.aclsUrl = aclsUrl;
     }
 
     public Collection<FacilityConfig> getFacilityConfigs() {

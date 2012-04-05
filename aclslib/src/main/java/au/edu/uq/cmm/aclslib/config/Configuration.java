@@ -170,10 +170,15 @@ public interface Configuration {
     boolean isHoldDatasetsWithNoUser();
     
     /**
-     * Get the base URL for Data Grabber's primary downstream repository.  This
+     * Get the URL for Data Grabber's primary downstream repository.  This
      * is the place where the user's browser should be redirected to access 
      * his / her ingested datasets.
      */
     String getPrimaryRepositoryUrl();
+    
+    /**
+     * Get the URL for the local ACLS booking system
+     */
+    String getAclsUrl();
     
 }
