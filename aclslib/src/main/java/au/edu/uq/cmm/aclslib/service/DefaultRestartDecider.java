@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.service;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The DefaultRestartDecider implements a simple policy where a service must

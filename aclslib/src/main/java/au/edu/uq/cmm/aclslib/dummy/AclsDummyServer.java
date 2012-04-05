@@ -3,7 +3,8 @@ package au.edu.uq.cmm.aclslib.dummy;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.edu.uq.cmm.aclslib.config.Configuration;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
