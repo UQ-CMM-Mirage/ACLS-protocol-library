@@ -42,7 +42,6 @@ public class StaticConfiguration implements Configuration {
     private String feedAuthorEmail;
     private String feedUrl;
     private int feedPageSize = 20;
-    private long facilityRecheckInterval;
     private long queueExpiryTime;
     private long queueExpiryInterval;
     private boolean expireByDeleting;
@@ -173,14 +172,6 @@ public class StaticConfiguration implements Configuration {
 
     public void setFeedPageSize(int feedPageSize) {
         this.feedPageSize = feedPageSize;
-    }
-
-    public long getFacilityRecheckInterval() {
-        return facilityRecheckInterval;
-    }
-
-    public void setFacilityRecheckInterval(long facilityRecheckInterval) {
-        this.facilityRecheckInterval = facilityRecheckInterval;
     }
 
     public Map<String, StaticFacilityConfig> getFacilityMap() {

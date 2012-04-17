@@ -131,13 +131,6 @@ public interface Configuration {
      * off feed paging.)
      */
     int getFeedPageSize();
-
-    /**
-     * Get the interval (in minutes) between calls to the ACLS server to re-check 
-     * for new virtual vMFL facilities.  If the interval is zero or negative,
-     * there is no re-checking.
-     */
-    long getFacilityRecheckInterval();
     
     /**
      * Get queue expiry time.  After an entry has been on the queue this long, 

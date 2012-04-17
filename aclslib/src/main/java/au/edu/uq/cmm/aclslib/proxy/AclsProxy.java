@@ -38,7 +38,6 @@ public class AclsProxy extends CompositeServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
     private Configuration config;
     private Service requestListener;
-    private Service facilityChecker;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
     // The virtual logout requests requires a password (!?!), so we've 
@@ -68,17 +67,11 @@ public class AclsProxy extends CompositeServiceBase {
         } catch (UnknownHostException ex) {
             throw new IllegalArgumentException("Configuration problem", ex);
         }
-        if (useVmfl) {
-            this.facilityChecker = new FacilityChecker(config);
-        }
     }
 
     @Override
     protected void doShutdown() throws ServiceException, InterruptedException {
         LOG.info("Shutting down");
-        if (facilityChecker != null) {
-            facilityChecker.shutdown();
-        }
         requestListener.shutdown();
         LOG.info("Shutdown completed");
     }
@@ -86,11 +79,7 @@ public class AclsProxy extends CompositeServiceBase {
     @Override
     protected void doStartup() throws ServiceException, InterruptedException {
         LOG.info("Starting up");
-        requestListener.startup();
-        if (facilityChecker != null) {
-            facilityChecker.startup();
-        }
-        LOG.info("Startup completed");
+        requestListener.startup();        LOG.info("Startup completed");
     }
 
     public void probeServer() throws ServiceException {
