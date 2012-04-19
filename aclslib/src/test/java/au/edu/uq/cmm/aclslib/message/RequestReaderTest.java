@@ -9,19 +9,18 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.Arrays;
 
 import org.junit.Test;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
-import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.config.StaticFacilityConfig;
 
 public class RequestReaderTest {
 
     @Test
     public void testConstructor() {
-        new RequestReaderImpl(config(), localHost());
+        new RequestReaderImpl(mapper(), localHost());
     }   
     
     @Test(expected=MessageSyntaxException.class)
@@ -323,7 +322,7 @@ public class RequestReaderTest {
     }
     
     private RequestReader reader() {
-        return new RequestReaderImpl(config(), localHost());
+        return new RequestReaderImpl(mapper(), localHost());
     }
     
     private InetAddress localHost() {
@@ -334,21 +333,15 @@ public class RequestReaderTest {
         }
     }
 
-    private Configuration config() {
-        StaticConfiguration config = new StaticConfiguration();
-        HashMap<String, StaticFacilityConfig> map = 
-                new HashMap<String, StaticFacilityConfig>();
+    private FacilityMapper mapper() {
         StaticFacilityConfig here = new StaticFacilityConfig();
         here.setFacilityName("here");
         here.setAddress(localHost().getHostAddress());
-        map.put(localHost().getHostAddress(), here);
         StaticFacilityConfig there = new StaticFacilityConfig();
         there.setFacilityName("there");
         there.setLocalHostId("ID");
         there.setAddress("nowhere.example.com");
-        map.put("nowhere.example.com", there);
-        config.setFacilityMap(map);
-        return config;
+        return new MockFacilityMapper(Arrays.asList(here, there));
     }
 
     private InputStream source(String text) {
