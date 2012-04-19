@@ -11,8 +11,9 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ConfigurationException;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 
 /**
  * This class is an ACLS request reader for versions 20.x and 30.x of the 
@@ -23,19 +24,19 @@ import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 public class RequestReaderImpl extends AbstractReader implements RequestReader {
     private static final Logger LOG = LoggerFactory.getLogger(RequestReaderImpl.class);
     
-    private Configuration config;
+    private FacilityMapper facilityMapper;
     private InetAddress clientAddr;
     private FacilityConfig facility;
     private String facilityName;
     private String localHostId;
     
-    public RequestReaderImpl(Configuration config, InetAddress clientAddr) {
+    public RequestReaderImpl(FacilityMapper facilityMapper, InetAddress clientAddr) {
         super(LOG, true);
-        this.config = config;
+        this.facilityMapper = facilityMapper;
         this.clientAddr = clientAddr;
     }
 
-    public Request read(InputStream source) throws AclsProtocolException {
+    public Request read(InputStream source) throws AclsException {
         Scanner scanner;
         try {
             scanner = createLineScanner(
@@ -87,14 +88,14 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
 
     private Request readQuery(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws AclsException {
         determineFacility(scanner, type);
         expectEnd(scanner);
         return new SimpleRequest(type, facility, clientAddr, localHostId);
     }
 
     private Request readNotesRequest(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws AclsException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
@@ -109,7 +110,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
 
     private Request readLoginRequest(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws AclsException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String password = nextPassword(scanner);
@@ -120,7 +121,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
 
     private Request readVirtualLogoutRequest(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws AclsException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         String password = nextPassword(scanner);
@@ -134,7 +135,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
 
     private Request readLogoutRequest(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws AclsException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
@@ -146,7 +147,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
     
     private Request readAccountRequest(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws AclsException {
         String userName = nextName(scanner);
         expect(scanner, AbstractMessage.DELIMITER);
         expect(scanner, AbstractMessage.ACCOUNT_DELIMITER);
@@ -158,7 +159,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
     
     private void determineFacility(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException {
+            throws MessageSyntaxException, ConfigurationException {
         facility = null;
         facilityName = null;
         localHostId = null;
@@ -195,23 +196,17 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
                 }
             }
         }
-        if (localHostId != null) {
-            localHostId = localHostId.trim();
-            if (localHostId.isEmpty()) {
-                localHostId = null;
-            } else {
-                facility = config.lookupFacilityByLocalHostId(localHostId);
-            }
-        } else if (facilityName != null) {
-            facilityName = facilityName.trim();
-            if (facilityName.isEmpty()) {
-                facilityName = null;
-            } else {
-                facility = config.lookupFacilityByName(facilityName);
-            }
-        }
-        if (facility == null) {
-            facility = config.lookupFacilityByAddress(clientAddr);
+        localHostId = tidy(localHostId);
+        facilityName = tidy(facilityName);
+        facility = facilityMapper.lookup(localHostId, facilityName, clientAddr);
+    }
+    
+    private String tidy(String str) {
+        if (str == null) {
+            return null;
+        } else {
+            str = str.trim();
+            return str.isEmpty() ? null : str;
         }
     }
 }

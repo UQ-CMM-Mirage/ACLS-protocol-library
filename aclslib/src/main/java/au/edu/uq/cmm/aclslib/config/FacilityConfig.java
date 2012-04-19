@@ -1,6 +1,5 @@
 package au.edu.uq.cmm.aclslib.config;
 
-import java.util.List;
 
 /**
  * Configuration details API for a proxied ACLS facility.  Some
@@ -14,6 +13,11 @@ import java.util.List;
  * @author scrawley
  */
 public interface FacilityConfig {
+
+    /**
+     * Get the registered IP address or DNS name of the facility.
+     */
+    String getAddress();
 
     /**
      * Get the user name that the Facility should use when mounting
@@ -55,17 +59,6 @@ public interface FacilityConfig {
      * "\\host\share".
      */
     String getFolderName();
-    
-    /**
-     * Get the datafile template configurations for the datafiles in a dataset. 
-     */
-    List<? extends DatafileTemplateConfig> getDatafileTemplates();
-    
-    /**
-     * If true, perform case insensitive matching of datafiles against 
-     * templates.
-     */
-    boolean isCaseInsensitive();
 
     /**
      * If true, tell the client to grab the screen when no use is
@@ -83,28 +76,4 @@ public interface FacilityConfig {
      * If true, tell the client to start a logout timer.
      */
     boolean isUseTimer();
-
-    /**
-     * If true, this Facility is the dummy (virtual) facility to be 
-     * used for username / password checking; e.g. using Benny.
-     */
-    boolean isDummy();
-
-    /**
-     * If true, the file grabber should acquire a file lock before copying
-     * (grabbing) a file from this facility's shared drive area.
-     */
-    boolean isUseFileLocks();
-
-    /**
-     * The file settling time is the time (in milliseconds) to wait after 
-     * the last file modification event before the grabber attempts to grab the file.
-     */
-    int getFileSettlingTime();
-
-    /**
-     * Get the registered IP address or DNS name of the facility.
-     */
-    String getAddress();
-    
 }

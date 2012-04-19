@@ -10,22 +10,27 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.service.MonitoredThreadServiceBase;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 
 public class RequestListener extends MonitoredThreadServiceBase {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestListener.class);
-    private Configuration config;
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(RequestListener.class);
+    private ACLSProxyConfiguration config;
+    private FacilityMapper mapper;
     private RequestProcessorFactory factory;
     private InetAddress bindAddr;
     private int port;
     private ServerSocket ss;
     
-    public RequestListener(Configuration config, int port, String bindHost,
-            RequestProcessorFactory factory) throws UnknownHostException {
+    public RequestListener(ACLSProxyConfiguration config, FacilityMapper mapper, 
+            int port, String bindHost, RequestProcessorFactory factory) 
+    throws UnknownHostException {
         super();
         this.config = config;
+        this.mapper = mapper;
         this.factory = factory;
         this.port = port;
         this.bindAddr = InetAddress.getByName(bindHost);
@@ -46,7 +51,7 @@ public class RequestListener extends MonitoredThreadServiceBase {
             try {
                 Socket s = ss.accept();
                 // FIXME - Use a bounded thread pool executor.
-                new Thread(factory.createProcessor(config, s)).start();
+                new Thread(factory.createProcessor(config, mapper, s)).start();
             } catch (InterruptedIOException ex) {
                 // FIXME - Synchronously shut down the processor pool.
                 LOG.info("Interrupted - we're done");

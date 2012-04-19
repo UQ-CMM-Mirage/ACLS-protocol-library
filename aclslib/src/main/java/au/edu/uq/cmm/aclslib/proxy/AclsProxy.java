@@ -10,8 +10,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
@@ -36,7 +37,7 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
  */
 public class AclsProxy extends CompositeServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
-    private Configuration config;
+    private ACLSProxyConfiguration config;
     private Service requestListener;
     private List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
@@ -48,19 +49,19 @@ public class AclsProxy extends CompositeServiceBase {
     private boolean useVmfl;
   
 
-    public AclsProxy(Configuration config) {
+    public AclsProxy(ACLSProxyConfiguration config, FacilityMapper mapper) {
         this.config = config;
         try {
             this.useVmfl = new AclsClient(config.getServerHost(),
                     config.getServerPort()).checkForVmflSupport();
-            this.requestListener = new RequestListener(config, config.getProxyPort(),
-                    config.getProxyHost(),
+            this.requestListener = new RequestListener(config, mapper,
+                    config.getProxyPort(), config.getProxyHost(),
                     new RequestProcessorFactory() {
-                public Runnable createProcessor(Configuration config, Socket s) {
+                public Runnable createProcessor(ACLSProxyConfiguration config, FacilityMapper mapper, Socket s) {
                     if (useVmfl) {
-                        return new VmflRequestProcessor(config, s, AclsProxy.this);
+                        return new VmflRequestProcessor(config, mapper, s, AclsProxy.this);
                     } else {
-                        return new NormalRequestProcessor(config, s, AclsProxy.this);
+                        return new NormalRequestProcessor(config, mapper, s, AclsProxy.this);
                     }
                 }
             });

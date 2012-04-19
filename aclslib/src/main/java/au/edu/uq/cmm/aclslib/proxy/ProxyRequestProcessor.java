@@ -3,8 +3,9 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.net.Socket;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.Request;
@@ -15,8 +16,9 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
     private AclsProxy proxy;
     
     public ProxyRequestProcessor(
-            Configuration config, Socket socket, AclsProxy proxy) {
-        super(config, socket);
+            ACLSProxyConfiguration config, FacilityMapper mapper,
+            Socket socket, AclsProxy proxy) {
+        super(config, mapper, socket);
         this.proxy = proxy;
         this.client = new AclsClient(
                 config.getServerHost(), config.getServerPort());

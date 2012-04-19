@@ -10,8 +10,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
@@ -39,8 +40,8 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 public class RequestProcessor extends RequestProcessorBase implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
     
-    public RequestProcessor(Configuration config, Socket socket) {
-        super(config, socket);
+    public RequestProcessor(ACLSProxyConfiguration config, FacilityMapper facilityMapper, Socket socket) {
+        super(config, facilityMapper, socket);
     }
 
     protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) 
