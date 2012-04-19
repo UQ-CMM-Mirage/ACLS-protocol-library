@@ -1,10 +1,7 @@
 package au.edu.uq.cmm.aclslib.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
+
 
 /**
  * This class gives the configuration details of an ACLS facility
@@ -23,13 +20,7 @@ public class StaticFacilityConfig implements FacilityConfig {
     private String localHostId;
     private boolean useTimer;
     private String facilityDescription;
-    private boolean dummy;
-    private boolean useFileLocks = true;
-    private boolean caseInsensitive;
-    private int fileSettlingTime;
     private String address;
-    private List<DatafileTemplateConfig> datafileTemplates =
-            new ArrayList<DatafileTemplateConfig>();
 
     public String getAccessName() {
         return accessName;
@@ -68,10 +59,6 @@ public class StaticFacilityConfig implements FacilityConfig {
         return useTimer;
     }
 
-    public boolean isDummy() {
-        return dummy;
-    }
-
     public void setAccessName(String accessName) {
         this.accessName = accessName;
     }
@@ -104,57 +91,19 @@ public class StaticFacilityConfig implements FacilityConfig {
         this.useTimer = useTimer;
     }
 
-    public void setDummy(boolean dummy) {
-        this.dummy = dummy;
-    }
-
-    public boolean isUseFileLocks() {
-        return this.useFileLocks;
-    }
-
-    public void setUseFileLocks(boolean useFileLocks) {
-        this.useFileLocks = useFileLocks;
-    }
-    
-    public int getFileSettlingTime() {
-        return this.fileSettlingTime;
-    }
-
-    public void setFileSettlingTime(int fileSettlingTime) {
-        this.fileSettlingTime = fileSettlingTime;
-    }
-
-    @JsonIgnore
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    @JsonDeserialize(contentAs=StaticDatafileTemplateConfig.class)
-    public List<DatafileTemplateConfig> getDatafileTemplates() {
-        return datafileTemplates;
-    }
-
-    public void setDatafileTemplates(List<DatafileTemplateConfig> templates) {
-        this.datafileTemplates = templates;
-    }
-
-    public boolean isCaseInsensitive() {
-        return caseInsensitive;
-    }
-
-    public void setCaseInsensitive(boolean caseInsensitive) {
-        this.caseInsensitive = caseInsensitive;
-    }
-
     public String getLocalHostId() {
         return localHostId;
     }
 
     public void setLocalHostId(String localHostId) {
         this.localHostId = localHostId;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

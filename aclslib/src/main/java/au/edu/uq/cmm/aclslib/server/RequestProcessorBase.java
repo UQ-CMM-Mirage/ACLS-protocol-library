@@ -10,8 +10,9 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AbstractMessage;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
@@ -29,12 +30,14 @@ public abstract class RequestProcessorBase  implements Runnable {
             LoggerFactory.getLogger(VmflRequestProcessor.class);
     
     private Socket socket;
-    private Configuration config;
+    private ACLSProxyConfiguration config;
+    private FacilityMapper facilityMapper;
 
-    public RequestProcessorBase(Configuration config, Socket socket) {
+    public RequestProcessorBase(ACLSProxyConfiguration config, FacilityMapper facilityMapper, Socket socket) {
         super();
         this.socket = socket;
         this.config = config;
+        this.facilityMapper = facilityMapper;
     }
 
     protected void sendErrorResponse(BufferedWriter w) throws AclsCommsException {
@@ -72,7 +75,8 @@ public abstract class RequestProcessorBase  implements Runnable {
             // IP address.  If the IP address is not known to us, we can't map it
             // to a virtual facility id to log the user in ... so the only sensible
             // thing to do is send a status error.
-            FacilityConfig f = config.lookupFacilityByAddress(addr);
+            // FIXME - this isn't right ...
+            FacilityConfig f = facilityMapper.lookup(null, null, addr);
             if (f == null) {
                 LOG.debug("Unknown facility: IP is " + addr);
                 w.append("Proxy has no facility details for " + addr + "\r\n").flush();
@@ -82,7 +86,7 @@ public abstract class RequestProcessorBase  implements Runnable {
             
             // Now read the request ...
             InputStream is = socket.getInputStream();
-            RequestReader reader = new RequestReaderImpl(config, socket.getInetAddress());
+            RequestReader reader = new RequestReaderImpl(facilityMapper, socket.getInetAddress());
             Request m = reader.read(is);
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)
@@ -105,7 +109,7 @@ public abstract class RequestProcessorBase  implements Runnable {
     protected abstract void doProcess(FacilityConfig f, Request m, BufferedWriter w) 
             throws AclsException;
 
-    public Configuration getConfig() {
+    public ACLSProxyConfiguration getConfig() {
         return config;
     }
 }

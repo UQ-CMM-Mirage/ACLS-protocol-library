@@ -6,7 +6,8 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.config.StaticConfiguration;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
@@ -21,6 +22,7 @@ public class AclsDummyServer {
     private static final Logger LOG = 
             LoggerFactory.getLogger(AclsDummyServer.class);
     private static StaticConfiguration config;   
+    private static FacilityMapper mapper;   
 
     public static void main(String[] args) {
         String configFile = null;
@@ -69,11 +71,12 @@ public class AclsDummyServer {
     }
 
     private static Thread launch() throws UnknownHostException {
-        Thread thread = new Thread(new RequestListener(config, config.getServerPort(),
-                config.getServerHost(),
+        Thread thread = new Thread(new RequestListener(config, mapper,
+                config.getServerPort(), config.getServerHost(),
                 new RequestProcessorFactory() {
-            public Runnable createProcessor(Configuration config, Socket s) {
-                return new RequestProcessor(config, s);
+            public Runnable createProcessor(
+                    ACLSProxyConfiguration config, FacilityMapper mapper, Socket s) {
+                return new RequestProcessor(config, mapper, s);
             }
         }));
         thread.setDaemon(true);

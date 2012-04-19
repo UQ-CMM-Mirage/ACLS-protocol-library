@@ -3,8 +3,9 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.net.Socket;
 
-import au.edu.uq.cmm.aclslib.config.Configuration;
+import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
+import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
@@ -25,8 +26,9 @@ import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 public class NormalRequestProcessor extends ProxyRequestProcessor {
     
     public NormalRequestProcessor(
-            Configuration config, Socket socket, AclsProxy proxy) {
-        super(config, socket, proxy);
+            ACLSProxyConfiguration config, FacilityMapper mapper,
+            Socket socket, AclsProxy proxy) {
+        super(config, mapper, socket, proxy);
     }
 
     protected void processUseFullScreenRequest(
