@@ -11,15 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
-import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
-import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
-import au.edu.uq.cmm.aclslib.message.LoginRequest;
-import au.edu.uq.cmm.aclslib.message.LoginResponse;
-import au.edu.uq.cmm.aclslib.message.LogoutRequest;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
@@ -46,7 +41,7 @@ public class AclsProxy extends CompositeServiceBase {
     // FIXME - this will need to be persisted if sessions are to survive 
     // beyond a restart.
     private Map<String, String> passwordCache = new HashMap<String, String>();
-    private boolean useVmfl;
+    private final boolean useVmfl;
   
 
     public AclsProxy(ACLSProxyConfiguration config, FacilityMapper mapper) {
@@ -135,105 +130,5 @@ public class AclsProxy extends CompositeServiceBase {
 
     public Map<String, String> getPasswordCache() {
         return passwordCache;
-    }
-
-    public List<String> login(FacilityConfig facility, String userName, String password) 
-    throws AclsAuthenticationException {
-        AclsClient client = new AclsClient(
-                config.getServerHost(), config.getServerPort());
-        Request request = new LoginRequest(
-                useVmfl ? RequestType.VIRTUAL_LOGIN : RequestType.LOGIN, 
-                userName, password, facility, null, null);
-        try {
-            Response response = client.serverSendReceive(request);
-            switch (response.getType()) {
-            case LOGIN_ALLOWED:
-                return ((LoginResponse) response).getAccounts();
-            case VIRTUAL_LOGIN_ALLOWED:
-                passwordCache.put(userName, password);
-                LOG.debug("Cached password for " + userName);
-                return ((LoginResponse) response).getAccounts();
-            case LOGIN_REFUSED:
-            case VIRTUAL_LOGIN_REFUSED:
-                throw new AclsAuthenticationException(
-                        "Login refused - username or password supplied is incorrect");
-            default:
-                LOG.error("Unexpected response - " + response.getType());
-                throw new AclsAuthenticationException(
-                        "Internal error - see server logs for details");
-            }
-        } catch (AclsException ex) {
-            LOG.error("Internal error", ex);
-            throw new AclsAuthenticationException(
-                    "Internal error - see server logs for details");
-        }
-    }
-
-    public void selectAccount(FacilityConfig facility, String userName, String account) 
-    throws AclsAuthenticationException {
-        AclsClient client = new AclsClient(
-                config.getServerHost(), config.getServerPort());
-        Request request = new AccountRequest(
-                useVmfl ? RequestType.VIRTUAL_ACCOUNT : RequestType.ACCOUNT,
-                userName, account, facility, null, null);
-        try {
-            Response response = client.serverSendReceive(request);
-            switch (response.getType()) {
-            case ACCOUNT_ALLOWED:
-            case VIRTUAL_ACCOUNT_ALLOWED:
-                sendEvent(new AclsLoginEvent(facility, userName, account));
-                return;
-            case ACCOUNT_REFUSED:
-            case VIRTUAL_ACCOUNT_REFUSED:
-                LOG.error("Account selection refused");
-                throw new AclsAuthenticationException("Account selection refused");
-            default:
-                LOG.error("Unexpected response - " + response.getType());
-                throw new AclsAuthenticationException(
-                        "Internal error - see server logs for details");
-            }
-        } catch (AclsException ex) {
-            LOG.error("Internal error", ex);
-            throw new AclsAuthenticationException(
-                    "Internal error - see server logs for details");
-        }
-    }
-
-    public void logout(FacilityConfig facility, String userName, String account) 
-            throws AclsAuthenticationException {
-        AclsClient client = new AclsClient(
-                config.getServerHost(), config.getServerPort());
-        Request request;
-        if (useVmfl) {
-            String password = passwordCache.get(userName);
-            request = new LogoutRequest(
-                RequestType.VIRTUAL_LOGOUT,
-                userName, password == null ? "" : password, account, facility, null, null);
-        } else {
-            request = new LogoutRequest(
-                    RequestType.LOGOUT,
-                    userName, null, account, facility, null, null);
-        }
-        try {
-            Response response = client.serverSendReceive(request);
-            switch (response.getType()) {
-            case LOGOUT_ALLOWED:
-            case VIRTUAL_LOGOUT_ALLOWED:
-                sendEvent(new AclsLogoutEvent(facility, userName, account));
-                return;
-            case LOGOUT_REFUSED:
-            case VIRTUAL_LOGOUT_REFUSED:
-                LOG.error("Logout refused");
-                throw new AclsAuthenticationException("Logout refused");
-            default:
-                LOG.error("Unexpected response - " + response.getType());
-                throw new AclsAuthenticationException(
-                        "Internal error - see server logs for details");
-            }
-        } catch (AclsException ex) {
-            LOG.error("Internal error", ex);
-            throw new AclsAuthenticationException(
-                    "Internal error - see server logs for details");
-        }
     }
 }
