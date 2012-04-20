@@ -3,6 +3,8 @@ package au.edu.uq.cmm.aclslib.proxy;
 import java.io.BufferedWriter;
 import java.net.Socket;
 
+import org.slf4j.LoggerFactory;
+
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
@@ -28,23 +30,22 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
     public NormalRequestProcessor(
             ACLSProxyConfiguration config, FacilityMapper mapper,
             Socket socket, AclsProxy proxy) {
-        super(config, mapper, socket, proxy);
+        super(config, mapper, LoggerFactory.getLogger(NormalRequestProcessor.class), socket, proxy);
     }
 
-    protected void processUseFullScreenRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processUseFullScreenRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Uses a facility-specific configuration setting
-        Response r = new YesNoResponse(f.isUseFullScreen() ? 
+        Response r = new YesNoResponse(m.getFacility().isUseFullScreen() ? 
                 ResponseType.FULL_SCREEN_YES : ResponseType.FULL_SCREEN_NO);
         sendResponse(w, r);
     }
 
-    protected void processNetDriveRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processNetDriveRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Uses facility-specific configuration settings
         Response r;
+        FacilityConfig f = m.getFacility();
         if (f.isUseNetDrive()) {
             r = new NetDriveResponse(f.getDriveName(), f.getFolderName(),
                     f.getAccessName(), f.getAccessPassword());
@@ -54,8 +55,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         sendResponse(w, r);
     }
 
-    protected void processStaffLoginRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processStaffLoginRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Pass a 'staff' request as-is.
         Response r = getClient().serverSendReceive(m);
@@ -66,14 +66,13 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case NO_RESPONSE:
             break;
         default:
-            LOG.error("Unexpected response for staff login: " + r.getType());
+            getLogger().error("Unexpected response for staff login: " + r.getType());
             r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
         sendResponse(w, r);
     }
 
-    protected void processSystemPasswordRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processSystemPasswordRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Pass a 'system password' request as-is.
         Response r = getClient().serverSendReceive(m);
@@ -84,31 +83,28 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case NO_RESPONSE:
             break;
         default:
-            LOG.error("Unexpected response for system password: " + r.getType());
+            getLogger().error("Unexpected response for system password: " + r.getType());
             r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
         sendResponse(w, r);
     }
 
-    protected void processUseVirtualRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processUseVirtualRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Uses a hard-wired response.  We don't support proxying of virtual facilities.
         Response r = new YesNoResponse(ResponseType.USE_VIRTUAL, false);
         sendResponse(w, r);
     }
 
-    protected void processUseTimerRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processUseTimerRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Uses a facility-specific configuration setting
-        Response r = new YesNoResponse(f.isUseTimer() ? 
+        Response r = new YesNoResponse(m.getFacility().isUseTimer() ? 
                 ResponseType.TIMER_YES : ResponseType.TIMER_NO);
         sendResponse(w, r);
     }
 
-    protected void processUseProjectRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processUseProjectRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Uses a general configuration setting
         Response r = new YesNoResponse(getConfig().isUseProject() ? 
@@ -116,21 +112,19 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         sendResponse(w, r);
     }
 
-    protected void processFacilityRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processFacilityRequest(Request m, BufferedWriter w) 
             throws AclsException {
         // Uses a facility-specific configuration setting
-        Response r = new FacilityNameResponse(f.getFacilityDescription());
+        Response r = new FacilityNameResponse(m.getFacility().getFacilityDescription());
         sendResponse(w, r);
     }
 
-    protected void processNotesRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processNotesRequest(Request m, BufferedWriter w) 
             throws AclsException {
         NoteRequest nr = (NoteRequest) m;
         String notes = nr.getNotes();
         Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), notes, 
-                f, null, nr.getLocalHostId());
+                m.getFacility(), null, nr.getLocalHostId());
         Response r = getClient().serverSendReceive(vnr);
         switch (r.getType()) {
         case NOTES_ALLOWED:
@@ -139,41 +133,40 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case NO_RESPONSE:
             break;
         default:
-            LOG.error("Unexpected response for notes: " + r.getType());
+            getLogger().error("Unexpected response for notes: " + r.getType());
             r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
         sendResponse(w, r);
     }
 
-    protected void processAccountRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processAccountRequest(Request m, BufferedWriter w) 
             throws AclsException {
         AccountRequest a = (AccountRequest) m;
         Request vl = new AccountRequest(
                 RequestType.ACCOUNT, a.getUserName(), a.getAccount(), 
-                f, null, a.getLocalHostId());
+                m.getFacility(), null, a.getLocalHostId());
         Response r = getClient().serverSendReceive(vl);
         switch (r.getType()) {
         case ACCOUNT_ALLOWED:
-            getProxy().sendEvent(new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
+            getProxy().sendEvent(new AclsLoginEvent(m.getFacility(), a.getUserName(), a.getAccount()));
             break;
         case LOGOUT_REFUSED:
         case COMMAND_ERROR:
         case NO_RESPONSE:
             break;
         default:
-            LOG.error("Unexpected response for account: " + r.getType());
+            getLogger().error("Unexpected response for account: " + r.getType());
             r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
         sendResponse(w, r);
     }
 
-    protected void processLogoutRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processLogoutRequest(Request m, BufferedWriter w) 
                     throws AclsException {
         LogoutRequest l = (LogoutRequest) m;
         Request vl = new LogoutRequest(RequestType.LOGOUT, 
-                l.getUserName(), null, l.getAccount(), f, null, l.getLocalHostId());
+                l.getUserName(), null, l.getAccount(), 
+                m.getFacility(), null, l.getLocalHostId());
         Response r = getClient().serverSendReceive(vl);
         switch (r.getType()) {
         case LOGOUT_ALLOWED:
@@ -182,20 +175,20 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case NO_RESPONSE:
             break;
         default:
-            LOG.error("Unexpected response for logout: " + r.getType());
+            getLogger().error("Unexpected response for logout: " + r.getType());
             r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
         // (Issue a logout event, even if the logout request was refused.)
-        getProxy().sendEvent(new AclsLogoutEvent(f, l.getUserName(), l.getAccount()));
+        getProxy().sendEvent(new AclsLogoutEvent(m.getFacility(), l.getUserName(), l.getAccount()));
         sendResponse(w, r);
     }
 
-    protected void processLoginRequest(
-            FacilityConfig f, Request m, BufferedWriter w) 
+    protected void processLoginRequest(Request m, BufferedWriter w) 
             throws AclsException {
         LoginRequest l = (LoginRequest) m;
         Request vl = new LoginRequest(RequestType.LOGIN, 
-                l.getUserName(), l.getPassword(), f, null, l.getLocalHostId());
+                l.getUserName(), l.getPassword(), 
+                m.getFacility(), null, l.getLocalHostId());
         Response r = getClient().serverSendReceive(vl);
         switch (r.getType()) {
         case LOGIN_ALLOWED:
@@ -204,7 +197,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case NO_RESPONSE:
             break;
         default:
-            LOG.error("Unexpected response for login: " + r.getType());
+            getLogger().error("Unexpected response for login: " + r.getType());
             r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
         }
         sendResponse(w, r);

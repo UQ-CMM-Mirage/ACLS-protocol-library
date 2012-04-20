@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
-import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsException;
@@ -40,11 +39,13 @@ import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 public class RequestProcessor extends RequestProcessorBase implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
     
-    public RequestProcessor(ACLSProxyConfiguration config, FacilityMapper facilityMapper, Socket socket) {
-        super(config, facilityMapper, socket);
+    public RequestProcessor(ACLSProxyConfiguration config, 
+            FacilityMapper facilityMapper, Socket socket) {
+        super(config, facilityMapper, 
+                LoggerFactory.getLogger(RequestProcessor.class), socket);
     }
 
-    protected void doProcess(FacilityConfig f, Request m, BufferedWriter w) 
+    protected void doProcess(Request m, BufferedWriter w) 
             throws AclsException {
         LOG.debug("Request is " + m.getType().name() + "(" + m.unparse(true) + ")");
         switch (m.getType()) {

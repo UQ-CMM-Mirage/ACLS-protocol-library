@@ -1,5 +1,8 @@
 package au.edu.uq.cmm.aclslib.config;
 
+import java.net.InetAddress;
+import java.util.Set;
+
 
 /**
  * The combined configuration property API for the ACLSProxy.
@@ -49,4 +52,28 @@ public interface ACLSProxyConfiguration {
      * @return the host id or null.
      */
     String getDummyFacilityHostId();
+
+    /**
+     * Get the flag that says whether we accept requests from address that
+     * we don't know about.
+     * 
+     * @return the flag
+     */
+    boolean isAllowUnknownClients();
+
+    /**
+     * Get the set of addresses that we trust ... in addition to those of
+     * the configured facilities.
+     * 
+     * @return the trusted addresses
+     */
+    Set<String> getTrustedAddresses();
+
+    /**
+     * Same as {@link #getTrustedAddresses()} but converted {@link InetAddress}
+     * instances.
+     * 
+     * @return the trusted addresses
+     */
+    Set<InetAddress> getTrustedInetAddresses();
 }

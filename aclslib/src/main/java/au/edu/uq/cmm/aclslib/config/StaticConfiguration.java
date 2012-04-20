@@ -1,7 +1,13 @@
 package au.edu.uq.cmm.aclslib.config;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 
 /**
@@ -17,6 +23,9 @@ public class StaticConfiguration implements ACLSProxyConfiguration {
     private String serverHost;
     private String proxyHost;
     private boolean useProject;
+    private boolean allowUnknownClients;
+    private Set<String> trustedAddresses;
+    private Set<InetAddress> trustedInetAddresses;
 
     private String dummyFacilityName;
     private String dummyFacilityHostId;
@@ -75,6 +84,32 @@ public class StaticConfiguration implements ACLSProxyConfiguration {
 
     public void setDummyFacilityName(String dummyFacilityName) {
         this.dummyFacilityName = dummyFacilityName;
+    }
+
+    public boolean isAllowUnknownClients() {
+        return allowUnknownClients;
+    }
+
+    public void setAllowUnknownClients(boolean allowUnknownClients) {
+        this.allowUnknownClients = allowUnknownClients;
+    }
+
+    public Set<String> getTrustedAddresses() {
+        return trustedAddresses;
+    }
+
+    public void setTrustedAddresses(Set<String> trustedAddresses) 
+            throws UnknownHostException {
+        this.trustedAddresses = trustedAddresses;
+        this.trustedInetAddresses = new HashSet<InetAddress>(trustedAddresses.size());
+        for (String address : trustedAddresses) {
+            trustedInetAddresses.add(InetAddress.getByName(address));
+        }
+    }
+
+    @JsonIgnore
+    public Set<InetAddress> getTrustedInetAddresses() {
+        return trustedInetAddresses;
     }
 
     /**

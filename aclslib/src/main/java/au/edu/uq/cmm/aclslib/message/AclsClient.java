@@ -76,7 +76,8 @@ public class AclsClient {
         } catch (AclsException ex) {
             // We do this in case we are talking to a server that is not
             // aware of the vMFL requests.
-            LOG.info("The 'useVirtual' request failed - assuming no vMFL", ex);
+            LOG.info("The 'useVirtual' request failed - assuming no vMFL");
+            LOG.debug("This is ths vMFL check failure cause", ex);
             return false;
         }
     }
