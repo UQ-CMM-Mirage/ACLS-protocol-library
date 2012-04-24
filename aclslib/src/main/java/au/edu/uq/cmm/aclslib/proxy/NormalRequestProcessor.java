@@ -10,12 +10,12 @@ import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LogoutRequest;
 import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
 import au.edu.uq.cmm.aclslib.message.NoteRequest;
-import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
@@ -63,11 +63,9 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case STAFF_LOGIN_ALLOWED:
         case STAFF_LOGIN_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for staff login: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for staff login: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -80,11 +78,9 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case SYSTEM_PASSWORD_YES:
         case SYSTEM_PASSWORD_NO:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for system password: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for system password: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -130,11 +126,9 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case NOTES_ALLOWED:
         case NOTES_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for notes: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for notes: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -152,11 +146,9 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             break;
         case LOGOUT_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for account: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for account: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -172,11 +164,9 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case LOGOUT_ALLOWED:
         case LOGOUT_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for logout: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for logout: " + r.getType());
         }
         // (Issue a logout event, even if the logout request was refused.)
         getProxy().sendEvent(new AclsLogoutEvent(m.getFacility(), l.getUserName(), l.getAccount()));
@@ -194,11 +184,9 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         case LOGIN_ALLOWED:
         case LOGIN_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for login: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for login: " + r.getType());
         }
         sendResponse(w, r);
     }

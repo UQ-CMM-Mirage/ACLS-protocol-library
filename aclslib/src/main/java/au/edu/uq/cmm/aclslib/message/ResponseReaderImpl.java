@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -49,6 +50,8 @@ public class ResponseReaderImpl extends AbstractReader implements ResponseReader
         }
         try {
             scanner = createLineScanner(br);
+        } catch (SocketTimeoutException ex) {
+            throw new AclsNoResponseException("Timeout on response line", ex);
         } catch (IOException ex) {
             throw new AclsProtocolException("IO error while reading response message", ex);
         }

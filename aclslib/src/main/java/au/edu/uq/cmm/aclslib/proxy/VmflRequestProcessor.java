@@ -11,6 +11,7 @@ import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
@@ -18,7 +19,6 @@ import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.LogoutRequest;
 import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
 import au.edu.uq.cmm.aclslib.message.NoteRequest;
-import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
@@ -67,11 +67,9 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         case STAFF_LOGIN_ALLOWED:
         case STAFF_LOGIN_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for staff login: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for staff login: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -84,11 +82,9 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         case SYSTEM_PASSWORD_YES:
         case SYSTEM_PASSWORD_NO:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for system password: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for system password: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -136,11 +132,9 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         case NOTES_ALLOWED:
         case NOTES_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for notes: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for notes: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -165,12 +159,10 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
             break;
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             r = vr;
             break;
         default:
-            getLogger().error("Unexpected response for virtual account: " + vr.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for virtual account: " + vr.getType());
         }
         sendResponse(w, r);
     }
@@ -200,12 +192,10 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
                 r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
                 break;
             case COMMAND_ERROR:
-            case NO_RESPONSE:
                 r = vr;
                 break;
             default:
-                getLogger().error("Unexpected response for virtual logout: " + vr.getType());
-                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+                throw new AclsProtocolException("Unexpected response for virtual logout: " + vr.getType());
             }
         }
         // (Issue a logout event, even if the logout request was refused, or 
@@ -236,12 +226,10 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
             break;
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             r = vr;
             break;
         default:
-            getLogger().error("Unexpected response for virtual login: " + vr.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException("Unexpected response for virtual login: " + vr.getType());
         }
         sendResponse(w, r);
     }

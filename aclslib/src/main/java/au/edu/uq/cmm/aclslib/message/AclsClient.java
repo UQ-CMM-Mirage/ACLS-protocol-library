@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,18 +44,12 @@ public class AclsClient {
                         "(" + r.unparse(true) + ")");
                 w.append(r.unparse(false) + "\r\n").flush();
                 return new ResponseReaderImpl().readWithStatusLine(is);
-            } catch (ServerStatusException ex) {
-                LOG.error("ACLS server (" + serverHost + ":" + serverPort +
-                		") refused request: " + ex);
-                // FIXME - I think this is wrong.
-                return new ProxyErrorResponse("Proxy got status error from ACLS server");
             } finally {
                 aclsSocket.close();
             }
         } catch (IOException ex) {
-            LOG.warn("IO error while trying to talk to ACLS server (" +
+            throw new AclsCommsException("IO error while trying to talk to ACLS server (" +
                     serverHost + ":" + serverPort + ")", ex);
-            return new ProxyErrorResponse("Proxy cannot talk to ACLS server");
         }
     }
 
@@ -73,11 +68,14 @@ public class AclsClient {
                         "Unexpected response to USE_VIRTUAL request - " + 
                                 response.getType());
             }
+        } catch (AclsNoResponseException ex) {
+            LOG.debug("No response to 'useVirtual' request - assume no vMFL");
+            return false;
         } catch (AclsException ex) {
             // We do this in case we are talking to a server that is not
             // aware of the vMFL requests.
             LOG.info("The 'useVirtual' request failed - assuming no vMFL");
-            LOG.debug("This is ths vMFL check failure cause", ex);
+            LOG.debug("This is the vMFL check failure cause", ex);
             return false;
         }
     }
