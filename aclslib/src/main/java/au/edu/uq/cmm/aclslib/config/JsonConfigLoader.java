@@ -46,13 +46,13 @@ public class JsonConfigLoader <C> {
             C res = mapper.readValue(is, clazz);
             return res;
         } catch (JsonParseException ex) {
-            throw new ConfigurationException("The configuration is not valid JSON", ex);
+            throw new ConfigurationException("The input is not valid JSON", ex);
         } catch (JsonMappingException ex) {
-            throw new ConfigurationException("The configuration JSON doesn't match " +
-                    "the StaticConfiguration class", ex);
+            throw new ConfigurationException("The input JSON doesn't match " +
+                    "the " + clazz.getCanonicalName() + " class", ex);
         } catch (IOException ex) {
             throw new ConfigurationException(
-                    "IO error while reading the configuration", ex);
+                    "IO error while reading the JSON", ex);
         } 
     }
 
