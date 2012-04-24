@@ -31,6 +31,12 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.4</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+	        <artifactId>slf4j-log4j12</artifactId>
+	        <version>1.6.4</version>
+	        <scope>test</scope>
+		</dependency>
 	</dependencies>
 	<description>A Java protocol library for encoding and decoding messages used in the ACLS login protocols.</description>
 	<inceptionYear>2011</inceptionYear>
