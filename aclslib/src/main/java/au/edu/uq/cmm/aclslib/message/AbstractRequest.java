@@ -77,7 +77,7 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
         if (id == null || id.isEmpty()) {
             return "";
         } else {
-            return COMMAND_DELIMITER + facility.getLocalHostId() + DELIMITER;
+            return COMMAND_DELIMITER + id + DELIMITER;
         }
     }
 }
