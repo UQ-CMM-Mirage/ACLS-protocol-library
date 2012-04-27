@@ -8,22 +8,16 @@ import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 public abstract class AclsFacilityEvent extends EventObject {
     
     private String userName;
-    private String account;
 
-    public AclsFacilityEvent(FacilityConfig source, String userName, String account) {
+    public AclsFacilityEvent(FacilityConfig source, String userName) {
         super(source);
         this.userName = userName;
-        this.account = account;
     }
 
     public String getUserName() {
         return userName;
     }
-
-    public String getAccount() {
-        return account;
-    }
-
+    
     public String getFacilityName() {
         return ((FacilityConfig) getSource()).getFacilityName();
     }
