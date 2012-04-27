@@ -5,12 +5,15 @@ import java.net.Socket;
 
 import org.slf4j.LoggerFactory;
 
+import au.edu.uq.cmm.aclslib.authenticator.AclsLoginDetails;
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
+import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
@@ -18,7 +21,6 @@ import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.LogoutRequest;
 import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
 import au.edu.uq.cmm.aclslib.message.NoteRequest;
-import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
@@ -34,7 +36,9 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
     public VmflRequestProcessor(
             ACLSProxyConfiguration config, FacilityMapper mapper,
             Socket socket, AclsProxy proxy) {
-        super(config, mapper, LoggerFactory.getLogger(VmflRequestProcessor.class), socket, proxy);
+        super(config, mapper, 
+                LoggerFactory.getLogger(VmflRequestProcessor.class),
+                socket, proxy);
     }
 
     protected void processUseFullScreenRequest(Request m, BufferedWriter w) 
@@ -67,11 +71,10 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         case STAFF_LOGIN_ALLOWED:
         case STAFF_LOGIN_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for staff login: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException(
+                    "Unexpected response for staff login: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -84,11 +87,10 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         case SYSTEM_PASSWORD_YES:
         case SYSTEM_PASSWORD_NO:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for system password: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException(
+                    "Unexpected response for system password: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -136,11 +138,10 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         case NOTES_ALLOWED:
         case NOTES_REFUSED:
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             break;
         default:
-            getLogger().error("Unexpected response for notes: " + r.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException(
+                    "Unexpected response for notes: " + r.getType());
         }
         sendResponse(w, r);
     }
@@ -157,7 +158,8 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         Response vr = getClient().serverSendReceive(vl);
         switch (vr.getType()) {
         case VIRTUAL_ACCOUNT_ALLOWED:
-            getProxy().sendEvent(new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
+            getProxy().sendEvent(
+                    new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
             r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
                     ((AccountResponse) vr).getLoginTimestamp());
             break;
@@ -165,12 +167,11 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
             break;
         case COMMAND_ERROR:
-        case NO_RESPONSE:
             r = vr;
             break;
         default:
-            getLogger().error("Unexpected response for virtual account: " + vr.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+            throw new AclsProtocolException(
+                    "Unexpected response for virtual account: " + vr.getType());
         }
         sendResponse(w, r);
     }
@@ -200,12 +201,11 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
                 r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
                 break;
             case COMMAND_ERROR:
-            case NO_RESPONSE:
                 r = vr;
                 break;
             default:
-                getLogger().error("Unexpected response for virtual logout: " + vr.getType());
-                r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+                throw new AclsProtocolException(
+                        "Unexpected response for virtual logout: " + vr.getType());
             }
         }
         // (Issue a logout event, even if the logout request was refused, or 
@@ -222,26 +222,34 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
         Request vl = new LoginRequest(RequestType.VIRTUAL_LOGIN, 
                 l.getUserName(), l.getPassword(), m.getFacility(), null, null);
         Response r;
-        Response vr = getClient().serverSendReceive(vl);
-        switch (vr.getType()) {
-        case VIRTUAL_LOGIN_ALLOWED:
-            getProxy().getPasswordCache().put(l.getUserName(), l.getPassword());
-            getLogger().debug("Cached password for " + l.getUserName());
-            LoginResponse vlr = (LoginResponse) vr;
-            r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
-                    vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
-                    vlr.getAccounts(), vlr.getCertification(), vlr.isOnsiteAssist());
-            break;
-        case VIRTUAL_LOGIN_REFUSED:
-            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
-            break;
-        case COMMAND_ERROR:
-        case NO_RESPONSE:
-            r = vr;
-            break;
-        default:
-            getLogger().error("Unexpected response for virtual login: " + vr.getType());
-            r = new ProxyErrorResponse("Proxy got unexpected response from ACLS server");
+        try {
+            Response vr = getClient().serverSendReceive(vl);
+            switch (vr.getType()) {
+            case VIRTUAL_LOGIN_ALLOWED:
+                LoginResponse vlr = (LoginResponse) vr;
+                getProxy().sendEvent(new AclsPasswordAcceptedEvent(m.getFacility(),
+                        new AclsLoginDetails(l.getUserName(), vlr.getUserName(),
+                                vlr.getOrgName(), l.getPassword(),
+                                m.getFacility().getFacilityName(), vlr.getAccounts(), 
+                                vlr.getCertification(), vlr.isOnsiteAssist(), false)));
+                getProxy().getPasswordCache().put(l.getUserName(), l.getPassword());
+                getLogger().debug("Cached password for " + l.getUserName());
+                r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
+                        vlr.getUserName(), vlr.getOrgName(), vlr.getLoginTimestamp(),
+                        vlr.getAccounts(), vlr.getCertification(), vlr.isOnsiteAssist());
+                break;
+            case VIRTUAL_LOGIN_REFUSED:
+                r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
+                break;
+            case COMMAND_ERROR:
+                r = vr;
+                break;
+            default:
+                throw new AclsProtocolException(
+                        "Unexpected response for virtual login: " + vr.getType());
+            }
+        } catch (AclsCommsException ex) {
+            r = tryFallbackAuthentication(l);
         }
         sendResponse(w, r);
     }

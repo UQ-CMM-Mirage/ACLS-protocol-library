@@ -18,7 +18,6 @@ import au.edu.uq.cmm.aclslib.message.AbstractMessage;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.CommandErrorResponse;
-import au.edu.uq.cmm.aclslib.message.ProxyErrorResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestReader;
 import au.edu.uq.cmm.aclslib.message.RequestReaderImpl;
@@ -55,13 +54,8 @@ public abstract class RequestProcessorBase  implements Runnable {
     protected void sendResponse(BufferedWriter w, Response r) 
         throws AclsCommsException {
         try {
-        if (r instanceof ProxyErrorResponse) {
-            logger.error("Proxy error - " + ((ProxyErrorResponse) r).getMessage());
-            w.append(new CommandErrorResponse().unparse(false) + "\r\n").flush();
-        } else {
             logger.debug("Sending response " + r.getType().name() + "(" + r.unparse(true) + ")");
             w.append(r.unparse(false) + "\r\n").flush();
-        }
         } catch (IOException ex) {
             throw new AclsCommsException("Couldn't write message", ex);
         }
