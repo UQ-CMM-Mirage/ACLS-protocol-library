@@ -199,8 +199,13 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
         localHostId = tidy(localHostId);
         facilityName = tidy(facilityName);
         facility = facilityMapper.lookup(localHostId, facilityName, clientAddr);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Mapped " + localHostId + "," + facilityName + "," + clientAddr + 
+                    " to " + (facility == null ? "null" : 
+                        ("facility " + facility.getFacilityName())));
+        }
     }
-    
+
     private String tidy(String str) {
         if (str == null) {
             return null;
