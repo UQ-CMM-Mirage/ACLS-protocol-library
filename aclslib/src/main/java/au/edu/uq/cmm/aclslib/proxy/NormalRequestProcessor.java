@@ -198,7 +198,8 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             case LOGIN_ALLOWED:
                 LoginResponse lr = (LoginResponse) r;
                 getProxy().sendEvent(new AclsPasswordAcceptedEvent(m.getFacility(),
-                        new AclsLoginDetails(l.getUserName(), lr.getOrgName(), l.getPassword(),
+                        new AclsLoginDetails(l.getUserName(), lr.getUserName(),
+                                lr.getOrgName(), l.getPassword(),
                                 m.getFacility().getFacilityName(), lr.getAccounts(), 
                                 lr.getCertification(), lr.isOnsiteAssist(), false)));
                 break;

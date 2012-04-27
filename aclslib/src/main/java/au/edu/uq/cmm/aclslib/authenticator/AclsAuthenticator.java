@@ -51,7 +51,7 @@ public class AclsAuthenticator implements Authenticator {
         switch (response.getType()) {
         case VIRTUAL_LOGIN_ALLOWED:
             LoginResponse lr = (LoginResponse) response;
-            return new AclsLoginDetails(userName, lr.getOrgName(), password, "",
+            return new AclsLoginDetails(userName, lr.getUserName(), lr.getOrgName(), password, "",
                     lr.getAccounts(), lr.getCertification(), lr.isOnsiteAssist(), false);
         case VIRTUAL_LOGIN_REFUSED:
             return null;
@@ -69,7 +69,7 @@ public class AclsAuthenticator implements Authenticator {
         switch (response.getType()) {
         case LOGIN_ALLOWED:
             LoginResponse lr = (LoginResponse) response;
-            return new AclsLoginDetails(userName, lr.getOrgName(), password, "",
+            return new AclsLoginDetails(userName, lr.getUserName(), lr.getOrgName(), password, "",
                     lr.getAccounts(), lr.getCertification(), lr.isOnsiteAssist(), false);
         case LOGIN_REFUSED:
             return null;

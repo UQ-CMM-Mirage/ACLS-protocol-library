@@ -11,17 +11,19 @@ import au.edu.uq.cmm.aclslib.message.Certification;
  *
  */
 public class AclsLoginDetails {
-    private String userName;
-    private String orgName;
-    private String password;
-    private String facilityName;
-    private List<String> accounts;
-    private Certification certification;
-    private boolean onsiteAssist;
-    private boolean cached;
+    private final String userName;
+    private final String humanReadableName;
+    private final String orgName;
+    private final String password;
+    private final String facilityName;
+    private final List<String> accounts;
+    private final Certification certification;
+    private final boolean onsiteAssist;
+    private final boolean cached;
     
-    public AclsLoginDetails(String userName, String orgName, String password,
-            String facilityName, List<String> accounts, Certification certification,
+    public AclsLoginDetails(String userName, String humanReadablName, 
+            String orgName, String password, String facilityName, 
+            List<String> accounts, Certification certification,
             boolean onsiteAssist, boolean cached) {
         super();
         this.userName = userName;
@@ -30,11 +32,17 @@ public class AclsLoginDetails {
         this.certification = certification;
         this.onsiteAssist = onsiteAssist;
         this.facilityName = facilityName;
+        this.orgName = orgName;
+        this.humanReadableName = humanReadablName;
         this.cached = cached;
     }
 
     public String getUserName() {
         return userName;
+    }
+
+    public String getHumanReadableName() {
+        return humanReadableName;
     }
 
     public String getOrgName() {

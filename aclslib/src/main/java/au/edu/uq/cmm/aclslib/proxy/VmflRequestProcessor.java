@@ -228,7 +228,8 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             case VIRTUAL_LOGIN_ALLOWED:
                 LoginResponse vlr = (LoginResponse) vr;
                 getProxy().sendEvent(new AclsPasswordAcceptedEvent(m.getFacility(),
-                        new AclsLoginDetails(l.getUserName(), vlr.getOrgName(), l.getPassword(),
+                        new AclsLoginDetails(l.getUserName(), vlr.getUserName(),
+                                vlr.getOrgName(), l.getPassword(),
                                 m.getFacility().getFacilityName(), vlr.getAccounts(), 
                                 vlr.getCertification(), vlr.isOnsiteAssist(), false)));
                 getProxy().getPasswordCache().put(l.getUserName(), l.getPassword());
