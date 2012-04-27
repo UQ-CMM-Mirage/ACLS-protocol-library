@@ -2,14 +2,22 @@ package au.edu.uq.cmm.aclslib.proxy;
 
 import java.io.BufferedWriter;
 import java.net.Socket;
+import java.util.Date;
 
 import org.slf4j.Logger;
 
+import au.edu.uq.cmm.aclslib.authenticator.AclsLoginDetails;
+import au.edu.uq.cmm.aclslib.authenticator.Authenticator;
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.LoginRequest;
+import au.edu.uq.cmm.aclslib.message.LoginResponse;
+import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
+import au.edu.uq.cmm.aclslib.message.Response;
+import au.edu.uq.cmm.aclslib.message.ResponseType;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorBase;
 
 public abstract class ProxyRequestProcessor extends RequestProcessorBase {
@@ -120,4 +128,26 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
 
     protected abstract void processLoginRequest(
             Request m, BufferedWriter w) throws AclsException;
+
+    protected Response tryFallbackAuthentication(LoginRequest l) throws AclsException {
+        Response r;
+        Authenticator fallbackAuthenticator = getProxy().getFallbackAuthenticator();
+        AclsLoginDetails details = null;
+        if (fallbackAuthenticator != null) {
+            getLogger().debug("Attempting fallback authentication for " + 
+                    l.getUserName() + " on " + l.getFacility().getFacilityName());
+            details = fallbackAuthenticator.authenticate(l.getUserName(), l.getPassword(), l.getFacility());
+            getLogger().debug("Fallback authentication " + 
+                    (details == null ? "succeeded" : "failed"));
+        }
+        if (details != null) {
+            r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
+                    details.getUserName(), details.getOrgName(), new Date().toString(),
+                    details.getAccounts(), details.getCertification(), details.isOnsiteAssist());
+        } else {
+            // I wish we could tell the user what really happened ...
+            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
+        }
+        return r;
+    }
 }

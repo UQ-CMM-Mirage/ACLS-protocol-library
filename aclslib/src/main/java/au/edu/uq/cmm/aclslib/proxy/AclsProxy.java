@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.edu.uq.cmm.aclslib.authenticator.Authenticator;
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AclsClient;
@@ -32,19 +33,22 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
  */
 public class AclsProxy extends CompositeServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
-    private ACLSProxyConfiguration config;
-    private Service requestListener;
-    private List<AclsFacilityEventListener> listeners = 
+    
+    private final ACLSProxyConfiguration config;
+    private final Service requestListener;
+    private final List<AclsFacilityEventListener> listeners = 
             new ArrayList<AclsFacilityEventListener>();
     // The virtual logout requests requires a password (!?!), so we've 
     // got no choice but to remember it.
     // FIXME - this will need to be persisted if sessions are to survive 
     // beyond a restart.
-    private Map<String, String> passwordCache = new HashMap<String, String>();
+    private final Map<String, String> passwordCache = new HashMap<String, String>();
+    private final Authenticator fallbackAuthenticator;
     private final boolean useVmfl;
   
 
-    public AclsProxy(ACLSProxyConfiguration config, FacilityMapper mapper) {
+    public AclsProxy(ACLSProxyConfiguration config, FacilityMapper mapper,
+            Authenticator fallbackAuthenticator) {
         this.config = config;
         try {
             this.useVmfl = new AclsClient(config.getServerHost(),
@@ -63,6 +67,7 @@ public class AclsProxy extends CompositeServiceBase {
         } catch (UnknownHostException ex) {
             throw new IllegalArgumentException("Configuration problem", ex);
         }
+        this.fallbackAuthenticator = fallbackAuthenticator;
     }
 
     @Override
@@ -76,6 +81,10 @@ public class AclsProxy extends CompositeServiceBase {
     protected void doStartup() throws ServiceException, InterruptedException {
         LOG.info("Starting up");
         requestListener.startup();        LOG.info("Startup completed");
+    }
+
+    public Authenticator getFallbackAuthenticator() {
+        return fallbackAuthenticator;
     }
 
     public void probeServer() throws ServiceException {
