@@ -138,7 +138,7 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
                     l.getUserName() + " on " + l.getFacility().getFacilityName());
             details = fallbackAuthenticator.authenticate(l.getUserName(), l.getPassword(), l.getFacility());
             getLogger().debug("Fallback authentication " + 
-                    (details == null ? "succeeded" : "failed"));
+                    (details != null ? "succeeded" : "failed"));
         }
         if (details != null) {
             r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
