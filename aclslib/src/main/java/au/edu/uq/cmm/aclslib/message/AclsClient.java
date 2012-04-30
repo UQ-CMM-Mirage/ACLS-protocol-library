@@ -17,25 +17,27 @@ import org.slf4j.LoggerFactory;
  * @author scrawley
  */
 public class AclsClient {
+    public static final int ACLS_REQUEST_TIMEOUT = 5000;
+    
     private static final Logger LOG = LoggerFactory.getLogger(AclsClient.class);
-    private static final int ACLS_REQUEST_TIMEOUT = 5000;
     private final String serverHost;
     private final int serverPort;
+    private int timeout;
     
     
-    public AclsClient(String serverHost, int serverPort) {
+    public AclsClient(String serverHost, int serverPort, int timeout) {
         this.serverHost = serverHost;
         this.serverPort = serverPort;
+        this.timeout = timeout > 0 ? timeout : ACLS_REQUEST_TIMEOUT;
     }
     
     public Response serverSendReceive(Request r) throws AclsException {
         try {
             Socket aclsSocket = new Socket();
             try {
-                aclsSocket.setSoTimeout(ACLS_REQUEST_TIMEOUT);
+                aclsSocket.setSoTimeout(timeout);
                 aclsSocket.connect(
-                        new InetSocketAddress(serverHost, serverPort),
-                        ACLS_REQUEST_TIMEOUT);
+                        new InetSocketAddress(serverHost, serverPort), timeout);
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                         aclsSocket.getOutputStream()));
                 InputStream is = aclsSocket.getInputStream();

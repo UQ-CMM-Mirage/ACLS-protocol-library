@@ -30,7 +30,8 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
         super(config, mapper, logger, socket);
         this.proxy = proxy;
         this.client = new AclsClient(
-                config.getServerHost(), config.getServerPort());
+                config.getServerHost(), config.getServerPort(), 
+                proxy.getTimeout());
     }
 
     protected void doProcess(Request m, BufferedWriter w) 

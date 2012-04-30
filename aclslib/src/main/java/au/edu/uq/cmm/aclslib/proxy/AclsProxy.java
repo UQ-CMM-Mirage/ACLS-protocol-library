@@ -45,14 +45,16 @@ public class AclsProxy extends CompositeServiceBase {
     private final Map<String, String> passwordCache = new HashMap<String, String>();
     private final Authenticator fallbackAuthenticator;
     private final boolean useVmfl;
+    private final int timeout;
   
 
-    public AclsProxy(ACLSProxyConfiguration config, FacilityMapper mapper,
-            Authenticator fallbackAuthenticator) {
+    public AclsProxy(ACLSProxyConfiguration config, int timeout, 
+            FacilityMapper mapper, Authenticator fallbackAuthenticator) {
         this.config = config;
+        this.timeout = timeout;
         try {
             this.useVmfl = new AclsClient(config.getServerHost(),
-                    config.getServerPort()).checkForVmflSupport();
+                    config.getServerPort(), timeout).checkForVmflSupport();
             this.requestListener = new RequestListener(config, mapper,
                     config.getProxyPort(), config.getProxyHost(),
                     new RequestProcessorFactory() {
@@ -90,7 +92,7 @@ public class AclsProxy extends CompositeServiceBase {
     public void probeServer() throws ServiceException {
         LOG.info("Probing ACLS server");
         AclsClient client = new AclsClient(
-                config.getServerHost(), config.getServerPort());
+                config.getServerHost(), config.getServerPort(), timeout);
         try {
             Request request = new SimpleRequest(RequestType.USE_PROJECT, null, null, null);
             Response response = client.serverSendReceive(request);
@@ -139,5 +141,9 @@ public class AclsProxy extends CompositeServiceBase {
 
     public Map<String, String> getPasswordCache() {
         return passwordCache;
+    }
+
+    public int getTimeout() {
+        return timeout;
     }
 }
