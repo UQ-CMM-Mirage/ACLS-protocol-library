@@ -29,6 +29,7 @@ public class AclsHelper {
     private boolean useVmfl;
     private String host;
     private int port;
+    private int timeout;
   
 
     /**
@@ -39,15 +40,17 @@ public class AclsHelper {
      * @param vmflCheck if true, check to see if we should enable vMFL by sending a
      *     vMFL specific request.  If false, vMFL won't be used.
      */
-    public AclsHelper(String host, int port, boolean vmflCheck) {
+    public AclsHelper(String host, int port, int timeout, boolean vmflCheck) {
         this.host = host;
         this.port = port;
-        this.useVmfl = vmflCheck && new AclsClient(host, port).checkForVmflSupport();
+        this.timeout = timeout;
+        this.useVmfl = vmflCheck && 
+                new AclsClient(host, port, timeout).checkForVmflSupport();
     }
 
     public void probeServer() throws ServiceException {
         LOG.info("Probing ACLS server");
-        AclsClient client = new AclsClient(host, port);
+        AclsClient client = new AclsClient(host, port, timeout);
         try {
             Request request = new SimpleRequest(RequestType.USE_PROJECT, null, null, null);
             Response response = client.serverSendReceive(request);
@@ -76,7 +79,7 @@ public class AclsHelper {
 
     public List<String> login(FacilityConfig facility, String userName, String password) 
     throws AclsAuthenticationException {
-        AclsClient client = new AclsClient(host, port);
+        AclsClient client = new AclsClient(host, port, timeout);
         Request request = new LoginRequest(
                 useVmfl ? RequestType.VIRTUAL_LOGIN : RequestType.LOGIN, 
                 userName, password, facility, null, null);
@@ -106,7 +109,7 @@ public class AclsHelper {
 
     public void selectAccount(FacilityConfig facility, String userName, String account) 
     throws AclsAuthenticationException {
-        AclsClient client = new AclsClient(host, port);
+        AclsClient client = new AclsClient(host, port, timeout);
         Request request = new AccountRequest(
                 useVmfl ? RequestType.VIRTUAL_ACCOUNT : RequestType.ACCOUNT,
                 userName, account, facility, null, null);
@@ -135,7 +138,7 @@ public class AclsHelper {
 
     public void logout(FacilityConfig facility, String userName, String account) 
             throws AclsAuthenticationException {
-        AclsClient client = new AclsClient(host, port);
+        AclsClient client = new AclsClient(host, port, timeout);
         Request request;
         if (useVmfl) {
             request = new LogoutRequest(

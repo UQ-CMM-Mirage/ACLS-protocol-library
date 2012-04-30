@@ -30,7 +30,8 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
         super(config, mapper, logger, socket);
         this.proxy = proxy;
         this.client = new AclsClient(
-                config.getServerHost(), config.getServerPort());
+                config.getServerHost(), config.getServerPort(), 
+                proxy.getTimeout());
     }
 
     protected void doProcess(Request m, BufferedWriter w) 
@@ -138,7 +139,7 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
                     l.getUserName() + " on " + l.getFacility().getFacilityName());
             details = fallbackAuthenticator.authenticate(l.getUserName(), l.getPassword(), l.getFacility());
             getLogger().debug("Fallback authentication " + 
-                    (details == null ? "succeeded" : "failed"));
+                    (details != null ? "succeeded" : "failed"));
         }
         if (details != null) {
             r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 

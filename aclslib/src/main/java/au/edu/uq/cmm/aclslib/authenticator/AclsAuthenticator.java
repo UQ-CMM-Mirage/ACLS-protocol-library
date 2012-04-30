@@ -25,8 +25,8 @@ public class AclsAuthenticator implements Authenticator {
     private final boolean useVirtual;
 
     public AclsAuthenticator(String serverHost, int serverPort, 
-            String dummyFacilityName, String localHostId) {
-        client = new AclsClient(serverHost, serverPort);
+            int timeout, String dummyFacilityName, String localHostId) {
+        client = new AclsClient(serverHost, serverPort, timeout);
         dummyFacility = new StaticFacilityConfig();
         dummyFacility.setFacilityName(dummyFacilityName);
         dummyFacility.setLocalHostId(localHostId);
