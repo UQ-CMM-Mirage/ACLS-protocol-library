@@ -51,7 +51,7 @@ public class LoginResponse extends AbstractResponse {
                 ACCOUNT_DELIMITER + generateList(accounts, ACCOUNT_SEPARATOR) + 
                 DELIMITER + CERTIFICATE_DELIMITER + certification + 
                 ONSITE_ASSIST_DELIMITER + 
-                (onsiteAssist ? AbstractMessage.YES : AbstractMessage.NO) + 
+                (onsiteAssist ? AbstractMessage.YES : "") + 
                 DELIMITER;
     }
 
