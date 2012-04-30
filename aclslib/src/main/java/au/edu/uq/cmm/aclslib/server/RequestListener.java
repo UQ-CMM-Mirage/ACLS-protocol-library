@@ -62,6 +62,9 @@ public class RequestListener extends MonitoredThreadServiceBase {
                     break;
                 }
                 LOG.debug("IO error", ex);
+            } catch (Throwable ex) {
+                LOG.error("Unexpected exception - proxy listener exiting", ex);
+                break;
             }
         }
     }
