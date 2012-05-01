@@ -97,11 +97,11 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
         }
     }
 
-    protected AclsClient getClient() {
+    protected final AclsClient getClient() {
         return client;
     }
 
-    protected AclsProxy getProxy() {
+    protected final AclsProxy getProxy() {
         return proxy;
     }
 
@@ -184,20 +184,15 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
                 new RefusedResponse(ResponseType.FACILITY_REFUSED);
     }
 
-    protected abstract Response processNotesRequest(
-            Request m) throws AclsException;
+    protected abstract Response processNotesRequest(Request m) throws AclsException;
 
-    protected abstract Response processAccountRequest(
-            Request m) throws AclsException;
+    protected abstract Response processAccountRequest(Request m) throws AclsException;
 
-    protected abstract Response processLogoutRequest(
-            Request m) throws AclsException;
+    protected abstract Response processLogoutRequest(Request m) throws AclsException;
 
-    protected abstract Response processLoginRequest(
-            Request m) throws AclsException;
+    protected abstract Response processLoginRequest(Request m) throws AclsException;
 
-    protected Response tryFallbackAuthentication(LoginRequest l) throws AclsException {
-        Response r;
+    protected final Response tryFallbackAuthentication(LoginRequest l) throws AclsException {
         Authenticator fallbackAuthenticator = getProxy().getFallbackAuthenticator();
         AclsLoginDetails details = null;
         if (fallbackAuthenticator != null) {
@@ -208,13 +203,12 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
                     (details != null ? "succeeded" : "failed"));
         }
         if (details != null) {
-            r = new LoginResponse(ResponseType.LOGIN_ALLOWED, 
+            return new LoginResponse(ResponseType.LOGIN_ALLOWED, 
                     details.getUserName(), details.getOrgName(), new Date().toString(),
                     details.getAccounts(), details.getCertification(), details.isOnsiteAssist());
         } else {
             // I wish we could tell the user what really happened ...
-            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
+            return new RefusedResponse(ResponseType.LOGIN_REFUSED);
         }
-        return r;
     }
 }
