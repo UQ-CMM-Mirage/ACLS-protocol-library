@@ -79,7 +79,6 @@ public abstract class RequestProcessorBase  implements Runnable {
                 // IP address.  If the IP address is not known to us, we can't map it
                 // to a virtual facility id to log the user in ... so the only sensible
                 // thing to do is send a status error.
-                // FIXME - this isn't right ...
                 FacilityConfig f = facilityMapper.lookup(null, null, addr);
                 if (f == null) {
                     logger.debug("Unknown facility: IP is " + addr);
@@ -98,12 +97,13 @@ public abstract class RequestProcessorBase  implements Runnable {
             // ... and dispatch to a "process" method bases on the request type.
             // These methods will deal with the server interaction (if required)
             // and create and return the relevant response.
-            logger.debug("Request is " + m.getType().name() + "(" + m.unparse(true) + ")");
             doProcess(m, w);
         } catch (IOException ex) {
             logger.error("IO error", ex);
         } catch (AclsException ex) {
             logger.error("ACLS error", ex);
+        } catch (Throwable ex) {
+            logger.error("Unexpected error", ex);
         } finally {
             try {
                 socket.close();
