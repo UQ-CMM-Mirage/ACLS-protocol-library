@@ -80,7 +80,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
                         "Unexpected response for account: " + r.getType());
             }
         } else {
-            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
+            r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
         }
         return r;
     }
@@ -107,7 +107,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             getProxy().sendEvent(
                     new AclsLogoutEvent(m.getFacility(), l.getUserName(), l.getAccount()));
         } else {
-            r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
+            r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
         }
         return r;
     }
@@ -142,7 +142,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
                 r = tryFallbackAuthentication(l);
             }
         } else {
-            r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
         }
         return r;
     }
