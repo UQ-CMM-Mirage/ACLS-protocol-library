@@ -82,7 +82,8 @@ public class AclsProxy extends CompositeServiceBase {
     @Override
     protected void doStartup() throws ServiceException, InterruptedException {
         LOG.info("Starting up");
-        requestListener.startup();        LOG.info("Startup completed");
+        requestListener.startup();        
+        LOG.info("Startup completed");
     }
 
     public Authenticator getFallbackAuthenticator() {

@@ -1,29 +1,25 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
-import java.io.BufferedWriter;
 import java.net.Socket;
 
 import org.slf4j.LoggerFactory;
 
 import au.edu.uq.cmm.aclslib.authenticator.AclsLoginDetails;
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
-import au.edu.uq.cmm.aclslib.config.FacilityConfig;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
-import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.LogoutRequest;
-import au.edu.uq.cmm.aclslib.message.NetDriveResponse;
 import au.edu.uq.cmm.aclslib.message.NoteRequest;
+import au.edu.uq.cmm.aclslib.message.RefusedResponse;
 import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
-import au.edu.uq.cmm.aclslib.message.YesNoResponse;
 
 /**
  * @author scrawley
@@ -38,181 +34,116 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
                 socket, proxy);
     }
 
-    protected void processUseFullScreenRequest(Request m, BufferedWriter w) 
+    protected Response processNotesRequest(Request m) 
             throws AclsException {
-        // Uses a facility-specific configuration setting
-        Response r = new YesNoResponse(m.getFacility().isUseFullScreen() ? 
-                ResponseType.FULL_SCREEN_YES : ResponseType.FULL_SCREEN_NO);
-        sendResponse(w, r);
-    }
-
-    protected void processNetDriveRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Uses facility-specific configuration settings
         Response r;
-        FacilityConfig f = m.getFacility();
-        if (f.isUseNetDrive()) {
-            r = new NetDriveResponse(f.getDriveName(), f.getFolderName(),
-                    f.getAccessName(), f.getAccessPassword());
-        } else {
-            r = new NetDriveResponse();
-        }
-        sendResponse(w, r);
-    }
-
-    protected void processStaffLoginRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Pass a 'staff' request as-is.
-        Response r = getClient().serverSendReceive(m);
-        switch (r.getType()) {
-        case STAFF_LOGIN_ALLOWED:
-        case STAFF_LOGIN_REFUSED:
-        case COMMAND_ERROR:
-            break;
-        default:
-            throw new AclsProtocolException(
-                    "Unexpected response for staff login: " + r.getType());
-        }
-        sendResponse(w, r);
-    }
-
-    protected void processSystemPasswordRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Pass a 'system password' request as-is.
-        Response r = getClient().serverSendReceive(m);
-        switch (r.getType()) {
-        case SYSTEM_PASSWORD_YES:
-        case SYSTEM_PASSWORD_NO:
-        case COMMAND_ERROR:
-            break;
-        default:
-            throw new AclsProtocolException(
-                    "Unexpected response for system password: " + r.getType());
-        }
-        sendResponse(w, r);
-    }
-
-    protected void processUseVirtualRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Uses a hard-wired response.  We don't support proxying of virtual facilities.
-        Response r = new YesNoResponse(ResponseType.USE_VIRTUAL, false);
-        sendResponse(w, r);
-    }
-
-    protected void processUseTimerRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Uses a facility-specific configuration setting
-        Response r = new YesNoResponse(m.getFacility().isUseTimer() ? 
-                ResponseType.TIMER_YES : ResponseType.TIMER_NO);
-        sendResponse(w, r);
-    }
-
-    protected void processUseProjectRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Uses a general configuration setting
-        Response r = new YesNoResponse(getConfig().isUseProject() ? 
-                ResponseType.PROJECT_YES : ResponseType.PROJECT_NO);
-        sendResponse(w, r);
-    }
-
-    protected void processFacilityRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        // Uses a facility-specific configuration setting
-        Response r = new FacilityNameResponse(m.getFacility().getFacilityDescription());
-        sendResponse(w, r);
-    }
-
-    protected void processNotesRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        NoteRequest nr = (NoteRequest) m;
-        String notes = nr.getNotes();
-        Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), notes, 
-                m.getFacility(), null, nr.getLocalHostId());
-        Response r = getClient().serverSendReceive(vnr);
-        switch (r.getType()) {
-        case NOTES_ALLOWED:
-        case NOTES_REFUSED:
-        case COMMAND_ERROR:
-            break;
-        default:
-            throw new AclsProtocolException(
-                    "Unexpected response for notes: " + r.getType());
-        }
-        sendResponse(w, r);
-    }
-
-    protected void processAccountRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        AccountRequest a = (AccountRequest) m;
-        Request vl = new AccountRequest(
-                RequestType.ACCOUNT, a.getUserName(), a.getAccount(), 
-                m.getFacility(), null, a.getLocalHostId());
-        Response r = getClient().serverSendReceive(vl);
-        switch (r.getType()) {
-        case ACCOUNT_ALLOWED:
-            getProxy().sendEvent(new AclsLoginEvent(
-                    m.getFacility(), a.getUserName(), a.getAccount()));
-            break;
-        case LOGOUT_REFUSED:
-        case COMMAND_ERROR:
-            break;
-        default:
-            throw new AclsProtocolException(
-                    "Unexpected response for account: " + r.getType());
-        }
-        sendResponse(w, r);
-    }
-
-    protected void processLogoutRequest(Request m, BufferedWriter w) 
-                    throws AclsException {
-        LogoutRequest l = (LogoutRequest) m;
-        Request vl = new LogoutRequest(RequestType.LOGOUT, 
-                l.getUserName(), null, l.getAccount(), 
-                m.getFacility(), null, l.getLocalHostId());
-        Response r = getClient().serverSendReceive(vl);
-        switch (r.getType()) {
-        case LOGOUT_ALLOWED:
-        case LOGOUT_REFUSED:
-        case COMMAND_ERROR:
-            break;
-        default:
-            throw new AclsProtocolException(
-                    "Unexpected response for logout: " + r.getType());
-        }
-        // Issue a logout event, even if the logout request was refused.
-        getProxy().sendEvent(
-                new AclsLogoutEvent(m.getFacility(), l.getUserName(), l.getAccount()));
-        sendResponse(w, r);
-    }
-
-    protected void processLoginRequest(Request m, BufferedWriter w) 
-            throws AclsException {
-        LoginRequest l = (LoginRequest) m;
-        Request vl = new LoginRequest(RequestType.LOGIN, 
-                l.getUserName(), l.getPassword(), 
-                m.getFacility(), null, l.getLocalHostId());
-        Response r;
-        try {
-            r = getClient().serverSendReceive(vl);
+        if (m.getFacility() != null) {
+            NoteRequest nr = (NoteRequest) m;
+            String notes = nr.getNotes();
+            Request vnr = new NoteRequest(nr.getUserName(), nr.getAccount(), notes, 
+                    m.getFacility(), null, nr.getLocalHostId());
+            r = getClient().serverSendReceive(vnr);
             switch (r.getType()) {
-            case LOGIN_ALLOWED:
-                LoginResponse lr = (LoginResponse) r;
-                getProxy().sendEvent(new AclsPasswordAcceptedEvent(m.getFacility(),
-                        new AclsLoginDetails(l.getUserName(), lr.getUserName(),
-                                lr.getOrgName(), l.getPassword(),
-                                m.getFacility().getFacilityName(), lr.getAccounts(), 
-                                lr.getCertification(), lr.isOnsiteAssist(), false)));
-                break;
-            case LOGIN_REFUSED:
+            case NOTES_ALLOWED:
+            case NOTES_REFUSED:
             case COMMAND_ERROR:
                 break;
             default:
                 throw new AclsProtocolException(
-                        "Unexpected response for login: " + r.getType());
+                        "Unexpected response for notes: " + r.getType());
             }
-        } catch (AclsCommsException ex) {
-            r = tryFallbackAuthentication(l);
+        } else {
+            r = new RefusedResponse(ResponseType.NOTES_REFUSED);
         }
-        sendResponse(w, r);
+        return r;
+    }
+
+    protected Response processAccountRequest(Request m) 
+            throws AclsException {
+        Response r;
+        if (m.getFacility() != null) {
+            AccountRequest a = (AccountRequest) m;
+            Request vl = new AccountRequest(
+                    RequestType.ACCOUNT, a.getUserName(), a.getAccount(), 
+                    m.getFacility(), null, a.getLocalHostId());
+            r = getClient().serverSendReceive(vl);
+            switch (r.getType()) {
+            case ACCOUNT_ALLOWED:
+                getProxy().sendEvent(new AclsLoginEvent(
+                        m.getFacility(), a.getUserName(), a.getAccount()));
+                break;
+            case LOGOUT_REFUSED:
+            case COMMAND_ERROR:
+                break;
+            default:
+                throw new AclsProtocolException(
+                        "Unexpected response for account: " + r.getType());
+            }
+        } else {
+            r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
+        }
+        return r;
+    }
+
+    protected Response processLogoutRequest(Request m) 
+            throws AclsException {
+        Response r;
+        if (m.getFacility() != null) {
+            LogoutRequest l = (LogoutRequest) m;
+            Request vl = new LogoutRequest(RequestType.LOGOUT, 
+                    l.getUserName(), null, l.getAccount(), 
+                    m.getFacility(), null, l.getLocalHostId());
+            r = getClient().serverSendReceive(vl);
+            switch (r.getType()) {
+            case LOGOUT_ALLOWED:
+            case LOGOUT_REFUSED:
+            case COMMAND_ERROR:
+                break;
+            default:
+                throw new AclsProtocolException(
+                        "Unexpected response for logout: " + r.getType());
+            }
+            // Issue a logout event, even if the logout request was refused.
+            getProxy().sendEvent(
+                    new AclsLogoutEvent(m.getFacility(), l.getUserName(), l.getAccount()));
+        } else {
+            r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+        }
+        return r;
+    }
+
+    protected Response processLoginRequest(Request m) 
+            throws AclsException {
+        Response r;
+        if (m.getFacility() != null) {
+            LoginRequest l = (LoginRequest) m;
+            Request vl = new LoginRequest(RequestType.LOGIN, 
+                    l.getUserName(), l.getPassword(), 
+                    m.getFacility(), null, l.getLocalHostId());
+            try {
+                r = getClient().serverSendReceive(vl);
+                switch (r.getType()) {
+                case LOGIN_ALLOWED:
+                    LoginResponse lr = (LoginResponse) r;
+                    getProxy().sendEvent(new AclsPasswordAcceptedEvent(m.getFacility(),
+                            new AclsLoginDetails(l.getUserName(), lr.getUserName(),
+                                    lr.getOrgName(), l.getPassword(),
+                                    m.getFacility().getFacilityName(), lr.getAccounts(), 
+                                    lr.getCertification(), lr.isOnsiteAssist(), false)));
+                    break;
+                case LOGIN_REFUSED:
+                case COMMAND_ERROR:
+                    break;
+                default:
+                    throw new AclsProtocolException(
+                            "Unexpected response for login: " + r.getType());
+                }
+            } catch (AclsCommsException ex) {
+                r = tryFallbackAuthentication(l);
+            }
+        } else {
+            r = new RefusedResponse(ResponseType.LOGIN_REFUSED);
+        }
+        return r;
     }
 }

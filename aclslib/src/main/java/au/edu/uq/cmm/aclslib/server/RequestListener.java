@@ -47,21 +47,32 @@ public class RequestListener extends MonitoredThreadServiceBase {
             LOG.error("Error while creating / binding the proxy's server socket", ex);
             throw new ServiceException("Startup / restart failed", ex);
         }
-        while (true) {
-            try {
-                Socket s = ss.accept();
-                // FIXME - Use a bounded thread pool executor.
-                new Thread(factory.createProcessor(config, mapper, s)).start();
-            } catch (InterruptedIOException ex) {
-                // FIXME - Synchronously shut down the processor pool.
-                LOG.info("Interrupted - we're done");
-                break;
-            } catch (IOException ex) {
-                if (Thread.currentThread().isInterrupted()) {
-                    LOG.info("Interrupted - we're done (2)");
+        try {
+            while (true) {
+                try {
+                    Socket s = ss.accept();
+                    // FIXME - Use a bounded thread pool executor.
+                    new Thread(factory.createProcessor(config, mapper, s)).start();
+                } catch (InterruptedIOException ex) {
+                    // FIXME - Synchronously shut down the processor pool.
+                    LOG.info("Interrupted - we're done");
+                    break;
+                } catch (IOException ex) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        LOG.info("Interrupted - we're done (2)");
+                        break;
+                    }
+                    LOG.debug("IO error", ex);
+                } catch (Throwable ex) {
+                    LOG.error("Unexpected exception - proxy listener exiting", ex);
                     break;
                 }
-                LOG.debug("IO error", ex);
+            }
+        } finally {
+            try {
+                ss.close();
+            } catch (IOException ex) {
+                LOG.debug("IO error while closing ServerSocket", ex);
             }
         }
     }
