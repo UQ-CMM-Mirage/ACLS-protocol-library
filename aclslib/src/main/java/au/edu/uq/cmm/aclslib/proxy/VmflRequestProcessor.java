@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
 import java.net.Socket;
+import java.util.Date;
 
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +13,7 @@ import au.edu.uq.cmm.aclslib.message.AccountRequest;
 import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.AclsNoResponseException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
@@ -73,23 +75,28 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             FacilityConfig f = m.getFacility();
             Request vl = new AccountRequest(RequestType.VIRTUAL_ACCOUNT, 
                     a.getUserName(), a.getAccount(), f, null, null);
-            Response vr = getClient().serverSendReceive(vl);
-            switch (vr.getType()) {
-            case VIRTUAL_ACCOUNT_ALLOWED:
-                getProxy().sendEvent(
-                        new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
-                r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
-                        ((AccountResponse) vr).getLoginTimestamp());
-                break;
-            case VIRTUAL_LOGOUT_REFUSED:
-                r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
-                break;
-            case COMMAND_ERROR:
-                r = vr;
-                break;
-            default:
-                throw new AclsProtocolException(
-                        "Unexpected response for virtual account: " + vr.getType());
+            try {
+                Response vr = getClient().serverSendReceive(vl);
+                switch (vr.getType()) {
+                case VIRTUAL_ACCOUNT_ALLOWED:
+                    getProxy().sendEvent(
+                            new AclsLoginEvent(f, a.getUserName(), a.getAccount()));
+                    r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED,
+                            ((AccountResponse) vr).getLoginTimestamp());
+                    break;
+                case VIRTUAL_ACCOUNT_REFUSED:
+                    r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
+                    break;
+                case COMMAND_ERROR:
+                    r = vr;
+                    break;
+                default:
+                    throw new AclsProtocolException(
+                            "Unexpected response for virtual account: " + vr.getType());
+                }
+            } catch (AclsNoResponseException ex) {
+                r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED, 
+                        new Date().toString());
             }
         } else {
             r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
@@ -114,20 +121,24 @@ public class VmflRequestProcessor extends ProxyRequestProcessor {
             } else {
                 Request vl = new LogoutRequest(RequestType.VIRTUAL_LOGOUT, 
                         l.getUserName(), password, l.getAccount(), f, null, null);
-                Response vr = getClient().serverSendReceive(vl);
-                switch (vr.getType()) {
-                case VIRTUAL_LOGOUT_ALLOWED:
+                try {
+                    Response vr = getClient().serverSendReceive(vl);
+                    switch (vr.getType()) {
+                    case VIRTUAL_LOGOUT_ALLOWED:
+                        r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
+                        break;
+                    case VIRTUAL_LOGOUT_REFUSED:
+                        r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
+                        break;
+                    case COMMAND_ERROR:
+                        r = vr;
+                        break;
+                    default:
+                        throw new AclsProtocolException(
+                                "Unexpected response for virtual logout: " + vr.getType());
+                    }
+                } catch (AclsNoResponseException ex) {
                     r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
-                    break;
-                case VIRTUAL_LOGOUT_REFUSED:
-                    r = new RefusedResponse(ResponseType.LOGOUT_REFUSED);
-                    break;
-                case COMMAND_ERROR:
-                    r = vr;
-                    break;
-                default:
-                    throw new AclsProtocolException(
-                            "Unexpected response for virtual logout: " + vr.getType());
                 }
             }
             // (Issue a logout event, even if the logout request was refused, or 
