@@ -176,7 +176,7 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
                 ResponseType.PROJECT_YES : ResponseType.PROJECT_NO);
     }
 
-    protected final Response processFacilityRequest(Request m) 
+    protected Response processFacilityRequest(Request m) 
             throws AclsException {
         // Uses a facility-specific configuration setting
         return m.getFacility() != null ?

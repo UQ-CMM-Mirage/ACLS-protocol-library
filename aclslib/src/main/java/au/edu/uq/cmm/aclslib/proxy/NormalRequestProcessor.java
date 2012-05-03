@@ -1,6 +1,7 @@
 package au.edu.uq.cmm.aclslib.proxy;
 
 import java.net.Socket;
+import java.util.Date;
 
 import org.slf4j.LoggerFactory;
 
@@ -8,9 +9,13 @@ import au.edu.uq.cmm.aclslib.authenticator.AclsLoginDetails;
 import au.edu.uq.cmm.aclslib.config.ACLSProxyConfiguration;
 import au.edu.uq.cmm.aclslib.config.FacilityMapper;
 import au.edu.uq.cmm.aclslib.message.AccountRequest;
+import au.edu.uq.cmm.aclslib.message.AccountResponse;
 import au.edu.uq.cmm.aclslib.message.AclsCommsException;
 import au.edu.uq.cmm.aclslib.message.AclsException;
+import au.edu.uq.cmm.aclslib.message.AclsNoResponseException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
+import au.edu.uq.cmm.aclslib.message.AllowedResponse;
+import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.LogoutRequest;
@@ -20,6 +25,7 @@ import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
+import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 
 /**
  * @author scrawley
@@ -34,6 +40,22 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
                 socket, proxy);
     }
 
+    @Override
+    protected Response processFacilityRequest(Request m) 
+            throws AclsException {
+        if (m.getFacility() == null) {
+            return new RefusedResponse(ResponseType.FACILITY_REFUSED);
+        }
+        try {
+            Request fr = new SimpleRequest(RequestType.FACILITY_NAME, 
+                    m.getFacility(), null, m.getFacility().getLocalHostId());
+            return getClient().serverSendReceive(fr);
+        } catch (AclsNoResponseException ex) {
+            return new FacilityNameResponse(m.getFacility().getFacilityDescription() + " (cached)");
+        }
+    }
+
+    @Override
     protected Response processNotesRequest(Request m) 
             throws AclsException {
         Response r;
@@ -58,26 +80,31 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         return r;
     }
 
-    protected Response processAccountRequest(Request m) 
-            throws AclsException {
+    @Override
+    protected Response processAccountRequest(Request m) throws AclsException {
         Response r;
         if (m.getFacility() != null) {
             AccountRequest a = (AccountRequest) m;
-            Request vl = new AccountRequest(
-                    RequestType.ACCOUNT, a.getUserName(), a.getAccount(), 
-                    m.getFacility(), null, a.getLocalHostId());
-            r = getClient().serverSendReceive(vl);
-            switch (r.getType()) {
-            case ACCOUNT_ALLOWED:
-                getProxy().sendEvent(new AclsLoginEvent(
-                        m.getFacility(), a.getUserName(), a.getAccount()));
-                break;
-            case LOGOUT_REFUSED:
-            case COMMAND_ERROR:
-                break;
-            default:
-                throw new AclsProtocolException(
-                        "Unexpected response for account: " + r.getType());
+            Request vl = new AccountRequest(RequestType.ACCOUNT,
+                    a.getUserName(), a.getAccount(), m.getFacility(), null,
+                    a.getLocalHostId());
+            try {
+                r = getClient().serverSendReceive(vl);
+                switch (r.getType()) {
+                case ACCOUNT_ALLOWED:
+                    getProxy().sendEvent(
+                            new AclsLoginEvent(m.getFacility(),
+                                    a.getUserName(), a.getAccount()));
+                    break;
+                case LOGOUT_REFUSED:
+                case COMMAND_ERROR:
+                    break;
+                default:
+                    throw new AclsProtocolException(
+                            "Unexpected response for account: " + r.getType());
+                }
+            } catch (AclsNoResponseException ex) {
+                r = new AccountResponse(ResponseType.ACCOUNT_ALLOWED, new Date().toString());
             }
         } else {
             r = new RefusedResponse(ResponseType.ACCOUNT_REFUSED);
@@ -85,6 +112,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         return r;
     }
 
+    @Override
     protected Response processLogoutRequest(Request m) 
             throws AclsException {
         Response r;
@@ -93,15 +121,19 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
             Request vl = new LogoutRequest(RequestType.LOGOUT, 
                     l.getUserName(), null, l.getAccount(), 
                     m.getFacility(), null, l.getLocalHostId());
-            r = getClient().serverSendReceive(vl);
-            switch (r.getType()) {
-            case LOGOUT_ALLOWED:
-            case LOGOUT_REFUSED:
-            case COMMAND_ERROR:
-                break;
-            default:
-                throw new AclsProtocolException(
-                        "Unexpected response for logout: " + r.getType());
+            try {
+                r = getClient().serverSendReceive(vl);
+                switch (r.getType()) {
+                case LOGOUT_ALLOWED:
+                case LOGOUT_REFUSED:
+                case COMMAND_ERROR:
+                    break;
+                default:
+                    throw new AclsProtocolException(
+                            "Unexpected response for logout: " + r.getType());
+                }
+            } catch (AclsNoResponseException ex) {
+                r = new AllowedResponse(ResponseType.LOGOUT_ALLOWED);
             }
             // Issue a logout event, even if the logout request was refused.
             getProxy().sendEvent(
@@ -112,6 +144,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         return r;
     }
 
+    @Override
     protected Response processLoginRequest(Request m) 
             throws AclsException {
         Response r;

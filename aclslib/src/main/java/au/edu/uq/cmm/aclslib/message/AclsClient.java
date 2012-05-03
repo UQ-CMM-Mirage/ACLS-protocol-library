@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,13 @@ public class AclsClient {
             } finally {
                 aclsSocket.close();
             }
+        } catch (SocketTimeoutException ex) {
+            LOG.info("ACLS send / receive timed out");
+            throw new AclsNoResponseException(
+                    "Timeout while connecting or talking to ACLS server (" +
+                    serverHost + ":" + serverPort + ")", ex);
         } catch (IOException ex) {
+            LOG.info("ACLS send / receive gave IO exception: " + ex.getMessage());
             throw new AclsCommsException("IO error while trying to talk to ACLS server (" +
                     serverHost + ":" + serverPort + ")", ex);
         }
