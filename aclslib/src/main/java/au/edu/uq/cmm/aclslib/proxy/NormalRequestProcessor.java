@@ -15,6 +15,7 @@ import au.edu.uq.cmm.aclslib.message.AclsException;
 import au.edu.uq.cmm.aclslib.message.AclsNoResponseException;
 import au.edu.uq.cmm.aclslib.message.AclsProtocolException;
 import au.edu.uq.cmm.aclslib.message.AllowedResponse;
+import au.edu.uq.cmm.aclslib.message.FacilityNameResponse;
 import au.edu.uq.cmm.aclslib.message.LoginRequest;
 import au.edu.uq.cmm.aclslib.message.LoginResponse;
 import au.edu.uq.cmm.aclslib.message.LogoutRequest;
@@ -24,6 +25,7 @@ import au.edu.uq.cmm.aclslib.message.Request;
 import au.edu.uq.cmm.aclslib.message.RequestType;
 import au.edu.uq.cmm.aclslib.message.Response;
 import au.edu.uq.cmm.aclslib.message.ResponseType;
+import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 
 /**
  * @author scrawley
@@ -38,6 +40,22 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
                 socket, proxy);
     }
 
+    @Override
+    protected Response processFacilityRequest(Request m) 
+            throws AclsException {
+        if (m.getFacility() == null) {
+            return new RefusedResponse(ResponseType.FACILITY_REFUSED);
+        }
+        try {
+            Request fr = new SimpleRequest(RequestType.FACILITY_NAME, 
+                    m.getFacility(), null, m.getFacility().getLocalHostId());
+            return getClient().serverSendReceive(fr);
+        } catch (AclsNoResponseException ex) {
+            return new FacilityNameResponse(m.getFacility().getFacilityDescription() + " (cached)");
+        }
+    }
+
+    @Override
     protected Response processNotesRequest(Request m) 
             throws AclsException {
         Response r;
@@ -62,6 +80,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         return r;
     }
 
+    @Override
     protected Response processAccountRequest(Request m) throws AclsException {
         Response r;
         if (m.getFacility() != null) {
@@ -93,6 +112,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         return r;
     }
 
+    @Override
     protected Response processLogoutRequest(Request m) 
             throws AclsException {
         Response r;
@@ -124,6 +144,7 @@ public class NormalRequestProcessor extends ProxyRequestProcessor {
         return r;
     }
 
+    @Override
     protected Response processLoginRequest(Request m) 
             throws AclsException {
         Response r;
