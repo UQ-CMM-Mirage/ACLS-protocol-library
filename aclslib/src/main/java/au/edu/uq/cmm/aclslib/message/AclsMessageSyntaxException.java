@@ -7,12 +7,12 @@ package au.edu.uq.cmm.aclslib.message;
  * @author scrawley
  */
 @SuppressWarnings("serial")
-public class MessageSyntaxException extends AclsProtocolException {
-    public MessageSyntaxException(String msg) {
+public class AclsMessageSyntaxException extends AclsProtocolException {
+    public AclsMessageSyntaxException(String msg) {
         super(msg);
     }
 
-    public MessageSyntaxException(String message, Throwable cause) {
+    public AclsMessageSyntaxException(String message, Throwable cause) {
         super(message, cause);
     }
 
