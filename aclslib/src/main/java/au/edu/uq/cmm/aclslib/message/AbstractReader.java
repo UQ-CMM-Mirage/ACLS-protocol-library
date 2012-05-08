@@ -100,22 +100,22 @@ public class AbstractReader {
         return line;
     }
 
-    protected void expect(Scanner source, String expected) throws MessageSyntaxException {
+    protected void expect(Scanner source, String expected) throws AclsMessageSyntaxException {
         if (!source.hasNext()) {
-            throw new MessageSyntaxException(
+            throw new AclsMessageSyntaxException(
                     "Expected '" + expected + "' but got end-of-message");
         }
         expect(source.next(), expected);
     }
 
-    protected void expect(String token, String expected) throws MessageSyntaxException {
+    protected void expect(String token, String expected) throws AclsMessageSyntaxException {
         if (!expected.equals(token)) {
-            throw new MessageSyntaxException(
+            throw new AclsMessageSyntaxException(
                     "Expected '" + expected + "' but got '" + token + "'");
         }
     }
 
-    protected void expectEnd(Scanner source) throws MessageSyntaxException {
+    protected void expectEnd(Scanner source) throws AclsMessageSyntaxException {
         if (source.hasNext()) {
             String token = source.next().trim();
             if (token.equals(DELIMITER)) {
@@ -127,7 +127,7 @@ public class AbstractReader {
             if (!token.isEmpty() &&
                 !token.equalsIgnoreCase(ACCEPTED_IP_TAG) &&
                 !token.equalsIgnoreCase(FAILED_TAG)) {
-                throw new MessageSyntaxException(
+                throw new AclsMessageSyntaxException(
                         "Unexpected token at end of message: '" + token + "'");
             }
         }

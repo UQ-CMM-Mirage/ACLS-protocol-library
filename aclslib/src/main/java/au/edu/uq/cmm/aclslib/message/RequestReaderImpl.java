@@ -83,7 +83,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
                 throw new AssertionError("not implemented");
             }
         } catch (IllegalArgumentException ex) {
-            throw new MessageSyntaxException(ex.getMessage(), ex);
+            throw new AclsMessageSyntaxException(ex.getMessage(), ex);
         }
     }
 
@@ -159,7 +159,7 @@ public class RequestReaderImpl extends AbstractReader implements RequestReader {
     }
     
     private void determineFacility(Scanner scanner, RequestType type) 
-            throws MessageSyntaxException, ConfigurationException {
+            throws AclsMessageSyntaxException, ConfigurationException {
         facility = null;
         facilityName = null;
         localHostId = null;
