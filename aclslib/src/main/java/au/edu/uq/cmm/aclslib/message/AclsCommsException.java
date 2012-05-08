@@ -8,4 +8,8 @@ public class AclsCommsException extends AclsProtocolException {
         super(message, cause);
     }
 
+    public AclsCommsException(String message) {
+        super(message);
+    }
+
 }

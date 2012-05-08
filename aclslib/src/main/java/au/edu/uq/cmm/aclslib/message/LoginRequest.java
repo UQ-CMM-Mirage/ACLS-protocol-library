@@ -36,7 +36,7 @@ public class LoginRequest extends AbstractRequest {
                 (obscurePasswords ? "XXXXXX" : password) + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
                     (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER)) +
-                    generateTrailer();
+                    generateTrailer(true);
     }
 
     /**

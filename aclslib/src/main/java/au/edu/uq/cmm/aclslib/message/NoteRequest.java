@@ -37,7 +37,7 @@ public class NoteRequest extends AbstractRequest {
         return generateHeader() + userName + DELIMITER + 
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 NOTE_DELIMITER + notes + DELIMITER +
-                generateTrailer();
+                generateTrailer(true);
     }
 
     /**

@@ -38,7 +38,7 @@ public class AccountRequest extends AbstractRequest {
                 ACCOUNT_DELIMITER + account + DELIMITER + 
                 (!getType().isVmfl() ? "" : 
                     (FACILITY_DELIMITER + getFacility().getFacilityName() + DELIMITER)) +
-                    generateTrailer();
+                    generateTrailer(true);
     }
 
     /**

@@ -66,7 +66,7 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
      * 
      * @return the message trailer.
      */
-    String generateTrailer() {
+    String generateTrailer(boolean withCommandDelimiter) {
         if (type.isVmfl() || !type.isLocalHostIdAllowed()) {
             return "";
         }
@@ -76,8 +76,10 @@ public abstract class AbstractRequest extends AbstractMessage implements Request
         } 
         if (id == null || id.isEmpty()) {
             return "";
-        } else {
+        } else if (withCommandDelimiter) {
             return COMMAND_DELIMITER + id + DELIMITER;
+        } else {
+            return id + DELIMITER;
         }
     }
 }

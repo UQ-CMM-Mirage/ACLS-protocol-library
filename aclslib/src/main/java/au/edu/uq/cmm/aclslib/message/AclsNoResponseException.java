@@ -7,4 +7,8 @@ public class AclsNoResponseException extends AclsCommsException {
         super(message, ex);
     }
 
+    public AclsNoResponseException(String message) {
+        super(message);
+    }
+
 }

@@ -23,22 +23,22 @@ public class RequestReaderTest {
         new RequestReaderImpl(mapper(), localHost());
     }   
     
-    @Test(expected=MessageSyntaxException.class)
+    @Test(expected=AclsMessageSyntaxException.class)
     public void testBadCommand() throws AclsException {
         reader().read(source("Z:\n"));
     }
     
-    @Test(expected=MessageSyntaxException.class)
+    @Test(expected=AclsMessageSyntaxException.class)
     public void testBadCommand2() throws AclsException {
         reader().read(source("1\n"));
     }
     
-    @Test(expected=MessageSyntaxException.class)
+    @Test(expected=AclsMessageSyntaxException.class)
     public void testBadCommand3() throws AclsException {
         reader().read(source("1?\n"));
     }
     
-    @Test(expected=MessageSyntaxException.class)
+    @Test(expected=AclsMessageSyntaxException.class)
     public void testBadCommand4() throws AclsException {
         reader().read(source("9999:\n"));
     }
