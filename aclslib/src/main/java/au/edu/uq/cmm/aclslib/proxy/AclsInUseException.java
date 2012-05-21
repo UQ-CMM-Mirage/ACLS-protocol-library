@@ -22,8 +22,21 @@ package au.edu.uq.cmm.aclslib.proxy;
 @SuppressWarnings("serial")
 public class AclsInUseException extends Exception {
 
-    public AclsInUseException(String message) {
-        super(message);
+    private final String userName;
+    private final String facilityName;
+
+    public AclsInUseException(String facilityName, String userName) {
+        super("Facility in use: userName=" + userName + ", facilityName=" + facilityName);
+        this.userName = userName;
+        this.facilityName = facilityName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getFacilityName() {
+        return facilityName;
     }
 
 }
