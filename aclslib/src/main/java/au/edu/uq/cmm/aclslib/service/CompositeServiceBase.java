@@ -63,6 +63,12 @@ public abstract class CompositeServiceBase implements Service {
                 state = State.FAILED;
                 lock.notifyAll();
             }
+        } catch (ServiceException ex) {
+            LOG.error("Startup failed", ex);
+            synchronized (lock) {
+                state = State.FAILED;
+                lock.notifyAll();
+            }
         }
     }
 
@@ -90,6 +96,12 @@ public abstract class CompositeServiceBase implements Service {
                     }
                 } catch (InterruptedException ex) {
                     LOG.error("Startup interrupted");
+                    synchronized (lock) {
+                        state = State.FAILED;
+                        lock.notifyAll();
+                    }
+                } catch (ServiceException ex) {
+                    LOG.error("Startup failed", ex);
                     synchronized (lock) {
                         state = State.FAILED;
                         lock.notifyAll();
