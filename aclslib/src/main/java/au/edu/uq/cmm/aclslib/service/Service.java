@@ -20,12 +20,12 @@
 package au.edu.uq.cmm.aclslib.service;
 
 /**
- * Light-weight API for component "services" supporting the notion
- * of startup and shutdown.
+ * This API extends the "simple" service with methods for tracking service
+ * status / state and for doing asynchronous starup and shutdown.
  * 
  * @author scrawley
  */
-public interface Service {
+public interface Service extends SimpleService {
     
     /**
      * This represents the possible states of a service.
