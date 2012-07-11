@@ -24,16 +24,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A Service class that extends this class gets infrastructure for starting up and
- * shutting down a "composite" service, comprising other Service instances.  The
- * class needs to implement the {@link #doStartup()} and {@link #doShutdown()}
- * methods.  These typically just call {@link Service#startup()} and 
+ * shutting down a service.  The class needs to implement the {@link #doStartup()} 
+ * and {@link #doShutdown()} methods.
+ * <p>
+ * One use-case for this class is to combine two or more other services into a 
+ * composite service.  This can be implemented by having {@link #doStartup()} and
+ * {@link #doShutdown()} just call {@link Service#startup()} and 
  * {@link Service#shutdown()} on the component services.
  * 
  * @author scrawley
  */
-public abstract class CompositeServiceBase implements Service {
+public abstract class ServiceBase implements Service {
     private static final Logger LOG = 
-            LoggerFactory.getLogger(CompositeServiceBase.class);
+            LoggerFactory.getLogger(ServiceBase.class);
     private State state = State.INITIAL;
     private final Object lock = new Object();
 
@@ -59,6 +62,12 @@ public abstract class CompositeServiceBase implements Service {
             }
         } catch (InterruptedException ex) {
             LOG.error("Startup interrupted");
+            synchronized (lock) {
+                state = State.FAILED;
+                lock.notifyAll();
+            }
+        } catch (ServiceException ex) {
+            LOG.error("Startup failed", ex);
             synchronized (lock) {
                 state = State.FAILED;
                 lock.notifyAll();
@@ -90,6 +99,12 @@ public abstract class CompositeServiceBase implements Service {
                     }
                 } catch (InterruptedException ex) {
                     LOG.error("Startup interrupted");
+                    synchronized (lock) {
+                        state = State.FAILED;
+                        lock.notifyAll();
+                    }
+                } catch (ServiceException ex) {
+                    LOG.error("Startup failed", ex);
                     synchronized (lock) {
                         state = State.FAILED;
                         lock.notifyAll();
