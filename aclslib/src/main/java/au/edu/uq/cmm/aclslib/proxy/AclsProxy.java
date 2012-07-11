@@ -42,7 +42,7 @@ import au.edu.uq.cmm.aclslib.message.ServerStatusException;
 import au.edu.uq.cmm.aclslib.message.SimpleRequest;
 import au.edu.uq.cmm.aclslib.server.RequestListener;
 import au.edu.uq.cmm.aclslib.server.RequestProcessorFactory;
-import au.edu.uq.cmm.aclslib.service.CompositeServiceBase;
+import au.edu.uq.cmm.aclslib.service.ServiceBase;
 import au.edu.uq.cmm.aclslib.service.Service;
 import au.edu.uq.cmm.aclslib.service.ServiceException;
 
@@ -50,7 +50,7 @@ import au.edu.uq.cmm.aclslib.service.ServiceException;
 /**
  * @author scrawley
  */
-public class AclsProxy extends CompositeServiceBase {
+public class AclsProxy extends ServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(AclsProxy.class);
     
     private final ACLSProxyConfiguration config;
