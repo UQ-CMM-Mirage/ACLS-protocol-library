@@ -40,6 +40,7 @@ public class StaticFacilityConfig implements FacilityConfig {
     private boolean useTimer;
     private String facilityDescription;
     private String address;
+    private boolean multiplexed;
 
     public String getAccessName() {
         return accessName;
@@ -125,4 +126,12 @@ public class StaticFacilityConfig implements FacilityConfig {
     public void setAddress(String address) {
         this.address = address;
     }
+
+	public boolean isMultiplexed() {
+		return multiplexed;
+	}
+
+	public void setMultiplexed(boolean multiplexed) {
+		this.multiplexed = multiplexed;
+	}
 }
