@@ -95,4 +95,10 @@ public interface FacilityConfig {
      * If true, tell the client to start a logout timer.
      */
     boolean isUseTimer();
+    
+    /**
+     * If true, there are expected / allowed to be other facilities
+     * sharing this facility's IP address.
+     */
+	boolean isMultiplexed();
 }

@@ -79,7 +79,7 @@ public class JsonConfigLoader <C> {
      * Load the configuration from a file.
      * 
      * @param configFile
-     * @return the configuration or null if it couldn't be found / read.
+     * @return the configuration.
      * @throws ConfigurationException 
      */
     public C loadConfiguration(String configFile) 
@@ -91,6 +91,22 @@ public class JsonConfigLoader <C> {
                 return readConfiguration(is);
         } catch (IOException ex) {
             throw new ConfigurationException("Cannot open file '" + configFile + "'", ex);
+        } finally {
+            closeQuietly(is);
+        }
+    }
+
+    /**
+     * Load the configuration from a stream.
+     * 
+     * @param is the input stream
+     * @return the configuration.
+     * @throws ConfigurationException 
+     */
+    public C loadConfiguration(InputStream is) 
+            throws ConfigurationException {
+        try {
+            return readConfiguration(is);
         } finally {
             closeQuietly(is);
         }
