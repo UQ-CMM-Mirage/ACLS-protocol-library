@@ -33,9 +33,9 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-	        <artifactId>slf4j-log4j12</artifactId>
-	        <version>1.6.4</version>
-	        <scope>test</scope>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<description>A Java protocol library for encoding and decoding messages used in the ACLS login protocols.</description>
@@ -54,4 +54,21 @@
 		</snapshotRepository>
 		<downloadUrl>http://maven.metadata.net/artifactory/repo/</downloadUrl>
 	</distributionManagement>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<inherited>true</inherited>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
