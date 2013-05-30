@@ -106,9 +106,7 @@ public class AclsHelper {
             Response response = client.serverSendReceive(request);
             switch (response.getType()) {
             case LOGIN_ALLOWED:
-                return ((LoginResponse) response).getAccounts();
             case VIRTUAL_LOGIN_ALLOWED:
-                LOG.debug("Cached password for " + userName);
                 return ((LoginResponse) response).getAccounts();
             case LOGIN_REFUSED:
             case VIRTUAL_LOGIN_REFUSED:

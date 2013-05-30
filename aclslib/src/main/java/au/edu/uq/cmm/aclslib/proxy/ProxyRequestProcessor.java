@@ -211,13 +211,15 @@ public abstract class ProxyRequestProcessor extends RequestProcessorBase {
 
     protected abstract Response processLoginRequest(Request m) throws AclsException;
 
-    protected final Response tryFallbackAuthentication(LoginRequest l) throws AclsException {
+    protected final Response tryFallbackAuthentication(LoginRequest l) 
+    		throws AclsException {
         Authenticator fallbackAuthenticator = getProxy().getFallbackAuthenticator();
         AclsLoginDetails details = null;
         if (fallbackAuthenticator != null) {
             getLogger().debug("Attempting fallback authentication for " + 
                     l.getUserName() + " on " + l.getFacility().getFacilityName());
-            details = fallbackAuthenticator.authenticate(l.getUserName(), l.getPassword(), l.getFacility());
+            details = fallbackAuthenticator.authenticate(
+            		l.getUserName(), l.getPassword(), l.getFacility());
             getLogger().debug("Fallback authentication " + 
                     (details != null ? "succeeded" : "failed"));
         }
