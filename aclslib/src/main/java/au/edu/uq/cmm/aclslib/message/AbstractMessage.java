@@ -19,6 +19,8 @@
 
 package au.edu.uq.cmm.aclslib.message;
 
+import java.util.Objects;
+
 /**
  * This is the base class for ACLS request and response methods.
  * 
@@ -100,6 +102,7 @@ public abstract class AbstractMessage implements Message {
     }
     
     protected String checkDateTime(String dateTime) {
+        Objects.requireNonNull(dateTime, "Date/time string is null");
         if (!dateTime.matches("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}")) {
             throw new IllegalArgumentException(
                     "Malformed datestamp '" + dateTime + "'");
@@ -108,6 +111,7 @@ public abstract class AbstractMessage implements Message {
     }
     
     private String check(String str, String desc, String forbidden) {
+        Objects.requireNonNull(str, desc + " is null");
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
             if (forbidden.indexOf(ch) >= 0 || Character.isISOControl(ch)) {
