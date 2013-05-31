@@ -20,6 +20,7 @@
 package au.edu.uq.cmm.aclslib.message;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents the three kinds of successful login response.  It gives
@@ -55,12 +56,12 @@ public class LoginResponse extends AbstractResponse {
         super(type);
         this.userName = checkName(userName);
         this.orgName = checkOrganization(orgName);
-        this.loginTimestamp = loginTimestamp;
+        this.loginTimestamp = loginTimestamp; // may be be null
         this.accounts = accounts;
         for (String acc : accounts) {
             checkAccount(acc);
         }
-        this.certification = certification;
+        this.certification = Objects.requireNonNull(certification);
         this.onsiteAssist = onsiteAssist;
     }
 
