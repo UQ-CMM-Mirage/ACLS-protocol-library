@@ -48,7 +48,8 @@ public class BuildInfo {
 	
 	/**
 	 * Extract the key information from a "pom.properties" file for
-	 * a Maven model, located at the standard place on the classpath.
+	 * a Maven model.  The file is located at the standard place on 
+	 * the classpath based on the group and artifact ids.
 	 * 
 	 * @param groupId the Maven group id 
 	 * @param artifactId the Maven artifact id
@@ -62,31 +63,8 @@ public class BuildInfo {
 					" at classpath://" + path);
 			return null;
 		}
-		BuildInfo buildInfo = new BuildInfo();
 		try {
-			// Read / parse by hand because we want to snarf the comment
-			// containing the timestamp.  (That's the best we have in the 
-			// way of a build date.)
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-			String line;
-			while ((line = br.readLine()) != null) {
-				if (line.startsWith("#")) {
-					// If it looks like it contains 
-					if (line.matches(".*(?<!\\d)\\d{4}(?!\\d).*")) {
-						buildInfo.buildTimestamp = line.substring(1).trim();
-					}
-				} else {
-					String[] parts = line.split("=", 2);
-					if (parts[0].equals("groupId")) {
-						buildInfo.groupId = parts[1];
-					} else if (parts[0].equals("artifactId")) {
-						buildInfo.artifactId = parts[1];
-					} else if (parts[0].equals("version")) {
-						buildInfo.version = parts[1];
-					} 
-				}
-			}
-			return buildInfo;
+			return readBuildInfo(is);
 		} catch (IOException ex) {
 			LOG.info("Error reading classpath:" + path, ex);
 			return null;
@@ -97,6 +75,41 @@ public class BuildInfo {
 				// ignore it
 			}
 		}
+	}
+
+	/**
+	 * Extract the key information from a "pom.properties" file for
+	 * a Maven model.  The file is read from the supplied stream.
+	 * 
+	 * @param is the input stream for the properties file
+	 * @return the BuildInfo
+	 * @throws IOException in the unlikely event that the stream can't be read.
+	 */
+	public static BuildInfo readBuildInfo(InputStream is) throws IOException {
+		BuildInfo buildInfo = new BuildInfo();
+		// Read / parse by hand because we want to snarf the comment
+		// containing the timestamp.  (That's the best we have in the 
+		// way of a build date.)
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		String line;
+		while ((line = br.readLine()) != null) {
+			if (line.startsWith("#")) {
+				// If it looks like it contains 
+				if (line.matches(".*(?<!\\d)\\d{4}(?!\\d).*")) {
+					buildInfo.buildTimestamp = line.substring(1).trim();
+				}
+			} else {
+				String[] parts = line.split("=", 2);
+				if (parts[0].equals("groupId")) {
+					buildInfo.groupId = parts[1];
+				} else if (parts[0].equals("artifactId")) {
+					buildInfo.artifactId = parts[1];
+				} else if (parts[0].equals("version")) {
+					buildInfo.version = parts[1];
+				} 
+			}
+		}
+		return buildInfo;
 	}
 
 	public String getBuildTimestamp() {
