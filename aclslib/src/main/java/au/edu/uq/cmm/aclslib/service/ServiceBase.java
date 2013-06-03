@@ -115,7 +115,8 @@ public abstract class ServiceBase implements Service {
     }
 
     public void shutdown() throws InterruptedException {
-        LOG.info("Shutdown called");
+        LOG.info("Shutdown called on thread " + Thread.currentThread().getName(), 
+                new Exception("Diagnosing source of shutdown"));
         synchronized (lock) {
             if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
@@ -136,7 +137,8 @@ public abstract class ServiceBase implements Service {
     }
     
     public void startShutdown() throws ServiceException {
-        LOG.info("StartShutdown called");
+        LOG.info("StartShutdown called on thread " + Thread.currentThread().getName(), 
+                new Exception("Diagnosing source of shutdown"));
         synchronized (lock) {
             if (state == State.STARTING || state == State.STOPPING) {
                 throw new IllegalStateException("State change already in progress");
